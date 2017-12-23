@@ -27,6 +27,8 @@ import MessageService # for OnCheckCode
 import OutlineService
 import FindInDirService
 from UICommon import CaseInsensitiveCompare
+import codecs
+import re
 try:
     import checker # for pychecker
     _CHECKER_INSTALLED = True
@@ -44,8 +46,82 @@ else:
 VIEW_PYTHON_INTERPRETER_ID = wx.NewId()
 
 
-class PythonDocument(CodeEditor.CodeDocument):
-    pass
+CODING_REG_STR = re.compile(r'^[ \t\f]*#.*coding[:=][ \t]*([-\w.]+)')
+BLANK_REG_STR = re.compile(r'^[ \t\f]*(?:[#\r\n]|$)')
+
+def coding_spec(str):
+    """Return the encoding declaration according to PEP 263.
+
+    Raise LookupError if the encoding is declared but unknown.
+    """
+    # Only consider the first two lines
+    lst = str.split("\n", 2)[:2]
+    for line in lst:
+        match = CODING_REG_STR.match(line)
+        if match is not None:
+            break
+        if not BLANK_REG_STR.match(line):
+            return None
+    else:
+        return None
+    name = match.group(1)
+    # Check whether the encoding is known
+    
+    try:
+        codecs.lookup(name)
+    except LookupError:
+        # The standard encoding error does not indicate the encoding
+        raise LookupError, "Unknown encoding "+name
+    return name
+
+class PythonDocument(CodeEditor.CodeDocument): 
+
+
+    UTF_8_ENCODING = 0
+    GBK_ENCODING = 1
+    ANSI_ENCODING = 2
+
+    def DoSaveBefore(self):
+        view = self.GetFirstView()
+        file_data = view.GetValue()
+        declare_encoding = coding_spec(file_data)
+        if self.IsDocEncodingChanged(declare_encoding):
+            self.file_encoding = declare_encoding
+    
+    def GetDocEncoding(self,encoding):
+
+        lower_encoding = encoding.lower() 
+
+        if lower_encoding == "utf-8" or lower_encoding == "utf-8-sig":
+            return self.UTF_8_ENCODING
+
+        elif lower_encoding == "gbk" or lower_encoding == "gb2312" \
+             or lower_encoding == "gb18030":
+            return self.GBK_ENCODING
+
+        return self.ANSI_ENCODING
+         
+
+    def IsUtf8Doc(self,encoding):
+
+        if encoding.lower().find("utf-8"):
+            return True
+
+        return False
+
+    def IsDocEncodingChanged(self,encoding):
+        
+        if self.GetDocEncoding(encoding) != self.GetDocEncoding(self.file_encoding):
+            return True
+
+        return False
+        
+    def SaveObject(self, fileObject):
+        view = self.GetFirstView()
+        content = view.GetValue()
+        fileObject.write(content)
+        view.SetModifyFalse()
+        return True
 
 
 class PythonView(CodeEditor.CodeView):

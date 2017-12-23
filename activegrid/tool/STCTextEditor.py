@@ -19,6 +19,11 @@ import string
 import FindService
 import os
 import sys
+import chardet
+import codecs
+import shutil
+import FileObserver
+import WxThreadSafe
 _ = wx.GetTranslation
 
 #----------------------------------------------------------------------------
@@ -44,12 +49,148 @@ TEXT_STATUS_BAR_ID = wx.NewId()
 # Classes
 #----------------------------------------------------------------------------
 
+
 class TextDocument(wx.lib.docview.Document):
 
 
     def __init__(self):
         wx.lib.docview.Document .__init__(self)
         self._inModify = False
+        self.file_watcher = FileObserver.FileAlarmWatcher()
+
+    def GetSaveObject(self,filename):
+        return codecs.open(filename, 'w',self.file_encoding)
+
+    def DoSaveBefore(self):
+        pass
+
+    def OnSaveDocument(self, filename):
+        """
+        Constructs an output file for the given filename (which must
+        not be empty), and calls SaveObject. If SaveObject returns true, the
+        document is set to unmodified; otherwise, an error message box is
+        displayed.
+        """
+        if not filename:
+            return False
+
+        msgTitle = wx.GetApp().GetAppName()
+        if not msgTitle:
+            msgTitle = _("File Error")
+
+        backupFilename = None
+        fileObject = None
+        copied = False
+
+        self.DoSaveBefore()
+
+        try:
+            # if current file exists, move it to a safe place temporarily
+            if os.path.exists(filename):
+
+                # Check if read-only.
+                if not os.access(filename, os.W_OK):
+                    wx.MessageBox("Could not save '%s'.  No write permission to overwrite existing file." % FileNameFromPath(filename),
+                                  msgTitle,
+                                  wx.OK | wx.ICON_EXCLAMATION,
+                                  self.GetDocumentWindow())
+                    return False
+
+                i = 1
+                backupFilename = "%s.bk%s" % (filename, i)
+                while os.path.exists(backupFilename):
+                    i += 1
+                    backupFilename = "%s.bk%s" % (filename, i)
+                shutil.copy(filename, backupFilename)
+                copied = True
+            fileObject = self.GetSaveObject(filename)
+            self.SaveObject(fileObject)
+            fileObject.close()
+            fileObject = None
+            
+            if backupFilename:
+                os.remove(backupFilename)
+        except:
+            # for debugging purposes
+            import traceback
+            traceback.print_exc()
+
+            if fileObject:
+                fileObject.close()  # file is still open, close it, need to do this before removal 
+
+            # save failed, remove copied file
+            #if backupFilename and copied:
+             #   os.remove(backupFilename)
+
+            wx.MessageBox("Could not save '%s'.  %s" % (wx.lib.docview.FileNameFromPath(filename), sys.exc_value),
+                          msgTitle,
+                          wx.OK | wx.ICON_ERROR,
+                          self.GetDocumentWindow())
+            return False
+
+        self.SetDocumentModificationDate()
+        self.SetFilename(filename, True)
+        self.Modify(False)
+        self.SetDocumentSaved(True)
+        #if wx.Platform == '__WXMAC__':  # Not yet implemented in wxPython
+        #    wx.FileName(file).MacSetDefaultTypeAndCreator()
+        return True
+
+    def DetectFileEncoding(self,filepath):
+
+        file_encoding = "ascii"
+        try:
+            with open(filepath,"rb") as f:
+                data = f.read()
+                result = chardet.detect(data)
+                file_encoding = result['encoding']
+        except:
+            pass
+        return file_encoding
+
+    def OnOpenDocument(self, filename):
+        """
+        Constructs an input file for the given filename (which must not
+        be empty), and calls LoadObject. If LoadObject returns true, the
+        document is set to unmodified; otherwise, an error message box is
+        displayed. The document's views are notified that the filename has
+        changed, to give windows an opportunity to update their titles. All of
+        the document's views are then updated.
+        """
+        if not self.OnSaveModified():
+            return False
+
+        msgTitle = wx.GetApp().GetAppName()
+        if not msgTitle:
+            msgTitle = _("File Error")
+        self.file_encoding = self.DetectFileEncoding(filename)
+        fileObject = None
+        try:
+            fileObject = codecs.open(filename, 'r',self.file_encoding)
+            self.LoadObject(fileObject)
+            fileObject.close()
+            fileObject = None
+        except:
+            # for debugging purposes
+            import traceback
+            traceback.print_exc()
+
+            if fileObject:
+                fileObject.close()  # file is still open, close it 
+
+            wx.MessageBox("Could not open '%s'.  %s" % (wx.lib.docview.FileNameFromPath(filename), sys.exc_value),
+                          msgTitle,
+                          wx.OK | wx.ICON_ERROR,
+                          self.GetDocumentWindow())
+            return False
+
+        self.SetDocumentModificationDate()
+        self.SetFilename(filename, True)
+        self.Modify(False)
+        self.SetDocumentSaved(True)
+        self.UpdateAllViews()
+        self.file_watcher.AddFileDoc(self)
+        return True
 
 
     def SaveObject(self, fileObject):
@@ -699,6 +840,22 @@ class TextView(wx.lib.docview.View):
     def GetMarkerCount(self):
         return self._markerCount
 
+    @WxThreadSafe.call_after
+    def Alarm(self,alarm_type):
+
+        if alarm_type == FileObserver.FileEventHandler.FILE_MODIFY_EVENT:
+
+            wx.MessageBox("File \"%s\" has already been modified outside,Do You Want to reload it?" % self.GetDocument().GetFilename(), "Reload..",
+                           wx.YES_NO  | wx.ICON_QUESTION,self.GetDocument().GetDocumentWindow())
+
+            
+
+        elif alarm_type == FileObserver.FileEventHandler.FILE_MOVED_EVENT or \
+             alarm_type == FileObserver.FileEventHandler.FILE_DELETED_EVENT:
+
+            wx.MessageBox(_("File \"%s\" has already been moved or deleted outside,Do You Want to keep it in Editor?") % self.GetDocument().GetFilename(), _("Reload.."),
+                           wx.YES_NO  | wx.ICON_QUESTION,None)
+
 
 class TextService(wx.lib.pydocview.DocService):
 
@@ -1044,15 +1201,16 @@ class TextCtrl(wx.stc.StyledTextCtrl):
 
         self.SetMarginType(1, wx.stc.STC_MARGIN_NUMBER)
         self.SetMarginWidth(1, self.EstimatedLineNumberMarginWidth())
-        self.UpdateStyles()
 
         self.SetCaretForeground("BLACK")
         
         self.SetViewDefaults()
         font, color = self.GetFontAndColorFromConfig()
+        
         self.SetFont(font)
         self.SetFontColor(color)
         self.MarkerDefineDefault()
+        self.UpdateStyles()
 
         # for multisash initialization   
         if isinstance(parent, wx.lib.multisash.MultiClient):     
@@ -1118,8 +1276,11 @@ class TextCtrl(wx.stc.StyledTextCtrl):
         
     def GetDefaultFont(self):
         """ Subclasses should override this """
-        return wx.Font(10, wx.MODERN, wx.NORMAL, wx.NORMAL)
-        
+        if wx.Platform == '__WXMSW__':
+            font = "Courier New"
+            return wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = font)
+        else:
+            return wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL)
 
     def GetDefaultColor(self):
         """ Subclasses should override this """
@@ -1150,9 +1311,10 @@ class TextCtrl(wx.stc.StyledTextCtrl):
 
     def SetFont(self, font):
         self._font = font
+
+        self.StyleClearAll()
         self.StyleSetFont(wx.stc.STC_STYLE_DEFAULT, self._font)
-
-
+        
     def GetFontColor(self):
         return self._fontColor
 
@@ -1164,19 +1326,25 @@ class TextCtrl(wx.stc.StyledTextCtrl):
 
     def UpdateStyles(self):
         self.StyleClearAll()
+        faces = { 'font' : self.GetFont().GetFaceName(),
+          'size' : self.GetFont().GetPointSize(),
+          'size2': self.GetFont().GetPointSize()-2,
+          'color' : "%02x%02x%02x" % (self.GetFontColor().Red(), self.GetFontColor().Green(), self.GetFontColor().Blue())
+        }
+        # Global default styles for all languages
+        self.StyleSetSpec(wx.stc.STC_STYLE_LINENUMBER,  "face:%(font)s,back:#C0C0C0,face:%(font)s,size:%(size2)d" % faces)
         return
-
 
     def EstimatedLineNumberMarginWidth(self):
         MARGIN = 4
-        baseNumbers = "000"
         lineNum = self.GetLineCount()
+        baseNumbers = " %d " % (lineNum)
         lineNum = lineNum/100
         while lineNum >= 10:
             lineNum = lineNum/10
-            baseNumbers = baseNumbers + "0"
+            baseNumbers = baseNumbers + " "
 
-        return self.TextWidth(wx.stc.STC_STYLE_LINENUMBER, baseNumbers) + MARGIN
+        return self.TextWidth(wx.stc.STC_STYLE_LINENUMBER, baseNumbers) 
 
 
     def OnUpdateLineNumberMarginWidth(self, event):
