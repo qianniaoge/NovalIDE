@@ -429,3 +429,26 @@ def replaceToken(infilepath, tokens={}, outfilepath=None, delim="@@",\
     finally:
         if f: f.close()
 endIfDef()
+
+def open_file_directory(file_path,platform):
+    """
+        Opens the parent directory of a file, selecting the file if possible.
+    """
+    if platform == '__WXMSW__':
+        # Normally we can just run `explorer /select, filename`, but Python 2
+        # always calls CreateProcessA, which doesn't support Unicode. We could
+        # call CreateProcessW with ctypes, but the following is more robust.
+        import ctypes
+        ctypes.windll.ole32.CoInitialize(None)
+        # Not sure why this is always UTF-8.
+        pidl = ctypes.windll.shell32.ILCreateFromPathW(file_path)
+        ctypes.windll.shell32.SHOpenFolderAndSelectItems(pidl, 0, None, 0)
+        ctypes.windll.shell32.ILFree(pidl)
+        ctypes.windll.ole32.CoUninitialize()
+    elif platform == '__WXMAC__':
+        import subprocess
+        subprocess.Popen(["open", file_path])
+    else:
+        import subprocess
+        subprocess.Popen(["nautilus", file_path])
+

@@ -13,6 +13,7 @@
 import sys
 import os
 import time
+import pyperclip
 
 # this will be set to true in IDE.py when we are running release builds.
 isRelease = False
@@ -114,3 +115,6 @@ def getCurrentTimeAsFloat():
     return time.time()
 
 systemStartTime = getCurrentTimeAsFloat()
+
+def CopyToClipboard(str):
+    pyperclip.copy(str)
