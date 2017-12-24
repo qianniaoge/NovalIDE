@@ -97,19 +97,19 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             print "    [filenames] is an optional list of files you want to open when application starts."
             return False
         elif isInArgs("dev", args):
-            self.SetAppName(_("ActiveGrid Application Builder Dev"))
+            self.SetAppName(_("NovalBuilderDev"))
             self.SetDebug(False)
         elif isInArgs("debug", args):
-            self.SetAppName(_("ActiveGrid Application Builder Debug"))
+            self.SetAppName(_("NovalBuilderDebug"))
             self.SetDebug(True)
             self.SetSingleInstance(False)
         elif isInArgs("baseide", args):
-            self.SetAppName(_("ActiveGrid IDE"))
+            self.SetAppName(_("NovalIDE"))
             ACTIVEGRID_BASE_IDE = True
         elif isInArgs("tools", args):
             USE_OLD_PROJECTS = True
         else:
-            self.SetAppName(_("ActiveGrid Application Builder"))
+            self.SetAppName(_("NovalBuilder"))
             self.SetDebug(False)
         if isInArgs("multiple", args) and wx.Platform != "__WXMAC__":
             self.SetSingleInstance(False)
@@ -773,6 +773,27 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame):
         else:
             self._notebook.SetToolTip(wx.ToolTip(""))
         event.Skip()
+
+    def OnMRUFile(self, event):
+        """
+        Opens the appropriate file when it is selected from the file history
+        menu.
+        """
+        n = event.GetId() - wx.ID_FILE1
+        filename = self._docManager.GetHistoryFile(n)
+        if filename and os.path.exists(filename):
+            self._docManager.CreateDocument(filename, wx.lib.docview.DOC_SILENT)
+        else:
+            self._docManager.RemoveFileFromHistory(n)
+            msgTitle = wx.GetApp().GetAppName()
+            if not msgTitle:
+                msgTitle = _("File Error")
+            if filename:
+                wx.MessageBox("The file '%s' doesn't exist and couldn't be opened!" % filename,
+                              msgTitle,
+                              wx.OK | wx.ICON_ERROR,
+                              self)
+
        
 class IDEMDIParentFrame(wx.lib.pydocview.DocMDIParentFrame):
     
