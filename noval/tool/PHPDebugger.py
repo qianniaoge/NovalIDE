@@ -15,7 +15,7 @@ import threading
 import traceback
 import wx
 import DebuggerService
-import activegrid.util.sysutils as sysutils
+import noval.util.sysutils as sysutils
 
 
 DBGC_REPLY                              = 0x0               # reply to previous DBGA_REQUEST request

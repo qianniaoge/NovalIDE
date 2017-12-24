@@ -17,10 +17,10 @@ import shutil
 import sys
 import zipfile
 
-import activegrid.util.aglogging as aglogging
-import activegrid.util.sysutils as sysutils
-import activegrid.util.utillang as utillang
-from activegrid.util.lang import *
+import noval.util.aglogging as aglogging
+import noval.util.sysutils as sysutils
+import noval.util.utillang as utillang
+from noval.util.lang import *
 
 global fileutilsLogger
 fileutilsLogger = logging.getLogger("activegrid.util.fileutils")

@@ -11,7 +11,7 @@
 #----------------------------------------------------------------------------
 import sys
 from types import *
-from activegrid.util.lang import *
+from noval.util.lang import *
 import logging
 ifDefPy()
 import xml.sax
@@ -19,10 +19,10 @@ import xml.sax.handler
 import xml.sax.saxutils
 import datetime
 endIfDef()
-import activegrid.util.utillang as utillang
-import activegrid.util.objutils as objutils
-import activegrid.util.sysutils as sysutils
-import activegrid.util.aglogging as aglogging
+import noval.util.utillang as utillang
+import noval.util.objutils as objutils
+import noval.util.sysutils as sysutils
+import noval.util.aglogging as aglogging
 
 MODULE_PATH = "__main__"
 

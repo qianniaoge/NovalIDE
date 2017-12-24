@@ -18,8 +18,8 @@ import OutlineService
 import os
 import re
 import FindInDirService
-import activegrid.util.appdirs as appdirs
-import activegrid.util.sysutils as sysutils
+import noval.util.appdirs as appdirs
+import noval.util.sysutils as sysutils
 _ = wx.GetTranslation
 
 

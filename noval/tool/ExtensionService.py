@@ -16,7 +16,7 @@ import MessageService
 import ProjectEditor
 import os
 import os.path
-import activegrid.util.xmlutils as xmlutils
+import noval.util.xmlutils as xmlutils
 _ = wx.GetTranslation
 
 

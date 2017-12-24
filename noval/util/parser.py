@@ -11,7 +11,7 @@
 #----------------------------------------------------------------------------
 
 import re
-from activegrid.util.lang import *
+from noval.util.lang import *
 ifDefPy()
 import string
 import array

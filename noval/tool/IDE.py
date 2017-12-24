@@ -16,8 +16,8 @@ import wx.lib.pydocview
 import sys
 import wx.grid
 import os.path
-import activegrid.util.sysutils as sysutilslib
-import activegrid.util.appdirs as appdirs
+import noval.util.sysutils as sysutilslib
+import noval.util.appdirs as appdirs
 import shutil
 
 # Required for Unicode support with python

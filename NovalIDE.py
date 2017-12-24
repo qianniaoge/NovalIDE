@@ -10,7 +10,7 @@
 # License:      wxWindows License
 #----------------------------------------------------------------------------
 import wx.lib.pydocview
-import activegrid.tool.IDE
+import noval.tool.IDE
 
 import os
 import sys
@@ -27,7 +27,7 @@ try:
     sys.path.index(execDir)
 except ValueError:
     sys.path.append(execDir)
-app = activegrid.tool.IDE.IDEApplication(redirect = False)
+app = noval.tool.IDE.IDEApplication(redirect = False)
 app.GetTopWindow().Raise()  # sometimes it shows up beneath other windows.  e.g. running self in debugger
 app.MainLoop()
 

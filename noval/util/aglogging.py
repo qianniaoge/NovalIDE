@@ -16,10 +16,10 @@ import re
 import traceback
 import logging
 import logging.config
-from activegrid.util.lang import *
-import activegrid.util.objutils as objutils
-import activegrid.util.sysutils as sysutils
-import activegrid.util.appdirs as appdirs
+from noval.util.lang import *
+import noval.util.objutils as objutils
+import noval.util.sysutils as sysutils
+import noval.util.appdirs as appdirs
 
 LEVEL_FATAL = logging.FATAL
 LEVEL_ERROR = logging.ERROR

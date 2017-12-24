@@ -15,11 +15,11 @@ import os.path
 import wx
 import string
 import ProjectEditor
-import activegrid.util.appdirs as appdirs
-import activegrid.util.fileutils as fileutils
-import activegrid.util.strutils as strutils
-import activegrid.util.sysutils as sysutils
-import activegrid.util.xmlutils as xmlutils
+import noval.util.appdirs as appdirs
+import noval.util.fileutils as fileutils
+import noval.util.strutils as strutils
+import noval.util.sysutils as sysutils
+import noval.util.xmlutils as xmlutils
 _ = wx.GetTranslation
 
 def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Directory:"), fileExtension="*", startingName="", startingDirectory=None, choiceDirs=None, appDirDefaultStartDir=False, returnAll=False, useDirDialog=False):

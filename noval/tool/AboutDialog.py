@@ -13,7 +13,7 @@
 import wx
 import os.path
 from IDE import ACTIVEGRID_BASE_IDE, getSplashBitmap, getIDESplashBitmap
-import activegrid.util.sysutils as sysutilslib
+import noval.util.sysutils as sysutilslib
 _ = wx.GetTranslation
 
 #----------------------------------------------------------------------------

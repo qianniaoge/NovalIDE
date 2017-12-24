@@ -23,7 +23,7 @@ import CodeEditor
 import PythonEditor
 import PHPEditor
 import PHPDebugger
-import activegrid.model.projectmodel as projectmodel
+import noval.model.projectmodel as projectmodel
 from IDE import ACTIVEGRID_BASE_IDE
 if not ACTIVEGRID_BASE_IDE:
     import ProcessModelEditor
@@ -45,7 +45,7 @@ import DebuggerHarness
 import traceback
 import StringIO
 import UICommon
-import activegrid.util.sysutils as sysutilslib
+import noval.util.sysutils as sysutilslib
 import subprocess
 import shutil
 

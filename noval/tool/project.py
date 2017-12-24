@@ -13,8 +13,8 @@
 import copy
 import os
 import os.path
-import activegrid.util.xmlutils as xmlutils
-import activegrid.util.aglogging as aglogging
+import noval.util.xmlutils as xmlutils
+import noval.util.aglogging as aglogging
 
 # REVIEW 07-Mar-06 stoens@activegrid.com -- Ideally move the pieces required
 # to generate the .dpl file out of this module so there's no dependency on wx,

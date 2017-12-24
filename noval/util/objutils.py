@@ -16,10 +16,10 @@ import sys
 import os
 import __builtin__
 import types
-import activegrid.util.utillang as utillang
-import activegrid.util.datetimeparser as datetimeparser
+import noval.util.utillang as utillang
+import noval.util.datetimeparser as datetimeparser
 from types import *
-from activegrid.util.lang import *
+from noval.util.lang import *
 
 FUNCTION_HAS_ATTR = '_hasAttr'
 FUNCTION_GET_ATTR = '_getAttr'

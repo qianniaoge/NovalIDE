@@ -22,9 +22,9 @@ import sets
 import sys
 import time
 import types
-import activegrid.util.appdirs as appdirs
-import activegrid.util.fileutils as fileutils
-import activegrid.util.aglogging as aglogging
+import noval.util.appdirs as appdirs
+import noval.util.fileutils as fileutils
+import noval.util.aglogging as aglogging
 import UICommon
 import Wizard
 import SVNService

@@ -10,15 +10,15 @@
 # License:      wxWindows License
 #----------------------------------------------------------------------------
 
-from activegrid.util.lang import *
+from noval.util.lang import *
 import os
 import time
 import urllib
 import logging
-from activegrid.util.lang import *
-import activegrid.util.objutils as objutils
-import activegrid.util.xmlmarshaller as xmlmarshaller
-import activegrid.util.aglogging as aglogging
+from noval.util.lang import *
+import noval.util.objutils as objutils
+import noval.util.xmlmarshaller as xmlmarshaller
+import noval.util.aglogging as aglogging
 
 xmlLogger = logging.getLogger("activegrid.util.xml")
     
