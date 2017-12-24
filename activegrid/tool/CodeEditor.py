@@ -794,7 +794,7 @@ class CodeCtrl(STCTextEditor.TextCtrl):
                   }
 
         # Global default styles for all languages
-        self.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT,     "face:%(font)s,fore:#FFFFFF,size:%(size)d" % faces)
+        ##self.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT,     "face:%(font)s,fore:#FFFFFF,size:%(size)d" % faces)
         self.StyleSetSpec(wx.stc.STC_STYLE_LINENUMBER,  "face:%(font)s,back:#C0C0C0,face:%(font)s,size:%(size2)d" % faces)
         self.StyleSetSpec(wx.stc.STC_STYLE_CONTROLCHAR, "face:%(font)s" % faces)
         self.StyleSetSpec(wx.stc.STC_STYLE_BRACELIGHT,  "face:%(font)s,fore:#000000,back:#70FFFF,size:%(size)d" % faces)

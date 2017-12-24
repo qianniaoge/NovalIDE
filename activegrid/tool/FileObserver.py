@@ -16,15 +16,15 @@ class FileAlarmWatcher(Singleton):
             path_watcher = self.path_watchers[file_path]
         path_watcher.AddFile(doc)
 
-    def DeleteFileDoc(self,doc):
+    def RemoveFileDoc(self,doc):
         file_name_path = doc.GetFilename()
         file_path = os.path.dirname(file_name_path)
         assert self.path_watchers.has_key(file_path)
-        path_watcher = self.path_wathers[file_path]
-        path_watcher.RemoveFile(text_view)
+        path_watcher = self.path_watchers[file_path]
+        path_watcher.RemoveFile(doc)
 
         if 0 == path_watcher.GetFileCount():
-            path_watcher.stop()
+            path_watcher.Stop()
             self.path_watchers.pop(file_path)
 
     def StopWatchFile(self,doc):
@@ -32,21 +32,31 @@ class FileAlarmWatcher(Singleton):
         file_path = os.path.dirname(file_name_path)
         assert self.path_watchers.has_key(file_path)
         path_watcher = self.path_watchers[file_path]
-        path_watcher.stop()
+        path_watcher.Stop()
+
+    def StartWatchFile(self,doc):
+        file_name_path = doc.GetFilename()
+        file_path = os.path.dirname(file_name_path)
+        assert self.path_watchers.has_key(file_path)
+        path_watcher = self.path_watchers[file_path]
+        path_watcher.Start()
 
 class PathWatcher(object):
 
     def __init__(self,path):
         self.file_docs = {}
         self._path = path
-        event_handler = FileEventHandler(self)  
-        self.observer = Observer()  
-        self.observer.schedule(event_handler, path=self._path, recursive=False)
-        self.observer.start()
+        self.event_handler = FileEventHandler(self)
+        self.Start()
 
     def Stop(self):
         self.observer.stop()
 
+    def Start(self):
+        self.observer = Observer()  
+        self.observer.schedule(self.event_handler, path=self._path, recursive=False)
+        self.observer.start()
+        
     def AddFile(self,doc):
         file_name_path = doc.GetFilename()
         ##lower_file_path = file_path.lower()

@@ -57,12 +57,13 @@ class TextDocument(wx.lib.docview.Document):
         wx.lib.docview.Document .__init__(self)
         self._inModify = False
         self.file_watcher = FileObserver.FileAlarmWatcher()
+        self._is_watched = False
 
     def GetSaveObject(self,filename):
         return codecs.open(filename, 'w',self.file_encoding)
 
     def DoSaveBefore(self):
-        pass
+        self.file_watcher.StopWatchFile(self)
 
     def OnSaveDocument(self, filename):
         """
@@ -81,10 +82,8 @@ class TextDocument(wx.lib.docview.Document):
         backupFilename = None
         fileObject = None
         copied = False
-
-        self.DoSaveBefore()
-
         try:
+            self.DoSaveBefore()
             # if current file exists, move it to a safe place temporarily
             if os.path.exists(filename):
 
@@ -132,6 +131,7 @@ class TextDocument(wx.lib.docview.Document):
         self.SetFilename(filename, True)
         self.Modify(False)
         self.SetDocumentSaved(True)
+        self.file_watcher.StartWatchFile(self)
         #if wx.Platform == '__WXMAC__':  # Not yet implemented in wxPython
         #    wx.FileName(file).MacSetDefaultTypeAndCreator()
         return True
@@ -190,8 +190,12 @@ class TextDocument(wx.lib.docview.Document):
         self.SetDocumentSaved(True)
         self.UpdateAllViews()
         self.file_watcher.AddFileDoc(self)
+        self._is_watched = True
         return True
 
+    @property
+    def IsWatched(self):
+        return self._is_watched
 
     def SaveObject(self, fileObject):
         view = self.GetFirstView()
@@ -209,6 +213,8 @@ class TextDocument(wx.lib.docview.Document):
 
 
     def IsModified(self):
+        if not os.path.exists(self.GetFilename()):
+            return True
         view = self.GetFirstView()
         if view:
             return view.IsModified()
@@ -349,6 +355,10 @@ class TextView(wx.lib.docview.View):
     def OnClose(self, deleteWindow = True):
         if not wx.lib.docview.View.OnClose(self, deleteWindow):
             return False
+    
+        document = self.GetDocument()
+        if document.IsWatched:
+            document.file_watcher.RemoveFileDoc(document)
         self.Activate(False)
         if deleteWindow and self.GetFrame():
             self.GetFrame().Destroy()
@@ -844,17 +854,22 @@ class TextView(wx.lib.docview.View):
     def Alarm(self,alarm_type):
 
         if alarm_type == FileObserver.FileEventHandler.FILE_MODIFY_EVENT:
-
-            wx.MessageBox("File \"%s\" has already been modified outside,Do You Want to reload it?" % self.GetDocument().GetFilename(), "Reload..",
-                           wx.YES_NO  | wx.ICON_QUESTION,self.GetDocument().GetDocumentWindow())
-
-            
-
+            ret = wx.MessageBox("File \"%s\" has already been modified outside,Do You Want to reload it?" % self.GetDocument().GetFilename(), "Reload..",
+                           wx.YES_NO  | wx.ICON_QUESTION,self.GetFrame())
+            if ret == wx.YES:
+                document = self.GetDocument()
+                document.OnOpenDocument(document.GetFilename())
+                
         elif alarm_type == FileObserver.FileEventHandler.FILE_MOVED_EVENT or \
              alarm_type == FileObserver.FileEventHandler.FILE_DELETED_EVENT:
+            ret = wx.MessageBox(_("File \"%s\" has already been moved or deleted outside,Do You Want to keep it in Editor?") % self.GetDocument().GetFilename(), _("Reload.."),
+                           wx.YES_NO  | wx.ICON_QUESTION ,self.GetFrame())
 
-            wx.MessageBox(_("File \"%s\" has already been moved or deleted outside,Do You Want to keep it in Editor?") % self.GetDocument().GetFilename(), _("Reload.."),
-                           wx.YES_NO  | wx.ICON_QUESTION,None)
+            document = self.GetDocument()
+            if ret == wx.YES:
+                document.Modify(True)
+            else:
+                document.DeleteAllViews()
 
 
 class TextService(wx.lib.pydocview.DocService):
@@ -1202,15 +1217,19 @@ class TextCtrl(wx.stc.StyledTextCtrl):
         self.SetMarginType(1, wx.stc.STC_MARGIN_NUMBER)
         self.SetMarginWidth(1, self.EstimatedLineNumberMarginWidth())
 
+        self.UpdateStyles()
+
         self.SetCaretForeground("BLACK")
         
         self.SetViewDefaults()
         font, color = self.GetFontAndColorFromConfig()
-        
+
         self.SetFont(font)
         self.SetFontColor(color)
+        
+        self.SetLineNumberStyle()
         self.MarkerDefineDefault()
-        self.UpdateStyles()
+        
 
         # for multisash initialization   
         if isinstance(parent, wx.lib.multisash.MultiClient):     
@@ -1311,8 +1330,6 @@ class TextCtrl(wx.stc.StyledTextCtrl):
 
     def SetFont(self, font):
         self._font = font
-
-        self.StyleClearAll()
         self.StyleSetFont(wx.stc.STC_STYLE_DEFAULT, self._font)
         
     def GetFontColor(self):
@@ -1323,9 +1340,10 @@ class TextCtrl(wx.stc.StyledTextCtrl):
         self._fontColor = fontColor
         self.StyleSetForeground(wx.stc.STC_STYLE_DEFAULT, "#%02x%02x%02x" % (self._fontColor.Red(), self._fontColor.Green(), self._fontColor.Blue()))
 
+    def SetLineNumberStyle(self):
 
-    def UpdateStyles(self):
-        self.StyleClearAll()
+        self.UpdateStyles()
+
         faces = { 'font' : self.GetFont().GetFaceName(),
           'size' : self.GetFont().GetPointSize(),
           'size2': self.GetFont().GetPointSize()-2,
@@ -1333,10 +1351,12 @@ class TextCtrl(wx.stc.StyledTextCtrl):
         }
         # Global default styles for all languages
         self.StyleSetSpec(wx.stc.STC_STYLE_LINENUMBER,  "face:%(font)s,back:#C0C0C0,face:%(font)s,size:%(size2)d" % faces)
+        
+    def UpdateStyles(self):
+        self.StyleClearAll()
         return
 
     def EstimatedLineNumberMarginWidth(self):
-        MARGIN = 4
         lineNum = self.GetLineCount()
         baseNumbers = " %d " % (lineNum)
         lineNum = lineNum/100

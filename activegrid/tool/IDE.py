@@ -718,6 +718,61 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame):
     # the top of the screen instead of disappearing. 
     def CreateDefaultStatusBar(self):
        pass
+
+    def OnNotebookRightClick(self, event):
+        """
+        Handles right clicks for the notebook, enabling users to either close
+        a tab or select from the available documents if the user clicks on the
+        notebook's white space.
+        """
+        index, type = self._notebook.HitTest(event.GetPosition())
+        menu = wx.Menu()
+        x, y = event.GetX(), event.GetY()
+        if index > -1:
+            doc = self._notebook.GetPage(index).GetView().GetDocument()
+            id = wx.NewId()
+            menu.Append(id, _("Close"))
+            def OnRightMenuSelect(event):
+                doc.DeleteAllViews()
+            wx.EVT_MENU(self, id, OnRightMenuSelect)
+            if self._notebook.GetPageCount() > 1:
+                id = wx.NewId()
+                menu.Append(id, _("Close All but \"%s\"" % doc.GetPrintableName()))
+                def OnRightMenuSelect(event):
+                    for i in range(self._notebook.GetPageCount()-1, -1, -1): # Go from len-1 to 0
+                        if i != index:
+                            doc = self._notebook.GetPage(i).GetView().GetDocument()
+                            if not self.GetDocumentManager().CloseDocument(doc, False):
+                                return
+                wx.EVT_MENU(self, id, OnRightMenuSelect)
+                menu.AppendSeparator()
+                tabsMenu = wx.Menu()
+                menu.AppendMenu(wx.NewId(), _("Select Tab"), tabsMenu)
+        else:
+            y = y - 25  # wxBug: It is offsetting click events in the blank notebook area
+            tabsMenu = menu
+
+        if self._notebook.GetPageCount() > 1:
+            selectIDs = {}
+            for i in range(0, self._notebook.GetPageCount()):
+                id = wx.NewId()
+                selectIDs[id] = i
+                tabsMenu.Append(id, self._notebook.GetPageText(i))
+                def OnRightMenuSelect(event):
+                    self._notebook.SetSelection(selectIDs[event.GetId()])
+                wx.EVT_MENU(self, id, OnRightMenuSelect)
+
+        self._notebook.PopupMenu(menu, wx.Point(x, y))
+        menu.Destroy()
+
+    def OnNotebookMouseOver(self, event):
+        index, type = self._notebook.HitTest(event.GetPosition())
+        if index > -1:
+            doc = self._notebook.GetPage(index).GetView().GetDocument()
+            self._notebook.SetToolTip(wx.ToolTip(doc.GetFilename()))
+        else:
+            self._notebook.SetToolTip(wx.ToolTip(""))
+        event.Skip()
        
 class IDEMDIParentFrame(wx.lib.pydocview.DocMDIParentFrame):
     

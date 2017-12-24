@@ -82,9 +82,12 @@ class PythonDocument(CodeEditor.CodeDocument):
     ANSI_ENCODING = 2
 
     def DoSaveBefore(self):
+        CodeEditor.CodeDocument.DoSaveBefore(self)
         view = self.GetFirstView()
         file_data = view.GetValue()
         declare_encoding = coding_spec(file_data)
+        if None == declare_encoding:
+            declare_encoding = "ascii"
         if self.IsDocEncodingChanged(declare_encoding):
             self.file_encoding = declare_encoding
     
@@ -115,14 +118,6 @@ class PythonDocument(CodeEditor.CodeDocument):
             return True
 
         return False
-        
-    def SaveObject(self, fileObject):
-        view = self.GetFirstView()
-        content = view.GetValue()
-        fileObject.write(content)
-        view.SetModifyFalse()
-        return True
-
 
 class PythonView(CodeEditor.CodeView):
 
