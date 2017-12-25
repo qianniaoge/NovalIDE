@@ -401,7 +401,7 @@ class TextView(wx.lib.docview.View):
             self.GetCtrl().OnClear()
             return True
         elif id == wx.ID_SELECTALL:
-            self.GetCtrl().SetSelection(0, -1)
+            self.GetCtrl().SelectAll()
             return True
         elif id == VIEW_WHITESPACE_ID:
             self.GetCtrl().SetViewWhiteSpace(not self.GetCtrl().GetViewWhiteSpace())
