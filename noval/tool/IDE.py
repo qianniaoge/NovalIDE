@@ -630,8 +630,8 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         projectService.AddLogicalViewFolderCollapsedDefault(_("Page Flows"), False)
         projectService.AddLogicalViewFolderCollapsedDefault(_("Pages"), False)
     
-        
-        self.SetDefaultIcon(getActiveGridIcon())
+        iconPath = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "noval.ico")
+        self.SetDefaultIcon(wx.Icon(iconPath, wx.BITMAP_TYPE_ICO))
         if not ACTIVEGRID_BASE_IDE:
             embeddedWindows = wx.lib.pydocview.EMBEDDED_WINDOW_TOPLEFT | wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOMLEFT |wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM | wx.lib.pydocview.EMBEDDED_WINDOW_RIGHT
         else:
@@ -649,7 +649,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         if not projectService.OpenSavedProjects() and not docManager.GetDocuments() and self.IsSDI():  # Have to open something if it's SDI and there are no projects...
             projectTemplate.CreateDocument('', wx.lib.docview.DOC_NEW).OnNewDocument()
             
-        tips_path = os.path.join(sysutilslib.mainModuleDir, "activegrid", "tool", "data", "tips.txt")
+        tips_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "data", "tips.txt")
             
         # wxBug: On Mac, having the updates fire while the tip dialog is at front
         # for some reason messes up menu updates. This seems a low-level wxWidgets bug,
@@ -666,7 +666,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             if os.path.isfile(tips_path):
                 self.ShowTip(docManager.FindSuitableParent(), wx.CreateFileTipProvider(tips_path, 0))
 
-        iconPath = os.path.join(sysutilslib.mainModuleDir, "activegrid", "tool", "bmp_source", "activegrid.ico")
+        
         if os.path.isfile(iconPath):
             ib = wx.IconBundle()
             ib.AddIconFromFile(iconPath, wx.BITMAP_TYPE_ANY)
@@ -680,6 +680,7 @@ class IDEDocManager(wx.lib.docview.DocManager):
     
     # Overriding default document creation.
     def OnFileNew(self, event):
+        self.CreateDocument('', wx.lib.docview.DOC_NEW)
         import NewDialog
         newDialog = NewDialog.NewDialog(wx.GetApp().GetTopWindow())
         if newDialog.ShowModal() == wx.ID_OK:
@@ -749,9 +750,9 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame):
         def OnOpenFileInExplorer(event):
             fileutils.open_file_directory(doc.GetFilename(),wx.Platform)
         def OnCopyFilePath(event):
-            pass
+            sysutilslib.CopyToClipboard(doc.GetFilename())
         def OnCopyFileName(event):
-            pass
+            sysutilslib.CopyToClipboard(os.path.basename(doc.GetFilename()))
         def OnSaveFile(event):
             self.GetDocumentManager().OnFileSave(event)
         def OnSaveFileAs(event):
@@ -5078,46 +5079,7 @@ def getIDESplashBitmap():
 def getIDESplashImage():
     stream = cStringIO.StringIO(getIDESplashData())
     return ImageFromStream(stream)
-    
 
-#----------------------------------------------------------------------
-def getActiveGridData():
-    return \
-'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x10\x00\x00\x00\x10\x08\x02\
-\x00\x00\x00\x90\x91h6\x00\x00\x00\x03sBIT\x08\x08\x08\xdb\xe1O\xe0\x00\x00\
-\x02\x10IDAT(\x91\x95\x92Kk\x13a\x14\x86\xcf7\xb7d\x92I\xa7I\'7\xa9)\x1a\xab\
-\xb5\xc1R\xabh\x15\x04\x91\xd2\x8d\x08\xaet\'\xf4?\xf87\xfc\r\xee\xdc\xb8\
-\xd0E\xc1\x8d(bP\xf0\x86Z/i\x02m\x9a\x98\xa9\xc9d&\x9d\xc9\xdc\xe7\x9b\xf9\
-\xdc\x84Rb@|\x97\xe7\x9c\x07^x\x0e"\x84\xc0\xff\x84\x998m\x7f}j\xd4\x9f\xc8n\
-\xd1d\xe7o\xdf\xd9@\x88:\\Q\x7f_\xebJ\xb3\xbd\xb59-\xb2y\xde\xc8\xe3\xf7\xb5\
-7\x8f\x8e\xb6\x98\x00\xb4\xb66\tv\xf6~\xfb\x10\x1a\t\xc6\xea\xec~&Q8\xb9R\
-\x14a\xa3\xbf\xa7\xb6\xbf$hp\xfc\xa0\xa6\x10u\x18\x9d\xb9P\xa1hf\x1c\xc0\xbe\
-\xd3\xf9\xf1Lm\xbeS\x15\x99\xa1B+ \x1e\x06\x96\x02\x9a\xa6OWV}[e\xe3"\xa2\
-\x98\x11\xe0Y\x83\xed\x97\x0f8\xbf)q H\xa4\xa3\x11\xdb\x8b,\x8f\xeckAnv\xc5\
-\xb4\xd9~\xf5q\x02\xf6sgoN\x1f\xbf\xc4\x00@\xe3\xedC\xceo\n1\x12ci!\x81x6\
-\xdc\xe9\xa1\xbe\x11F\x84.\xcc\x9d\xcag\x93;\xdb\xbf\x1c\xaf^\xab\x0eS\xd2+\
-\n\x00\xec\xeeG\x8e&b:#-,%\xc5l\x8c\xa3\xae,\x1d\xbbq1wn\x8e\xf9\xf6\xe1E*\
-\x9d\xe1\xd3E3\x10\xf2\x8bk\xf9\xf2U\x06\x00\x10\x10\x00\xc4\xcf\xe4P\xa1\
-\x14*\xdd\x08h\x96\x17y\xd7\x88s(I\xe9\x8d\xfa\xcf\xd2\xca]~\xba\x14\xf4?iz\
-\x86\x01\x00N<\xe9\xb9MM\x96\x13\xba\xae\xabj\x80#\xa5\xd7\x1b\x98\x9e\x87!\
-\x19G\xc3AO\xa8,\x0b\xe7oEx]\xdb}M\x01\xc0\x89\xcb\x1b.\x11z\x8a\xd1i\xc9\
-\x86\xe5\x99\x0e\x96\xbb\x9a6\xb0\\\x0f|\x8cf2\xe2H\x19\x13\x93\xe6\xd7(\x00\
-\x98\xca\x96\xcb\xd7\xef\xe3\xd8\xec\x81\x03\xa6\x0b\xa6K\x0c;\xd4\xed\xe8\
-\xc0\x8e0\x95,\x96\x16\x8e\xbaB\x87\xda\xb1o\xb7\xbe?\x97\x1bUC\x95]\x0f\x0f\
-\x1d\x12\xd2S\xab\xeb\xf7\x16\x97\xafM\x06F\xb2\xc3@W\xe5\xa1\xaeF@K\x85\x92\
-\x90J\x8f=\xce8\xf0\xcf\xfc\x01\xc1h\x0bqbR\xd1\'\x00\x00\x00\x00IEND\xaeB`\
-\x82' 
-
-def getActiveGridBitmap():
-    return BitmapFromImage(getActiveGridImage())
-
-def getActiveGridImage():
-    stream = cStringIO.StringIO(getActiveGridData())
-    return ImageFromStream(stream)
-
-def getActiveGridIcon():
-    return wx.IconFromBitmap(getActiveGridBitmap())
-    
 #----------------------------------------------------------------------
 def getSkinData():
     return \

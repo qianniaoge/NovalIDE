@@ -51,6 +51,8 @@ TEXT_STATUS_BAR_ID = wx.NewId()
 
 
 class TextDocument(wx.lib.docview.Document):
+    
+    DEFAULT_FILE_ENCODING = "ascii"
 
 
     def __init__(self):
@@ -58,6 +60,8 @@ class TextDocument(wx.lib.docview.Document):
         self._inModify = False
         self.file_watcher = FileObserver.FileAlarmWatcher()
         self._is_watched = False
+        self.file_encoding = TextDocument.DEFAULT_FILE_ENCODING
+        self._is_new_doc = True
 
     def GetSaveObject(self,filename):
         return codecs.open(filename, 'w',self.file_encoding)
@@ -133,6 +137,7 @@ class TextDocument(wx.lib.docview.Document):
         self.Modify(False)
         self.SetDocumentSaved(True)
         self._is_watched = True
+        self._is_new_doc = False
         self.file_watcher.StartWatchFile(self)
         #if wx.Platform == '__WXMAC__':  # Not yet implemented in wxPython
         #    wx.FileName(file).MacSetDefaultTypeAndCreator()
@@ -140,7 +145,7 @@ class TextDocument(wx.lib.docview.Document):
 
     def DetectFileEncoding(self,filepath):
 
-        file_encoding = "ascii"
+        file_encoding = TextDocument.DEFAULT_FILE_ENCODING
         try:
             with open(filepath,"rb") as f:
                 data = f.read()
@@ -149,7 +154,7 @@ class TextDocument(wx.lib.docview.Document):
         except:
             pass
         if None == file_encoding:
-            file_encoding = "ascii"
+            file_encoding = TextDocument.DEFAULT_FILE_ENCODING
         return file_encoding
 
     def OnOpenDocument(self, filename):
@@ -195,6 +200,7 @@ class TextDocument(wx.lib.docview.Document):
         self.UpdateAllViews()
         self.file_watcher.AddFileDoc(self)
         self._is_watched = True
+        self._is_new_doc = False
         return True
 
     @property
@@ -221,7 +227,8 @@ class TextDocument(wx.lib.docview.Document):
 
 
     def IsModified(self):
-        if not os.path.exists(self.GetFilename()):
+        filename = self.GetFilename()
+        if filename and not os.path.exists(filename) and not self._is_new_doc:
             return True
         view = self.GetFirstView()
         if view:

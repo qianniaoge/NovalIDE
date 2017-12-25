@@ -87,7 +87,7 @@ class PythonDocument(CodeEditor.CodeDocument):
         file_data = view.GetValue()
         declare_encoding = coding_spec(file_data)
         if None == declare_encoding:
-            declare_encoding = "ascii"
+            declare_encoding = CodeEditor.CodeDocument.DEFAULT_FILE_ENCODING
         if self.IsDocEncodingChanged(declare_encoding):
             self.file_encoding = declare_encoding
     

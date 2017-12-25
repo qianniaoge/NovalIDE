@@ -60,16 +60,21 @@ class PathWatcher(object):
         self.file_docs = {}
         self._path = path
         self.event_handler = FileEventHandler(self)
+        self._is_watched = False
         self.Start()
 
     def Stop(self):
         self.observer.stop()
         self.observer.join()
+        self._is_watched = False
 
     def Start(self):
+        if self._is_watched:
+            self.Stop()
         self.observer = Observer()  
         self.observer.schedule(self.event_handler, path=self._path, recursive=False)
         self.observer.start()
+        self._is_watched = True
         
     def AddFile(self,doc):
         file_name_path = doc.GetFilename()
