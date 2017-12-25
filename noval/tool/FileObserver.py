@@ -27,19 +27,32 @@ class FileAlarmWatcher(Singleton):
             path_watcher.Stop()
             self.path_watchers.pop(file_path)
 
+    def RemoveFile(self,file_name_path):
+        file_path = os.path.dirname(file_name_path)
+        assert self.path_watchers.has_key(file_path)
+        path_watcher = self.path_watchers[file_path]
+        path_watcher.RemoveFilePath(file_name_path)
+        if 0 == path_watcher.GetFileCount():
+            path_watcher.Stop()
+            self.path_watchers.pop(file_path)
+
     def StopWatchFile(self,doc):
         file_name_path = doc.GetFilename()
         file_path = os.path.dirname(file_name_path)
-        assert self.path_watchers.has_key(file_path)
+        if not self.path_watchers.has_key(file_path):
+            return
         path_watcher = self.path_watchers[file_path]
         path_watcher.Stop()
 
     def StartWatchFile(self,doc):
         file_name_path = doc.GetFilename()
         file_path = os.path.dirname(file_name_path)
-        assert self.path_watchers.has_key(file_path)
-        path_watcher = self.path_watchers[file_path]
-        path_watcher.Start()
+        if not self.path_watchers.has_key(file_path):
+            self.AddFileDoc(doc)
+        else:
+            path_watcher = self.path_watchers[file_path]
+            path_watcher.AddFile(doc)
+            path_watcher.Start()
 
 class PathWatcher(object):
 
@@ -51,6 +64,7 @@ class PathWatcher(object):
 
     def Stop(self):
         self.observer.stop()
+        self.observer.join()
 
     def Start(self):
         self.observer = Observer()  
@@ -65,6 +79,10 @@ class PathWatcher(object):
 
     def RemoveFile(self,doc):
         file_name_path = doc.GetFilename()
+        assert self.file_docs.has_key(file_name_path)
+        self.file_docs.pop(file_name_path)
+
+    def RemoveFilePath(self,file_name_path):
         assert self.file_docs.has_key(file_name_path)
         self.file_docs.pop(file_name_path)
 

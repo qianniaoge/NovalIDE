@@ -18,6 +18,7 @@ import wx.grid
 import os.path
 import noval.util.sysutils as sysutilslib
 import noval.util.appdirs as appdirs
+import noval.util.fileutils as fileutils
 import shutil
 
 # Required for Unicode support with python
@@ -708,7 +709,16 @@ class IDEDocManager(wx.lib.docview.DocManager):
                 else:
                     assert False, "Unknown type returned from NewDialog"
 
-    
+    def OnFileSaveAs(self, event):
+        doc = self.GetCurrentDocument()
+        if not doc:
+            return
+        old_file_path = doc.GetFilename()
+        if not doc.SaveAs():
+            return
+        if doc.IsWatched:
+            doc.FileWatcher.RemoveFile(old_file_path)
+        
 
 class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame):
     
@@ -718,6 +728,13 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame):
     # the top of the screen instead of disappearing. 
     def CreateDefaultStatusBar(self):
        pass
+ 
+    def AppendMenuItem(self,menu,name,callback,separator=False):
+       id = wx.NewId()
+       menu.Append(id,name)
+       wx.EVT_MENU(self, id, callback)       
+       if separator:
+           menu.AppendSeparator()
 
     def OnNotebookRightClick(self, event):
         """
@@ -725,29 +742,43 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame):
         a tab or select from the available documents if the user clicks on the
         notebook's white space.
         """
+        def OnCloseDoc(event):
+            doc.DeleteAllViews()
+        def OnCloseAllDocs(event):
+            self.GetDocumentManager().CloseDocuments(False)
+        def OnOpenFileInExplorer(event):
+            fileutils.open_file_directory(doc.GetFilename(),wx.Platform)
+        def OnCopyFilePath(event):
+            pass
+        def OnCopyFileName(event):
+            pass
+        def OnSaveFile(event):
+            self.GetDocumentManager().OnFileSave(event)
+        def OnSaveFileAs(event):
+            self.GetDocumentManager().OnFileSaveAs(event)
+        def OnCloseAllWithoutDoc(event):
+            for i in range(self._notebook.GetPageCount()-1, -1, -1): # Go from len-1 to 0
+                if i != index:
+                    doc = self._notebook.GetPage(i).GetView().GetDocument()
+                    if not self.GetDocumentManager().CloseDocument(doc, False):
+                        return
         index, type = self._notebook.HitTest(event.GetPosition())
         menu = wx.Menu()
         x, y = event.GetX(), event.GetY()
         if index > -1:
             doc = self._notebook.GetPage(index).GetView().GetDocument()
-            id = wx.NewId()
-            menu.Append(id, _("Close"))
-            def OnRightMenuSelect(event):
-                doc.DeleteAllViews()
-            wx.EVT_MENU(self, id, OnRightMenuSelect)
+            self.AppendMenuItem(menu,_("Save"),OnSaveFile)
+            self.AppendMenuItem(menu,_("SaveAs"),OnSaveFileAs)
+            self.AppendMenuItem(menu,_("Close"),OnCloseDoc)
+            self.AppendMenuItem(menu,_("CloseAll"),OnCloseAllDocs)
             if self._notebook.GetPageCount() > 1:
-                id = wx.NewId()
-                menu.Append(id, _("Close All but \"%s\"" % doc.GetPrintableName()))
-                def OnRightMenuSelect(event):
-                    for i in range(self._notebook.GetPageCount()-1, -1, -1): # Go from len-1 to 0
-                        if i != index:
-                            doc = self._notebook.GetPage(i).GetView().GetDocument()
-                            if not self.GetDocumentManager().CloseDocument(doc, False):
-                                return
-                wx.EVT_MENU(self, id, OnRightMenuSelect)
-                menu.AppendSeparator()
+                item_name = _("Close All but \"%s\"" % doc.GetPrintableName())
+                self.AppendMenuItem(menu,item_name,OnCloseAllWithoutDoc,True)
                 tabsMenu = wx.Menu()
                 menu.AppendMenu(wx.NewId(), _("Select Tab"), tabsMenu)
+            self.AppendMenuItem(menu,_("Open File In FileManager"),OnOpenFileInExplorer)
+            self.AppendMenuItem(menu,_("Copy File Path"),OnCopyFilePath)
+            self.AppendMenuItem(menu,_("Copy File Name"),OnCopyFileName)
         else:
             y = y - 25  # wxBug: It is offsetting click events in the blank notebook area
             tabsMenu = menu

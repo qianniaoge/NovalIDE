@@ -63,7 +63,8 @@ class TextDocument(wx.lib.docview.Document):
         return codecs.open(filename, 'w',self.file_encoding)
 
     def DoSaveBefore(self):
-        self.file_watcher.StopWatchFile(self)
+        if self._is_watched:
+            self.file_watcher.StopWatchFile(self)
 
     def OnSaveDocument(self, filename):
         """
@@ -131,6 +132,7 @@ class TextDocument(wx.lib.docview.Document):
         self.SetFilename(filename, True)
         self.Modify(False)
         self.SetDocumentSaved(True)
+        self._is_watched = True
         self.file_watcher.StartWatchFile(self)
         #if wx.Platform == '__WXMAC__':  # Not yet implemented in wxPython
         #    wx.FileName(file).MacSetDefaultTypeAndCreator()
