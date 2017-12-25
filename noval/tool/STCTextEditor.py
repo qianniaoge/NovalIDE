@@ -439,13 +439,13 @@ class TextView(wx.lib.docview.View):
             self.OnFind(replace = True)
             return True
         elif id == FindService.FindService.FINDONE_ID:
-            self.DoFind()
+            self.DoFindText()
             return True
         elif id == FindService.FindService.REPLACEONE_ID:
-            self.DoFind(replace = True)
+            self.DoReplaceSel()
             return True
         elif id == FindService.FindService.REPLACEALL_ID:
-            self.DoFind(replaceAll = True)
+            self.DoReplaceAll()
             return True
         elif id == FindService.FindService.GOTO_LINE_ID:
             self.OnGotoLine(event)
@@ -650,7 +650,146 @@ class TextView(wx.lib.docview.View):
         if findService:
             findService.ShowFindReplaceDialog(findString = self.GetCtrl().GetSelectedText(), replace = replace)
 
+    def AdjustFindDialogPosition(self,findService):
+        start = self.GetCtrl().GetSelectionEnd()
+        point = self.GetCtrl().PointFromPosition(start)
+        new_point = self.GetCtrl().ClientToScreen(point)
+        current_dlg = findService.GetCurrentDialog()
+        dlg_rect = current_dlg.GetRect()
+        if dlg_rect.Contains(new_point):
+            if new_point.y > dlg_rect.GetHeight():
+                dlg_rect.Offset(wx.Point(0,new_point.y-20-dlg_rect.GetBottomRight().y))
+            else:
+                dlg_rect.Offset(wx.Point(0,new_point.y+40-dlg_rect.GetTopLeft().y))
+            to_point = wx.Point(dlg_rect.GetX(),dlg_rect.GetY())
+            current_dlg.Move(to_point)
+    
+    def TextNotFound(self,findString,flags):
+        wx.MessageBox(_("Have been reached the end of document,Can't find \"%s\".") % findString, "Find",
+                          wx.OK | wx.ICON_INFORMATION)     
+        down = flags & wx.FR_DOWN > 0
+        wrap = flags & FindService.FindService.FR_WRAP > 0
+        if wrap & down:
+            self.GetCtrl().SetSelectionStart(0)
+            self.GetCtrl().SetSelectionEnd(0)
+        elif wrap & (not down):
+            doc_length = self.GetCtrl().GetLength()
+            self.GetCtrl().SetSelectionStart(doc_length)
+            self.GetCtrl().SetSelectionEnd(doc_length)
+        
+    def FindText(self,findString,flags):
+        startLoc, endLoc = self.GetCtrl().GetSelection()
+        wholeWord = flags & wx.FR_WHOLEWORD > 0
+        matchCase = flags & wx.FR_MATCHCASE > 0
+        regExp = flags & FindService.FindService.FR_REGEXP > 0
+        down = flags & wx.FR_DOWN > 0
+        wrap = flags & FindService.FindService.FR_WRAP > 0
+        minpos = self.GetCtrl().GetSelectionStart()
+        maxpos = self.GetCtrl().GetSelectionEnd()
+        if minpos != maxpos:
+            if down:
+                minpos += 1
+            else:
+                maxpos = minpos - 1
+        if down:
+            maxpos = self.GetCtrl().GetLength()
+        else:
+            minpos = 0
+        flags =  wx.stc.STC_FIND_MATCHCASE if matchCase else 0
+        flags |= wx.stc.STC_FIND_WHOLEWORD if wholeWord else 0
+        flags |= wx.stc.STC_FIND_REGEXP if regExp else 0
+         #Swap the start and end positions which Scintilla uses to flag backward searches
+        if not down:
+            tmp_min = minpos
+            minpos = maxpos
+            maxpos= tmp_min
 
+        return True if self.FindAndSelect(findString,minpos,maxpos,flags) != -1 else False
+ 
+    def FindAndSelect(self,findString,minpos,maxpos,flags):
+        index = self.GetCtrl().FindText(minpos,maxpos,findString,flags)
+        if -1 != index:
+            start = index
+            end = index+len(findString)
+            self.GetCtrl().SetSelection(start,end)
+            self.GetCtrl().EnsureVisibleEnforcePolicy(self.GetCtrl().LineFromPosition(end))  # show bottom then scroll up to top
+            self.GetCtrl().EnsureVisibleEnforcePolicy(self.GetCtrl().LineFromPosition(start)) # do this after ensuring bottom is visible
+            wx.GetApp().GetTopWindow().PushStatusText(_("Found \"%s\".") % findString)
+        return index
+        
+    def DoFindText(self):
+        findService = wx.GetApp().GetService(FindService.FindService)
+        if not findService:
+            return
+        findString = findService.GetFindString()
+        if len(findString) == 0:
+            return -1
+        flags = findService.GetFlags()
+        if not self.FindText(findString,flags):
+            self.TextNotFound(findString,flags)
+        else:
+            self.AdjustFindDialogPosition(findService)
+            
+    def DoReplaceSel(self):
+        findService = wx.GetApp().GetService(FindService.FindService)
+        if not findService:
+            return
+        findString = findService.GetFindString()
+        if len(findString) == 0:
+            return -1
+        replaceString = findService.GetReplaceString()
+        flags = findService.GetFlags()
+        if not self.SameAsSelected(findString,flags):
+            if not self.FindText(findString,flags):
+                self.TextNotFound(findString,flags)
+            else:
+                self.AdjustFindDialogPosition(findService)
+            return
+        self.GetCtrl().ReplaceSelection(replaceString)
+        if not self.FindText(findString,flags):
+            self.TextNotFound(findString,flags)
+        else:
+            self.AdjustFindDialogPosition(findService)
+      
+    def DoReplaceAll(self):
+        findService = wx.GetApp().GetService(FindService.FindService)
+        if not findService:
+            return
+        findString = findService.GetFindString()
+        if len(findString) == 0:
+            return -1
+        replaceString = findService.GetReplaceString()
+        flags = findService.GetFlags()
+        hit_found = False
+        self.GetCtrl().SetSelection(0,0)
+        ###self.GetCtrl().HideSelection(True)
+        while self.FindText(findString,flags):
+            hit_found = True
+            self.GetCtrl().ReplaceSelection(replaceString)
+
+        ###self.GetCtrl().HideSelection(False)
+        if not hit_found:
+            self.TextNotFound(findString,flags)
+        
+    def SameAsSelected(self,findString,flags):
+        start_pos = self.GetCtrl().GetSelectionStart()
+        end_pos = self.GetCtrl().GetSelectionEnd()
+        wholeWord = flags & wx.FR_WHOLEWORD > 0
+        matchCase = flags & wx.FR_MATCHCASE > 0
+        regExp = flags & FindService.FindService.FR_REGEXP > 0
+        flags =  wx.stc.STC_FIND_MATCHCASE if matchCase else 0
+        flags |= wx.stc.STC_FIND_WHOLEWORD if wholeWord else 0
+        flags |= wx.stc.STC_FIND_REGEXP if regExp else 0
+        #Now use the advanced search functionality of scintilla to determine the result
+        self.GetCtrl().SetSearchFlags(flags);
+        self.GetCtrl().TargetFromSelection();
+        #see what we got
+        if self.GetCtrl().SearchInTarget(findString) < 0:
+            #no match
+            return False
+        	#If we got a match, the target is set to the found text
+        return (self.GetCtrl().GetTargetStart() == start_pos) and (self.GetCtrl().GetTargetEnd() == end_pos);
+        
     def DoFind(self, forceFindNext = False, forceFindPrevious = False, replace = False, replaceAll = False):
         findService = wx.GetApp().GetService(FindService.FindService)
         if not findService:
@@ -870,7 +1009,7 @@ class TextView(wx.lib.docview.View):
                 
         elif alarm_type == FileObserver.FileEventHandler.FILE_MOVED_EVENT or \
              alarm_type == FileObserver.FileEventHandler.FILE_DELETED_EVENT:
-            ret = wx.MessageBox(_("File \"%s\" has already been moved or deleted outside,Do You Want to keep it in Editor?") % self.GetDocument().GetFilename(), _("Reload.."),
+            ret = wx.MessageBox(_("File \"%s\" has already been moved or deleted outside,Do You Want to keep it in Editor?") % self.GetDocument().GetFilename(), _("Keep Document.."),
                            wx.YES_NO  | wx.ICON_QUESTION ,self.GetFrame())
 
             document = self.GetDocument()
