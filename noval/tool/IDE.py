@@ -669,7 +669,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             if os.path.isfile(tips_path):
                 self.ShowTip(docManager.FindSuitableParent(), wx.CreateFileTipProvider(tips_path, 0))
                    
-        Interpreter.InterpreterManager().GetDefaultInterpreter()
+        Interpreter.InterpreterManager().LoadDefaultInterpreter()
         wx.UpdateUIEvent.SetUpdateInterval(1000)  # Overhead of updating menus was too much.  Change to update every n milliseconds.
 
         return True

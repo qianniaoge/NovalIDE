@@ -2,6 +2,7 @@ import os
 import sys
 import subprocess
 from Singleton import *
+import wx
 
 class Interpreter(object):
     
@@ -84,19 +85,39 @@ class PythonInterpreter(Interpreter):
     def IsValidInterpreter(self):
          return self._is_valid_interpreter
          
-
 class InterpreterManager(Singleton):
     
     interpreters = []
     DefaultInterpreter = None
     
-    def GetDefaultInterpreter(self):
+    def LoadDefaultInterpreter(self):
         
         self.LoadPythonInterpreters()
-        if [] == self.interpreters:
-            return None
-        self.SetDefault()
-   
+        if 0 == len(self.interpreters):
+             dlg = wx.MessageDialog(None, "No Default Python Interpreter Found!", "No Interpreter", wx.OK | wx.ICON_WARNING)  
+             dlg.ShowModal()
+             dlg.Destroy()  
+        elif 1 == len(self.interpreters):
+            self.MakeDefaultInterpreter()
+        else:
+            self.ChooseDefaultInterpreter()
+        
+    def ChooseDefaultInterpreter(self):
+        choices = []
+        for interpreter in self.interpreters:
+            choices.append(interpreter.Name)
+        dlg = wx.SingleChoiceDialog(None, u"Please Choose Default Interpreter:", "Choose",choices)  
+        if dlg.ShowModal() == wx.ID_OK:  
+            name = dlg.GetStringSelection()
+            interpreter = self.GetInterpreterByName(name)
+            self.SetDefaultInterpreter(interpreter)
+        dlg.Destroy()
+        
+    def GetInterpreterByName(self,name):
+        for interpreter in self.interpreters:
+            if name == interpreter.Name:
+                return interpreter
+        return None
     def LoadPythonInterpreters(self):
         if sys.platform == "win32":
             import _winreg
@@ -107,13 +128,16 @@ class InterpreterManager(Singleton):
                     countkey=_winreg.QueryInfoKey(open_key)[0]  
                     keylist = []  
                     for i in range(int(countkey)):  
-                        name = _winreg.EnumKey(open_key,i)  
-                        child_key = _winreg.OpenKey(root_key, r"SOFTWARE\Python\Pythoncore\%s" % name)
-                        install_path = _winreg.QueryValue(child_key,"InstallPath")
-                        interpreter = PythonInterpreter(name,os.path.join(install_path,PythonInterpreter.CONSOLE_EXECUTABLE_NAME))
-                        self.interpreters.append(interpreter)
+                        name = _winreg.EnumKey(open_key,i)
+                        try:
+                            child_key = _winreg.OpenKey(root_key, r"SOFTWARE\Python\Pythoncore\%s" % name)
+                            install_path = _winreg.QueryValue(child_key,"InstallPath")
+                            interpreter = PythonInterpreter(name,os.path.join(install_path,PythonInterpreter.CONSOLE_EXECUTABLE_NAME))
+                            self.interpreters.append(interpreter)
+                        except:
+                            continue
                 except:
-                    pass
+                    continue
             
         elif sys.platform.find('linux') != -1:
             executable_path = sys.executable
@@ -134,8 +158,8 @@ class InterpreterManager(Singleton):
     def SetDefaultInterpreter(self,interpreter):
         self.DefaultInterpreter = interpreter
         
-    def SetDefault(self):
+    def MakeDefaultInterpreter(self):
         self.DefaultInterpreter = self.interpreters[0]
         
-    def GetDefault(self):
+    def GetDefaultInterpreter(self):
         return self.DefaultInterpreter

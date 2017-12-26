@@ -150,10 +150,10 @@ class FindService(wx.lib.pydocview.DocService):
         return self._replaceDialog
 
 
-    def GetLineNumber(self, parent):
+    def GetLineNumber(self, parent,line_number):
         """ Display Goto Line Number dialog box """
         line = -1
-        dialog = wx.TextEntryDialog(parent, _("Enter line number to go to:"), _("Go to Line"))
+        dialog = wx.TextEntryDialog(parent, _("Enter line number to go to:(1-%d)" % line_number), _("Go to Line"))
         dialog.CenterOnParent()
         if dialog.ShowModal() == wx.ID_OK:
             try:

@@ -892,7 +892,8 @@ class TextView(wx.lib.docview.View):
     def OnGotoLine(self, event):
         findService = wx.GetApp().GetService(FindService.FindService)
         if findService:
-            line = findService.GetLineNumber(self.GetDocumentManager().FindSuitableParent())
+            line_number = self.GetCtrl().GetLineCount()
+            line = findService.GetLineNumber(self.GetDocumentManager().FindSuitableParent(),line_number)
             if line > -1:
                 line = line - 1
                 self.GetCtrl().EnsureVisible(line)
