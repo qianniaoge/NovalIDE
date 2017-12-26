@@ -1,0 +1,6 @@
+include LICENSE.md
+include CHANGES.md
+include README.md
+include noval.ico
+include NovalIDE.py
+

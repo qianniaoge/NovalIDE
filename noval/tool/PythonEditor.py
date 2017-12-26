@@ -18,7 +18,7 @@ import string
 import keyword  # So it knows what to hilite
 import wx.py  # For the Python interpreter
 import wx.stc # For the Python interpreter
-import cStringIO  # For indent
+import StringIO  # For indent
 import OutlineService
 import STCTextEditor
 import keyword # for GetAutoCompleteKeywordList
@@ -568,8 +568,7 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         self._tokenizerChars = {}  # This is really too much, need to find something more like a C array
         for i in range(len(text)):
             self._tokenizerChars[i] = 0
-
-        ctext = cStringIO.StringIO(text)
+        ctext = StringIO.StringIO(text)
         try:
             tokenize.tokenize(ctext.readline, self)
         except:

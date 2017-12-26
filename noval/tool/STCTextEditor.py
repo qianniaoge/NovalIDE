@@ -717,7 +717,7 @@ class TextView(wx.lib.docview.View):
         index = self.GetCtrl().FindText(minpos,maxpos,findString,flags)
         if -1 != index:
             start = index
-            end = index+len(findString)
+            end = index + len(findString.encode('utf-8'))
             self.GetCtrl().SetSelection(start,end)
             self.GetCtrl().EnsureVisibleEnforcePolicy(self.GetCtrl().LineFromPosition(end))  # show bottom then scroll up to top
             self.GetCtrl().EnsureVisibleEnforcePolicy(self.GetCtrl().LineFromPosition(start)) # do this after ensuring bottom is visible
@@ -1134,31 +1134,64 @@ class TextService(wx.lib.pydocview.DocService):
 
 class TextStatusBar(wx.StatusBar):
 
+
+    TEXT_MODE_PANEL = 1
+    LINE_NUMBER_PANEL = 2
+    COLUMN_NUMBER_PANEL = 3
+    
+
     # wxBug: Would be nice to show num key status in statusbar, but can't figure out how to detect if it is enabled or disabled
 
     def __init__(self, parent, id, style = wx.ST_SIZEGRIP, name = "statusBar"):
         wx.StatusBar.__init__(self, parent, id, style, name)
         self.SetFieldsCount(4)
         self.SetStatusWidths([-1, 50, 50, 55])
+        self.Bind(wx.EVT_LEFT_DCLICK, self.OnStatusBarLeftDclick) 
 
     def SetInsertMode(self, insert = True):
         if insert:
             newText = _("Ins")
         else:
-            newText = _("")
-        if self.GetStatusText(1) != newText:     # wxBug: Need to check if the text has changed, otherwise it flickers under win32
-            self.SetStatusText(newText, 1)
+            newText = _("Over")
+        if self.GetStatusText(TextStatusBar.TEXT_MODE_PANEL) != newText:     # wxBug: Need to check if the text has changed, otherwise it flickers under win32
+            self.SetStatusText(newText, TextStatusBar.TEXT_MODE_PANEL)
 
     def SetLineNumber(self, lineNumber):
         newText = _("Ln %i") % lineNumber
-        if self.GetStatusText(2) != newText:
-            self.SetStatusText(newText, 2)
+        if self.GetStatusText(TextStatusBar.LINE_NUMBER_PANEL) != newText:
+            self.SetStatusText(newText, TextStatusBar.LINE_NUMBER_PANEL)
 
     def SetColumnNumber(self, colNumber):
         newText = _("Col %i") % colNumber
-        if self.GetStatusText(3) != newText:
-            self.SetStatusText(newText, 3)
+        if self.GetStatusText(TextStatusBar.COLUMN_NUMBER_PANEL) != newText:
+            self.SetStatusText(newText, TextStatusBar.COLUMN_NUMBER_PANEL)
+            
+    def OnStatusBarLeftDclick(self,event):
+        panel = self.GetPaneAtPosition(event.GetPosition())
+        if panel < 0:
+            return
+        view = wx.GetApp().GetDocumentManager().GetCurrentView()
+        if not view or not isinstance(view,TextView):
+            return
 
+        if panel == TextStatusBar.TEXT_MODE_PANEL:
+            if view.GetCtrl().GetOvertype():
+                self.SetInsertMode(True)
+                view.GetCtrl().SetOvertype(False)
+            else:
+                self.SetInsertMode(False)
+                view.GetCtrl().SetOvertype(True)
+        elif panel == TextStatusBar.LINE_NUMBER_PANEL or \
+             panel == TextStatusBar.COLUMN_NUMBER_PANEL:
+            view.OnGotoLine(None)
+ 
+    def GetPaneAtPosition(self,point):
+
+        for i in range(self.GetFieldsCount()):
+            rect = self.GetFieldRect(i)
+            if rect.Contains(point):
+                return i
+        return -1
 
 class TextOptionsPanel(wx.Panel):
 
