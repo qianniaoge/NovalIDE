@@ -1,0 +1,11 @@
+#! /usr/bin/python
+import sys
+import os
+if sys.platform == "win32":
+    os.system("python setup.py py2exe")
+else:
+    if 1 == len(sys.argv):
+        cmd = "install"
+    else:
+        cmd = sys.argv[1]
+    os.system("python setup.py %s" % cmd)
