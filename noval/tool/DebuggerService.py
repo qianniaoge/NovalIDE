@@ -48,6 +48,8 @@ import UICommon
 import noval.util.sysutils as sysutilslib
 import subprocess
 import shutil
+import Interpreter
+import OutputService
 
 if wx.Platform == '__WXMSW__':
     try:
@@ -2349,10 +2351,11 @@ class DebuggerService(Service.Service):
             self.ClearAllBreakpoints()
             return True
         elif an_id == DebuggerService.RUN_ID:
-            self.OnRunProject(event)
+            self.RunScript(event)
             return True
         elif an_id == DebuggerService.DEBUG_ID:
-            self.OnDebugProject(event)
+            ##self.OnDebugProject(event)
+            self.DebugRunScript(event)
             return True
         elif an_id == DebuggerService.RUN_LAST_ID:
             self.OnRunProject(event, showDialog=False)
@@ -2398,6 +2401,46 @@ class DebuggerService(Service.Service):
     #----------------------------------------------------------------------------
     # Class Methods
     #----------------------------------------------------------------------------
+    
+    def DebugRunScript(self,event,showDialog=True):
+        
+        interpreter_manager = Interpreter.InterpreterManager()
+        interpreter = interpreter_manager.GetDefault()
+        view = wx.GetApp().GetDocumentManager().GetCurrentView()
+        if not view or not isinstance(view,PythonEditor.PythonView):
+            return
+        document = view.GetDocument()
+        outputService = wx.GetApp().GetService(OutputService.OutputService)
+        output_view = outputService.GetView()
+        output_view.ClearLines()
+   
+        cmd_list = [interpreter.Path,document.GetFilename()]
+        p = subprocess.Popen(cmd_list,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        while True:
+            out = p.stdout.readline()
+            err = p.stderr.readline()
+            if out == b'' and err == b'':
+                if p.poll() is not None:
+                    break
+            else:
+                output_view.AddLines(out)
+                output_view.AddLines(err)
+
+    def RunScript(self,event,showDialog=True):
+        
+        interpreter_manager = Interpreter.InterpreterManager()
+        interpreter = interpreter_manager.GetDefault()
+        view = wx.GetApp().GetDocumentManager().GetCurrentView()
+        if not view or not isinstance(view,PythonEditor.PythonView):
+            return
+        document = view.GetDocument()
+        if sys.platform == "win32":
+            cmd_list = ['cmd.exe',"/c",interpreter.Path,document.GetFilename(),"&pause"]
+            subprocess.Popen(cmd_list,shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE)
+        else:
+            python_cmd = "%s \"%s\"; read" % (interpreter.Path,document.GetFilename())
+            cmd_list = ['gnome-terminal','-x','bash','-c',python_cmd]
+            subprocess.Popen(cmd_list,shell = False)
 
     def OnDebugProject(self, event, showDialog=True):
         if _WINDOWS and not _PYWIN32_INSTALLED:

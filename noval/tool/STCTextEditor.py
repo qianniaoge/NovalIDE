@@ -437,10 +437,10 @@ class TextView(wx.lib.docview.View):
             self.OnFind()
             return True
         elif id == FindService.FindService.FIND_PREVIOUS_ID:
-            self.DoFind(forceFindPrevious = True)
+            self.DoFindText(forceFindPrevious = True)
             return True
         elif id == FindService.FindService.FIND_NEXT_ID:
-            self.DoFind(forceFindNext = True)
+            self.DoFindText(forceFindNext = True)
             return True
         elif id == FindService.FindService.REPLACE_ID:
             self.OnFind(replace = True)
@@ -671,11 +671,17 @@ class TextView(wx.lib.docview.View):
             to_point = wx.Point(dlg_rect.GetX(),dlg_rect.GetY())
             current_dlg.Move(to_point)
     
-    def TextNotFound(self,findString,flags):
+    def TextNotFound(self,findString,flags,forceFindNext = False, forceFindPrevious = False):
         wx.MessageBox(_("Have been reached the end of document,Can't find \"%s\".") % findString, "Find",
                           wx.OK | wx.ICON_INFORMATION)     
         down = flags & wx.FR_DOWN > 0
         wrap = flags & FindService.FindService.FR_WRAP > 0
+        if forceFindPrevious: 
+            down = False
+            wrap = False 
+        elif forceFindNext:
+            down = True
+            wrap = False
         if wrap & down:
             self.GetCtrl().SetSelectionStart(0)
             self.GetCtrl().SetSelectionEnd(0)
@@ -684,13 +690,21 @@ class TextView(wx.lib.docview.View):
             self.GetCtrl().SetSelectionStart(doc_length)
             self.GetCtrl().SetSelectionEnd(doc_length)
         
-    def FindText(self,findString,flags):
+    def FindText(self,findString,flags,forceFindNext = False, forceFindPrevious = False):
         startLoc, endLoc = self.GetCtrl().GetSelection()
         wholeWord = flags & wx.FR_WHOLEWORD > 0
         matchCase = flags & wx.FR_MATCHCASE > 0
         regExp = flags & FindService.FindService.FR_REGEXP > 0
         down = flags & wx.FR_DOWN > 0
         wrap = flags & FindService.FindService.FR_WRAP > 0
+        
+        if forceFindPrevious:   # this is from function keys, not dialog box
+            down = False
+            wrap = False        # user would want to know they're at the end of file
+        elif forceFindNext:
+            down = True
+            wrap = False        # user would want to know they're at the end of file
+            
         minpos = self.GetCtrl().GetSelectionStart()
         maxpos = self.GetCtrl().GetSelectionEnd()
         if minpos != maxpos:
@@ -724,7 +738,7 @@ class TextView(wx.lib.docview.View):
             wx.GetApp().GetTopWindow().PushStatusText(_("Found \"%s\".") % findString)
         return index
         
-    def DoFindText(self):
+    def DoFindText(self,forceFindNext = False, forceFindPrevious = False):
         findService = wx.GetApp().GetService(FindService.FindService)
         if not findService:
             return
@@ -732,10 +746,11 @@ class TextView(wx.lib.docview.View):
         if len(findString) == 0:
             return -1
         flags = findService.GetFlags()
-        if not self.FindText(findString,flags):
-            self.TextNotFound(findString,flags)
+        if not self.FindText(findString,flags,forceFindNext,forceFindPrevious):
+            self.TextNotFound(findString,flags,forceFindNext,forceFindPrevious)
         else:
-            self.AdjustFindDialogPosition(findService)
+            if not forceFindNext and not forceFindPrevious:
+                self.AdjustFindDialogPosition(findService)
             
     def DoReplaceSel(self):
         findService = wx.GetApp().GetService(FindService.FindService)

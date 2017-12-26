@@ -139,6 +139,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         import HtmlEditor
         import TabbedView
         import MessageService
+        import OutputService
         import Service
         import ImageEditor
         import PerlEditor
@@ -148,6 +149,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         import AboutDialog
         import SVNService
         import ExtensionService
+        import Interpreter
 ##        import UpdateLogIniService
                             
         if not ACTIVEGRID_BASE_IDE:
@@ -499,7 +501,8 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         outlineService          = self.InstallService(OutlineService.OutlineService("Outline", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOMLEFT))
         filePropertiesService   = self.InstallService(wx.lib.pydocview.FilePropertiesService())
         markerService           = self.InstallService(MarkerService.MarkerService())
-        messageService          = self.InstallService(MessageService.MessageService("Messages", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
+        messageService          = self.InstallService(MessageService.MessageService("Search Results", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
+        outputService          = self.InstallService(OutputService.OutputService("Output", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
         debuggerService         = self.InstallService(DebuggerService.DebuggerService("Debugger", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
         if not ACTIVEGRID_BASE_IDE:
             processModelService = self.InstallService(ProcessModelEditor.ProcessModelService())
@@ -665,13 +668,8 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         else:
             if os.path.isfile(tips_path):
                 self.ShowTip(docManager.FindSuitableParent(), wx.CreateFileTipProvider(tips_path, 0))
-
-        
-        if os.path.isfile(iconPath):
-            ib = wx.IconBundle()
-            ib.AddIconFromFile(iconPath, wx.BITMAP_TYPE_ANY)
-            wx.GetApp().GetTopWindow().SetIcons(ib)
-        
+                   
+        Interpreter.InterpreterManager().GetDefaultInterpreter()
         wx.UpdateUIEvent.SetUpdateInterval(1000)  # Overhead of updating menus was too much.  Change to update every n milliseconds.
 
         return True
