@@ -15,3 +15,4 @@ Version 1.0.0 -------------2017-12-26
 8.support mru files and delete invalid file path
 9.enable show tips when startup application
 10.multi document tabbed frame style
+11.auto detect python file encoding when save python document
