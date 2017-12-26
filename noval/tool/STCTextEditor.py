@@ -100,11 +100,7 @@ class TextDocument(wx.lib.docview.Document):
                                   self.GetDocumentWindow())
                     return False
 
-                i = 1
-                backupFilename = "%s.bk%s" % (filename, i)
-                while os.path.exists(backupFilename):
-                    i += 1
-                    backupFilename = "%s.bk%s" % (filename, i)
+                backupFilename = "%s.bk%s" % (filename, 1)
                 shutil.copy(filename, backupFilename)
                 copied = True
             fileObject = self.GetSaveObject(filename)
@@ -123,13 +119,15 @@ class TextDocument(wx.lib.docview.Document):
                 fileObject.close()  # file is still open, close it, need to do this before removal 
 
             # save failed, remove copied file
-            #if backupFilename and copied:
-             #   os.remove(backupFilename)
+            if backupFilename and copied:
+                shutil.copy(backupFilename,filename)
+                os.remove(backupFilename)
 
             wx.MessageBox("Could not save '%s'.  %s" % (wx.lib.docview.FileNameFromPath(filename), sys.exc_value),
                           msgTitle,
                           wx.OK | wx.ICON_ERROR,
                           self.GetDocumentWindow())
+            self.SetDocumentModificationDate()
             return False
 
         self.SetDocumentModificationDate()

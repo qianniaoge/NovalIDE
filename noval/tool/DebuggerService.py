@@ -2405,7 +2405,7 @@ class DebuggerService(Service.Service):
     def DebugRunScript(self,event,showDialog=True):
         
         interpreter_manager = Interpreter.InterpreterManager()
-        interpreter = interpreter_manager.GetDefault()
+        interpreter = interpreter_manager.GetDefaultInterpreter()
         view = wx.GetApp().GetDocumentManager().GetCurrentView()
         if not view or not isinstance(view,PythonEditor.PythonView):
             return
@@ -2429,7 +2429,7 @@ class DebuggerService(Service.Service):
     def RunScript(self,event,showDialog=True):
         
         interpreter_manager = Interpreter.InterpreterManager()
-        interpreter = interpreter_manager.GetDefault()
+        interpreter = interpreter_manager.GetDefaultInterpreter()
         view = wx.GetApp().GetDocumentManager().GetCurrentView()
         if not view or not isinstance(view,PythonEditor.PythonView):
             return
