@@ -71,7 +71,12 @@ class PythonInterpreter(Interpreter):
         output = GetCommandOutput(check_cmd,True).strip()
         if 0 == len(output):
             return True,-1,''
-            
+        if -1 != output.lower().find('permission denied:'):
+            line = output.splitlines()[-1]
+            pos = line.find(']')
+            msg = line[pos+1:].replace("'","").strip()
+            msg += ",Perhaps you need to delete it first!"
+            return False,-1,msg
         i = output.find('(')
         j = output.find(')')
         msg = output[0:i].strip()

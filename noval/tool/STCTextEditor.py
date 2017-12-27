@@ -1430,7 +1430,7 @@ class TextCtrl(wx.stc.StyledTextCtrl):
         
         self.SetLineNumberStyle()
         self.MarkerDefineDefault()
-        
+        self.SetCaretLineColor((210,210,210),)
 
         # for multisash initialization   
         if isinstance(parent, wx.lib.multisash.MultiClient):     
@@ -1757,7 +1757,10 @@ class TextCtrl(wx.stc.StyledTextCtrl):
             return self._dynSash._view.ProcessUpdateUIEvent(event)
         return False
 
-
+    def SetCaretLineColor(self,color):
+        self.SetCaretLineVisible(True)
+        self.SetCaretLineBack(color)
+         
 class TextPrintout(wx.lib.docview.DocPrintout):
     """ for Print Preview and Print """
     

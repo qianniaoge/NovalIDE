@@ -22,4 +22,4 @@ Version 1.0.0 -------------2017-12-23
 
 Version 1.0.1 -------------2017-12-27
 1.enable check python file syntax
-2.
+2.show caret line background color

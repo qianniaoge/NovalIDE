@@ -2405,46 +2405,37 @@ class DebuggerService(Service.Service):
             return True
         else:
             return False
-            
-    def SaveFileFirst(self):
-        doc = wx.GetApp().GetDocumentManager().GetCurrentDocument()
-        if not doc:
-            return False
-        
-        return doc.Save()
-
     #----------------------------------------------------------------------------
     # Class Methods
     #----------------------------------------------------------------------------
     
     def CheckScript(self,event):
-        if not self.SaveFileFirst():
-            return
         interpreter = Interpreter.InterpreterManager().GetDefaultInterpreter()
         active_book = wx.GetApp().MainFrame.GetActiveChild()
         if not active_book:
             return
         view = active_book.GetView()
         document = view.GetDocument()
+        if not document.Save():
+            return
         ok,line,msg = interpreter.CheckSyntax(document.GetFilename())
         if ok:
             wx.MessageBox("Check Syntax Ok!",wx.GetApp().GetAppName(),wx.OK | wx.ICON_INFORMATION,view.GetFrame())
             return
-            
         wx.MessageBox(msg,wx.GetApp().GetAppName(),wx.OK | wx.ICON_ERROR,view.GetFrame())
-        view.GotoLine(line)
+        if line > 0:
+            view.GotoLine(line)
  
     def DebugRunScript(self,event,showDialog=True):
-        
-        if not self.SaveFileFirst():
-            return
-        
         interpreter_manager = Interpreter.InterpreterManager()
         interpreter = interpreter_manager.GetDefaultInterpreter()
-        view = wx.GetApp().GetDocumentManager().GetCurrentView()
-        if not view or not isinstance(view,PythonEditor.PythonView):
+        active_book = wx.GetApp().MainFrame.GetActiveChild()
+        if not active_book:
             return
-        document = view.GetDocument()
+        doc_view = active_book.GetView()
+        document = doc_view.GetDocument()
+        if not document.Save():
+            return
         outputService = wx.GetApp().GetService(OutputService.OutputService)
         output_view = outputService.GetView()
         output_view.ClearLines()
@@ -2462,15 +2453,15 @@ class DebuggerService(Service.Service):
                 output_view.AddLines(err)
 
     def RunScript(self,event,showDialog=True):
-        if not self.SaveFileFirst():
-            return
-               
         interpreter_manager = Interpreter.InterpreterManager()
         interpreter = interpreter_manager.GetDefaultInterpreter()
-        view = wx.GetApp().GetDocumentManager().GetCurrentView()
-        if not view or not isinstance(view,PythonEditor.PythonView):
+        active_book = wx.GetApp().MainFrame.GetActiveChild()
+        if not active_book:
             return
-        document = view.GetDocument()
+        doc_view = active_book.GetView()
+        document = doc_view.GetDocument()
+        if not document.Save():
+            return
         if sys.platform == "win32":
             cmd_list = ['cmd.exe',"/c",interpreter.Path,document.GetFilename(),"&pause"]
             subprocess.Popen(cmd_list,shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE)
