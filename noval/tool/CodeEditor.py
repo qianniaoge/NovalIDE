@@ -646,14 +646,7 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         
         self.UsePopUp(False)
         self.Bind(wx.EVT_RIGHT_UP, self.OnRightUp)
-        self.SetProperty("fold", "1")
 
-        # Setup a margin to hold fold markers
-        #self.SetFoldFlags(16)  ###  WHAT IS THIS VALUE?  WHAT ARE THE OTHER FLAGS?  DOES IT MATTER?
-        self.SetMarginType(2, wx.stc.STC_MARGIN_SYMBOL)
-        self.SetMarginMask(2, wx.stc.STC_MASK_FOLDERS)
-        self.SetMarginSensitive(2, True)
-        
         self.SetMarginSensitive(1, False)
         self.SetMarginMask(1, 0x4)
         
@@ -662,13 +655,6 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         self.SetMarginMask(0, 0x3)
         self.SetMarginWidth(0, 12)
 
-        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDEREND,     wx.stc.STC_MARK_BOXPLUSCONNECTED,  "white", "black")
-        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDEROPENMID, wx.stc.STC_MARK_BOXMINUSCONNECTED, "white", "black")
-        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDERMIDTAIL, wx.stc.STC_MARK_TCORNER,  "white", "black")
-        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDERTAIL,    wx.stc.STC_MARK_LCORNER,  "white", "black")
-        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDERSUB,     wx.stc.STC_MARK_VLINE,    "white", "black")
-        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDER,        wx.stc.STC_MARK_BOXPLUS,  "white", "black")
-        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDEROPEN,    wx.stc.STC_MARK_BOXMINUS, "white", "black")
         # Define the current line marker
         self.MarkerDefine(CodeCtrl.CURRENT_LINE_MARKER_NUM, wx.stc.STC_MARK_SHORTARROW, wx.BLACK, (255,255,128))
         # Define the breakpoint marker
@@ -970,3 +956,17 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         return line
 
 
+    def SetMarginFoldStyle(self):
+        # Setup a margin to hold fold markers
+        self.SetProperty("fold", "1")
+        self.SetMarginType(2, wx.stc.STC_MARGIN_SYMBOL)
+        self.SetMarginMask(2, wx.stc.STC_MASK_FOLDERS)
+        self.SetMarginSensitive(2, True)
+        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDEREND,     wx.stc.STC_MARK_BOXPLUSCONNECTED,  "white", "black")
+        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDEROPENMID, wx.stc.STC_MARK_BOXMINUSCONNECTED, "white", "black")
+        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDERMIDTAIL, wx.stc.STC_MARK_TCORNER,  "white", "black")
+        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDERTAIL,    wx.stc.STC_MARK_LCORNER,  "white", "black")
+        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDERSUB,     wx.stc.STC_MARK_VLINE,    "white", "black")
+        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDER,        wx.stc.STC_MARK_BOXPLUS,  "white", "black")
+        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDEROPEN,    wx.stc.STC_MARK_BOXMINUS, "white", "black")
+        self.SetFoldFlags(16)  ###  WHAT IS THIS VALUE?  WHAT ARE THE OTHER FLAGS?  DOES IT MATTER?

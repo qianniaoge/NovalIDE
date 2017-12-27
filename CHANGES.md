@@ -16,3 +16,4 @@ Version 1.0.0 -------------2017-12-26
 9.enable show tips when startup application
 10.multi document tabbed frame style
 11.auto detect python file encoding when save python document
+12. enable code margin fold style

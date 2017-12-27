@@ -441,7 +441,7 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         self.SetProperty("fold.quotes.python", "1")
         self.SetLexer(wx.stc.STC_LEX_PYTHON)
         self.SetKeyWords(0, string.join(keyword.kwlist))
-
+        CodeEditor.CodeCtrl.SetMarginFoldStyle(self)
 
     def CreatePopupMenu(self):
         FINDCLASS_ID = wx.NewId()
