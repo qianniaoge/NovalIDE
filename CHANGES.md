@@ -4,7 +4,7 @@ Changelog
 Changes with latest version of NovalIDE
 ----------------------------------------------
 
-Version 1.0.0 -------------2017-12-26
+Version 1.0.0 -------------2017-12-23
 1.support Cross Platform editor
 2.support HTML,python,text xml lanauge 
 3.auto load default python interpreter
@@ -18,3 +18,8 @@ Version 1.0.0 -------------2017-12-26
 11.auto detect python file encoding when save python document
 12.enable code margin fold style
 13.simple support debug or run a python script
+
+
+Version 1.0.1 -------------2017-12-27
+1.enable check python file syntax
+2.

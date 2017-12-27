@@ -673,6 +673,9 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         wx.UpdateUIEvent.SetUpdateInterval(1000)  # Overhead of updating menus was too much.  Change to update every n milliseconds.
 
         return True
+    @property
+    def MainFrame(self):
+        return self.frame
 
 class IDEDocManager(wx.lib.docview.DocManager):
     

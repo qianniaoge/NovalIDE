@@ -67,9 +67,16 @@ class PythonInterpreter(Interpreter):
         self._is_valid_interpreter = True
         
     def CheckSyntax(self,script_path):
-        check_cmd ="%s -c \"%s\"" % (self.Path,script_path)
-        output = GetCommandOutput(check_cmd)
-        return output
+        check_cmd ="%s -c \"import py_compile;py_compile.compile(r'%s')\"" % (self.Path,script_path)
+        output = GetCommandOutput(check_cmd,True).strip()
+        if 0 == len(output):
+            return True,-1,''
+            
+        i = output.find('(')
+        j = output.find(')')
+        msg = output[0:i].strip()
+        line = int(output[i+1:j].split()[-1])
+        return False,line,msg
         
     @property
     def Version(self):

@@ -2204,6 +2204,7 @@ class DebuggerService(Service.Service):
     CLEAR_ALL_BREAKPOINTS = wx.NewId()
     RUN_ID = wx.NewId()
     DEBUG_ID = wx.NewId()
+    CHECK_ID = wx.NewId()
     RUN_LAST_ID = wx.NewId()
     DEBUG_LAST_ID = wx.NewId()
     DEBUG_WEBSERVER_ID = wx.NewId()
@@ -2289,6 +2290,10 @@ class DebuggerService(Service.Service):
             debuggerMenu.Append(DebuggerService.DEBUG_ID, _("&Debug...\tCtrl+F5"), _("Debug a file"))
             wx.EVT_MENU(frame, DebuggerService.DEBUG_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, DebuggerService.DEBUG_ID, frame.ProcessUpdateUIEvent)
+            
+            debuggerMenu.Append(DebuggerService.CHECK_ID, _("&Check Syntax...\tCtrl+F3"), _("Check syntax of file"))
+            wx.EVT_MENU(frame, DebuggerService.CHECK_ID, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, DebuggerService.CHECK_ID, frame.ProcessUpdateUIEvent)
 
             debuggerMenu.Append(DebuggerService.RUN_LAST_ID, _("&Run Using Last Settings\tCtrl+R"), _("Run a file using previous settings"))
             wx.EVT_MENU(frame, DebuggerService.RUN_LAST_ID, frame.ProcessEvent)
@@ -2357,6 +2362,9 @@ class DebuggerService(Service.Service):
             ##self.OnDebugProject(event)
             self.DebugRunScript(event)
             return True
+        elif an_id == DebuggerService.CHECK_ID:
+            self.CheckScript(event)
+            return True
         elif an_id == DebuggerService.RUN_LAST_ID:
             self.OnRunProject(event, showDialog=False)
             return True
@@ -2409,6 +2417,23 @@ class DebuggerService(Service.Service):
     # Class Methods
     #----------------------------------------------------------------------------
     
+    def CheckScript(self,event):
+        if not self.SaveFileFirst():
+            return
+        interpreter = Interpreter.InterpreterManager().GetDefaultInterpreter()
+        active_book = wx.GetApp().MainFrame.GetActiveChild()
+        if not active_book:
+            return
+        view = active_book.GetView()
+        document = view.GetDocument()
+        ok,line,msg = interpreter.CheckSyntax(document.GetFilename())
+        if ok:
+            wx.MessageBox("Check Syntax Ok!",wx.GetApp().GetAppName(),wx.OK | wx.ICON_INFORMATION,view.GetFrame())
+            return
+            
+        wx.MessageBox(msg,wx.GetApp().GetAppName(),wx.OK | wx.ICON_ERROR,view.GetFrame())
+        view.GotoLine(line)
+ 
     def DebugRunScript(self,event,showDialog=True):
         
         if not self.SaveFileFirst():
@@ -2450,7 +2475,7 @@ class DebuggerService(Service.Service):
             cmd_list = ['cmd.exe',"/c",interpreter.Path,document.GetFilename(),"&pause"]
             subprocess.Popen(cmd_list,shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE)
         else:
-            python_cmd = "%s \"%s\"; read" % (interpreter.Path,document.GetFilename())
+            python_cmd = "%s \"%s\";echo 'Please enter any to continue';read" % (interpreter.Path,document.GetFilename())
             cmd_list = ['gnome-terminal','-x','bash','-c',python_cmd]
             subprocess.Popen(cmd_list,shell = False)
 
