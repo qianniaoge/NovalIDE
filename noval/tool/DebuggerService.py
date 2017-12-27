@@ -2282,19 +2282,19 @@ class DebuggerService(Service.Service):
         debuggerMenu = wx.Menu()
         if not menuBar.FindItemById(DebuggerService.CLEAR_ALL_BREAKPOINTS):
 
-            debuggerMenu.Append(DebuggerService.RUN_ID, _("&Run...\tCtrl+R"), _("Runs a file"))
+            debuggerMenu.Append(DebuggerService.RUN_ID, _("&Run...\tF5"), _("Run a file"))
             wx.EVT_MENU(frame, DebuggerService.RUN_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, DebuggerService.RUN_ID, frame.ProcessUpdateUIEvent)
 
-            debuggerMenu.Append(DebuggerService.DEBUG_ID, _("&Debug...\tCtrl+D"), _("Debugs a file"))
+            debuggerMenu.Append(DebuggerService.DEBUG_ID, _("&Debug...\tCtrl+F5"), _("Debug a file"))
             wx.EVT_MENU(frame, DebuggerService.DEBUG_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, DebuggerService.DEBUG_ID, frame.ProcessUpdateUIEvent)
 
-            debuggerMenu.Append(DebuggerService.RUN_LAST_ID, _("&Run Using Last Settings\tF5"), _("Runs a file using previous settings"))
+            debuggerMenu.Append(DebuggerService.RUN_LAST_ID, _("&Run Using Last Settings\tCtrl+R"), _("Run a file using previous settings"))
             wx.EVT_MENU(frame, DebuggerService.RUN_LAST_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, DebuggerService.RUN_LAST_ID, frame.ProcessUpdateUIEvent)
 
-            debuggerMenu.Append(DebuggerService.DEBUG_LAST_ID, _("&Debug Using Last Settings\tF8"), _("Debugs a file using previous settings"))
+            debuggerMenu.Append(DebuggerService.DEBUG_LAST_ID, _("&Debug Using Last Settings\tCtrl+D"), _("Debug a file using previous settings"))
             wx.EVT_MENU(frame, DebuggerService.DEBUG_LAST_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, DebuggerService.DEBUG_LAST_ID, frame.ProcessUpdateUIEvent)
 
@@ -2323,8 +2323,8 @@ class DebuggerService(Service.Service):
         menuBar.Insert(viewMenuIndex + 1, debuggerMenu, _("&Run"))
 
         toolBar.AddSeparator()
-        toolBar.AddTool(DebuggerService.RUN_LAST_ID, getRunningManBitmap(), shortHelpString = _("Run Using Last Settings"), longHelpString = _("Run Using Last Settings"))
-        toolBar.AddTool(DebuggerService.DEBUG_LAST_ID, getDebuggingManBitmap(), shortHelpString = _("Debug Using Last Settings"), longHelpString = _("Debug Using Last Settings"))
+        toolBar.AddTool(DebuggerService.RUN_ID, getRunningManBitmap(), shortHelpString = _("Run a file"), longHelpString = _("Run a file in system teminator"))
+        toolBar.AddTool(DebuggerService.DEBUG_ID, getDebuggingManBitmap(), shortHelpString = _("Debug a file"), longHelpString = _("Debug a file in Editor"))
         toolBar.Realize()
 
         return True
@@ -2397,12 +2397,22 @@ class DebuggerService(Service.Service):
             return True
         else:
             return False
+            
+    def SaveFileFirst(self):
+        doc = wx.GetApp().GetDocumentManager().GetCurrentDocument()
+        if not doc:
+            return False
+        
+        return doc.Save()
 
     #----------------------------------------------------------------------------
     # Class Methods
     #----------------------------------------------------------------------------
     
     def DebugRunScript(self,event,showDialog=True):
+        
+        if not self.SaveFileFirst():
+            return
         
         interpreter_manager = Interpreter.InterpreterManager()
         interpreter = interpreter_manager.GetDefaultInterpreter()
@@ -2427,7 +2437,9 @@ class DebuggerService(Service.Service):
                 output_view.AddLines(err)
 
     def RunScript(self,event,showDialog=True):
-        
+        if not self.SaveFileFirst():
+            return
+               
         interpreter_manager = Interpreter.InterpreterManager()
         interpreter = interpreter_manager.GetDefaultInterpreter()
         view = wx.GetApp().GetDocumentManager().GetCurrentView()
