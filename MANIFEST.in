@@ -3,4 +3,4 @@ include CHANGES.md
 include README.md
 include noval.ico
 include NovalIDE.py
-
+include version.txt

@@ -7,13 +7,17 @@ if sys.platform == "win32":
           options = { "py2exe":{"dll_excludes":["MSVCP90.dll"]}},
             data_files=[("noval/tool/bmp_source", ["noval/tool/bmp_source/noval.ico"]),
                 ("noval/tool/data",["noval/tool/data/tips.txt"])],)
+
 elif sys.platform.find('linux') != -1:
     from distutils.core import setup
     from setuptools import find_packages
+    
+    with open("version.txt") as f:
+        version = f.read()
 
     install_requires = ['wxpython','pyyaml',"watchdog","chardet","pyperclip"]
     setup(name='NovalIDE',
-            version='1.0.0',
+            version = version,
             description='''noval ide is a cross platform code editor''',
             author='wukan',
             author_email='wekay102200@sohu.com',
@@ -23,10 +27,13 @@ elif sys.platform.find('linux') != -1:
             install_requires=install_requires,
             zip_safe=False,
             test_suite='noval.tests',
-            package_data={'noval': [
+            package_data={
+                'noval': [
                         'tool/bmp_source/*',
                         'tool/data/*',
-            ]},
+                        ],
+            },
+            data_files = [('',['version.txt']),],
             classifiers=[
             'Development Status :: 4 - Beta',
             'Environment :: Console',
