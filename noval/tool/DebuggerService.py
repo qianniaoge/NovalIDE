@@ -2437,6 +2437,8 @@ class DebuggerService(Service.Service):
         if not document.Save():
             return
         outputService = wx.GetApp().GetService(OutputService.OutputService)
+        #change to output tab page
+        Service.ServiceView.bottomTab.ChangeSelection(1)
         output_view = outputService.GetView()
         output_view.ClearLines()
    
