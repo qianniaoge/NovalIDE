@@ -25,3 +25,4 @@ Version 1.0.1 -------------2017-12-27
 2.show caret line background color
 3.enbale open file path in terminator
 4.set debug or run script execution dir is script path
+5.support python script path contains chinese
