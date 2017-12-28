@@ -2443,7 +2443,7 @@ class DebuggerService(Service.Service):
         output_view.ClearLines()
    
         cmd_list = [interpreter.Path,document.GetFilename()]
-        p = subprocess.Popen(cmd_list,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        p = subprocess.Popen(cmd_list,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE,cwd=os.path.dirname(document.GetFilename()))
         while True:
             out = p.stdout.readline()
             err = p.stderr.readline()
@@ -2466,11 +2466,11 @@ class DebuggerService(Service.Service):
             return
         if sys.platform == "win32":
             cmd_list = ['cmd.exe',"/c",interpreter.Path,document.GetFilename(),"&pause"]
-            subprocess.Popen(cmd_list,shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE)
+            subprocess.Popen(cmd_list,shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE,cwd=os.path.dirname(document.GetFilename()))
         else:
             python_cmd = "%s \"%s\";echo 'Please enter any to continue';read" % (interpreter.Path,document.GetFilename())
             cmd_list = ['gnome-terminal','-x','bash','-c',python_cmd]
-            subprocess.Popen(cmd_list,shell = False)
+            subprocess.Popen(cmd_list,shell = False,cwd=os.path.dirname(document.GetFilename()))
 
     def OnDebugProject(self, event, showDialog=True):
         if _WINDOWS and not _PYWIN32_INSTALLED:

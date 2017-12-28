@@ -21,6 +21,7 @@ import noval.util.aglogging as aglogging
 import noval.util.sysutils as sysutils
 import noval.util.utillang as utillang
 from noval.util.lang import *
+import subprocess
 
 global fileutilsLogger
 fileutilsLogger = logging.getLogger("activegrid.util.fileutils")
@@ -452,3 +453,8 @@ def open_file_directory(file_path,platform):
         import subprocess
         subprocess.Popen(["nautilus", file_path])
 
+def open_path_in_terminator(file_path,platform):
+    if platform == '__WXMSW__':
+        subprocess.Popen('start cmd.exe',shell=True,cwd=file_path)
+    else:
+        subprocess.Popen('gnome-terminal',shell=True,cwd=file_path)

@@ -17,6 +17,8 @@ import ProjectEditor
 import os
 import os.path
 import noval.util.xmlutils as xmlutils
+import subprocess
+import sys
 _ = wx.GetTranslation
 
 
@@ -127,8 +129,16 @@ class ExtensionService(wx.lib.pydocview.DocService):
             if index == -1:
                 index = menuBar.FindMenu(_("&View"))
             menuBar.Insert(index + 1, toolsMenu, _("&Tools"))
+            id = wx.NewId()
+            toolsMenu.Append(id,"&Terminator")
+            wx.EVT_MENU(frame, id, self.OpenTerminator)  
 
-
+    def OpenTerminator(self, event):
+        if sys.platform == "win32":
+            subprocess.Popen('start cmd.exe',shell=True)
+        else:
+            subprocess.Popen('gnome-terminal',shell=True)
+        
     def ProcessEvent(self, event):
         id = event.GetId()
         for extension in self._extensions:
