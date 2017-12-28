@@ -17,7 +17,7 @@ Version 1.0.0 -------------2017-12-23
 10.multi document tabbed frame style
 11.auto detect python file encoding when save python document
 12.enable code margin fold style
-13.simple support debug or run a python script
+13.simple support debug or run a python script in editor or terminator 
 
 
 Version 1.0.1 -------------2017-12-27
