@@ -3,6 +3,7 @@ import sys
 import subprocess
 from Singleton import *
 import wx
+import locale
 
 class Interpreter(object):
     
@@ -68,7 +69,8 @@ class PythonInterpreter(Interpreter):
         
     def CheckSyntax(self,script_path):
         check_cmd ="%s -c \"import py_compile;py_compile.compile(r'%s')\"" % (self.Path,script_path)
-        output = GetCommandOutput(check_cmd,True).strip()
+        sys_encoding = locale.getdefaultlocale()[1]
+        output = GetCommandOutput(check_cmd.encode(sys_encoding),True).strip()
         if 0 == len(output):
             return True,-1,''
         lower_output = output.lower()

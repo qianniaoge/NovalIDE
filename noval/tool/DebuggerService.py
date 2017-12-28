@@ -50,6 +50,7 @@ import subprocess
 import shutil
 import Interpreter
 import OutputService
+import locale
 
 if wx.Platform == '__WXMSW__':
     try:
@@ -2441,9 +2442,9 @@ class DebuggerService(Service.Service):
         Service.ServiceView.bottomTab.ChangeSelection(1)
         output_view = outputService.GetView()
         output_view.ClearLines()
-   
-        cmd_list = [interpreter.Path,document.GetFilename()]
-        p = subprocess.Popen(cmd_list,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE,cwd=os.path.dirname(document.GetFilename()))
+        sys_encoding = locale.getdefaultlocale()[1]
+        cmd_list = [interpreter.Path,document.GetFilename().encode(sys_encoding)]
+        p = subprocess.Popen(cmd_list,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE,cwd=os.path.dirname(document.GetFilename()).encode(sys_encoding))
         while True:
             out = p.stdout.readline()
             err = p.stderr.readline()
@@ -2451,8 +2452,13 @@ class DebuggerService(Service.Service):
                 if p.poll() is not None:
                     break
             else:
-                output_view.AddLines(out)
-                output_view.AddLines(err)
+                try:
+                    output_view.AddLines(out)
+                    output_view.AddLines(err)
+                except:
+                    output_view.AddLines(out.decode("utf-8"))
+                    output_view.AddLines(err.decode("utf-8"))
+
 
     def RunScript(self,event,showDialog=True):
         interpreter_manager = Interpreter.InterpreterManager()
@@ -2464,13 +2470,14 @@ class DebuggerService(Service.Service):
         document = doc_view.GetDocument()
         if not document.Save():
             return
+        sys_encoding = locale.getdefaultlocale()[1]
         if sys.platform == "win32":
-            cmd_list = ['cmd.exe',"/c",interpreter.Path,document.GetFilename(),"&pause"]
-            subprocess.Popen(cmd_list,shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE,cwd=os.path.dirname(document.GetFilename()))
+            cmd_list = ['cmd.exe',"/c",interpreter.Path,document.GetFilename().encode(sys_encoding),"&pause"]
+            subprocess.Popen(cmd_list,shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE,cwd=os.path.dirname(document.GetFilename()).encode(sys_encoding))
         else:
-            python_cmd = "%s \"%s\";echo 'Please enter any to continue';read" % (interpreter.Path,document.GetFilename())
+            python_cmd = "%s \"%s\";echo 'Please enter any to continue';read" % (interpreter.Path,document.GetFilename().encode(sys_encoding))
             cmd_list = ['gnome-terminal','-x','bash','-c',python_cmd]
-            subprocess.Popen(cmd_list,shell = False,cwd=os.path.dirname(document.GetFilename()))
+            subprocess.Popen(cmd_list,shell = False,cwd=os.path.dirname(document.GetFilename()).encode(sys_encoding))
 
     def OnDebugProject(self, event, showDialog=True):
         if _WINDOWS and not _PYWIN32_INSTALLED:
