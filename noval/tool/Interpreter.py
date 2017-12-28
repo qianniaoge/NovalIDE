@@ -71,17 +71,24 @@ class PythonInterpreter(Interpreter):
         output = GetCommandOutput(check_cmd,True).strip()
         if 0 == len(output):
             return True,-1,''
-        if -1 != output.lower().find('permission denied:'):
-            line = output.splitlines()[-1]
+        lower_output = output.lower()
+        lines = output.splitlines()
+        fileBegin = lines[0].find("File \"")
+        fileEnd = lines[0].find("\", line ")
+        if -1 != lower_output.find('permission denied:'):
+            line = lines[-1]
             pos = line.find(']')
             msg = line[pos+1:].replace("'","").strip()
             msg += ",Perhaps you need to delete it first!"
             return False,-1,msg
-        i = output.find('(')
-        j = output.find(')')
-        msg = output[0:i].strip()
-        line = int(output[i+1:j].split()[-1])
-        return False,line,msg
+        elif fileBegin != -1 and fileEnd != -1:
+            lineNum = int(lines[0][fileEnd + 8:].strip())
+            return False,lineNum,'\n'.join(lines[1:])
+        i = lines[0].find('(')
+        j = lines[0].find(')')
+        msg = lines[0][0:i].strip()
+        lineNum = int(lines[0][i+1:j].split()[-1])
+        return False,lineNum,msg
         
     @property
     def Version(self):
