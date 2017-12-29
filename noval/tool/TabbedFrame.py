@@ -33,9 +33,9 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame):
         def OnCloseAllDocs(event):
             self.GetDocumentManager().CloseDocuments(False)
         def OnOpenPathInExplorer(event):
-            fileutils.open_file_directory(doc.GetFilename(),wx.Platform)
+            fileutils.open_file_directory(doc.GetFilename())
         def OnOpenPathInTerminator(event):
-            fileutils.open_path_in_terminator(os.path.dirname(doc.GetFilename()),wx.Platform)
+            fileutils.open_path_in_terminator(os.path.dirname(doc.GetFilename()))
         def OnCopyFilePath(event):
             sysutilslib.CopyToClipboard(doc.GetFilename())
         def OnCopyFileName(event):

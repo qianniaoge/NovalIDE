@@ -120,7 +120,6 @@ def CopyToClipboard(str):
     pyperclip.copy(str)
 
 def MakeDirs(dirname):
-
     dirname = os.path.abspath(dirname)
     dirname = dirname.replace("\\","/")
     dirnames = dirname.split("/")

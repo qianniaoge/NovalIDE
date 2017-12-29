@@ -4,6 +4,7 @@ import subprocess
 from Singleton import *
 import wx
 import locale
+import noval.util.sysutils as sysutils
 
 class Interpreter(object):
     
@@ -44,7 +45,7 @@ class PythonInterpreter(Interpreter):
     CONSOLE_EXECUTABLE_NAME = "python.exe"
     WINDOW_EXECUTABLE_NAME = "pythonw.exe"
     def __init__(self,name,executable_path):
-        if sys.platform == "win32":
+        if sysutils.isWindows():
             if os.path.basename(executable_path) == PythonInterpreter.WINDOW_EXECUTABLE_NAME:
                 self._window_path = executable_path
                 console_path = os.path.join(os.path.dirname(executable_path),PythonInterpreter.CONSOLE_EXECUTABLE_NAME)
@@ -140,7 +141,7 @@ class InterpreterManager(Singleton):
                 return interpreter
         return None
     def LoadPythonInterpreters(self):
-        if sys.platform == "win32":
+        if sysutils.isWindows():
             import _winreg
             ROOT_KEY_LIST = [_winreg.HKEY_LOCAL_MACHINE,_winreg.HKEY_CURRENT_USER]
             for root_key in ROOT_KEY_LIST:
@@ -159,8 +160,7 @@ class InterpreterManager(Singleton):
                             continue
                 except:
                     continue
-            
-        elif sys.platform.find('linux') != -1:
+        else:
             executable_path = sys.executable
             install_path = os.path.dirname(executable_path)
             interpreter = PythonInterpreter("default",executable_path)

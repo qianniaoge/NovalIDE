@@ -431,11 +431,11 @@ def replaceToken(infilepath, tokens={}, outfilepath=None, delim="@@",\
         if f: f.close()
 endIfDef()
 
-def open_file_directory(file_path,platform):
+def open_file_directory(file_path):
     """
         Opens the parent directory of a file, selecting the file if possible.
     """
-    if platform == '__WXMSW__':
+    if sysutils.isWindows():
         # Normally we can just run `explorer /select, filename`, but Python 2
         # always calls CreateProcessA, which doesn't support Unicode. We could
         # call CreateProcessW with ctypes, but the following is more robust.
@@ -446,17 +446,13 @@ def open_file_directory(file_path,platform):
         ctypes.windll.shell32.SHOpenFolderAndSelectItems(pidl, 0, None, 0)
         ctypes.windll.shell32.ILFree(pidl)
         ctypes.windll.ole32.CoUninitialize()
-    elif platform == '__WXMAC__':
-        import subprocess
-        subprocess.Popen(["open", file_path])
     else:
-        import subprocess
         subprocess.Popen(["nautilus", file_path])
 
-def open_path_in_terminator(file_path,platform):
+def open_path_in_terminator(file_path):
     import locale
     sys_encoding = locale.getdefaultlocale()[1]
-    if platform == '__WXMSW__':
+    if sysutils.isWindows():
         subprocess.Popen('start cmd.exe',shell=True,cwd=file_path.encode(sys_encoding))
     else:
         subprocess.Popen('gnome-terminal',shell=True,cwd=file_path.encode(sys_encoding))

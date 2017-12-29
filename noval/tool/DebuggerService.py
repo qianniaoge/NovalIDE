@@ -2479,7 +2479,7 @@ class DebuggerService(Service.Service):
         if not document.Save():
             return
         sys_encoding = locale.getdefaultlocale()[1]
-        if sys.platform == "win32":
+        if sysutilslib.isWindows():
             cmd_list = ['cmd.exe',"/c",interpreter.Path,document.GetFilename().encode(sys_encoding),"&pause"]
             subprocess.Popen(cmd_list,shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE,cwd=os.path.dirname(document.GetFilename()).encode(sys_encoding))
         else:
