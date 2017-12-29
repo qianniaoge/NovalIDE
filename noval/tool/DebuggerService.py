@@ -51,6 +51,7 @@ import shutil
 import Interpreter
 import OutputService
 import locale
+import OutputThread
 
 if wx.Platform == '__WXMSW__':
     try:
@@ -2443,21 +2444,28 @@ class DebuggerService(Service.Service):
         output_view = outputService.GetView()
         output_view.ClearLines()
         sys_encoding = locale.getdefaultlocale()[1]
-        cmd_list = [interpreter.Path,document.GetFilename().encode(sys_encoding)]
+        #cmd_list = [interpreter.Path,document.GetFilename().encode(sys_encoding)]
+        cmd_list = [interpreter.Path,'-u',document.GetFilename().encode(sys_encoding)]
         p = subprocess.Popen(cmd_list,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE,cwd=os.path.dirname(document.GetFilename()).encode(sys_encoding))
-        while True:
-            out = p.stdout.readline()
-            err = p.stderr.readline()
-            if out == b'' and err == b'':
-                if p.poll() is not None:
-                    break
-            else:
-                try:
-                    output_view.AddLines(out)
-                    output_view.AddLines(err)
-                except:
-                    output_view.AddLines(out.decode("utf-8"))
-                    output_view.AddLines(err.decode("utf-8"))
+        
+        stdout_thread = OutputThread.OutputThread(p.stdout,p,output_view)
+        stdout_thread.start()
+        stderr_thread = OutputThread.OutputThread(p.stderr,p,output_view)
+        stderr_thread.start()
+        
+##        while True:
+##            out = p.stdout.readline()
+##            err = p.stderr.readline()
+##            if out == b'' and err == b'':
+##                if p.poll() is not None:
+##                    break
+##            else:
+##                try:
+##                    output_view.AddLines(out)
+##                    output_view.AddLines(err)
+##                except:
+##                    output_view.AddLines(out.decode("utf-8"))
+##                    output_view.AddLines(err.decode("utf-8"))
 
 
     def RunScript(self,event,showDialog=True):

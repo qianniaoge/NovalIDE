@@ -13,7 +13,7 @@
 import wx
 import Service
 import STCTextEditor
-
+import WxThreadSafe
 #----------------------------------------------------------------------------
 # Utility
 #----------------------------------------------------------------------------
@@ -122,7 +122,7 @@ class OutputView(Service.ServiceView):
         self.GetControl().ClearAll()
         self.GetControl().SetReadOnly(True)
 
-
+    @WxThreadSafe.call_after
     def AddLines(self, text):
         self.GetControl().SetCurrentPos(self.GetControl().GetTextLength())
         self.GetControl().SetReadOnly(False)
