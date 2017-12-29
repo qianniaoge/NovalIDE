@@ -14,6 +14,7 @@ import wx
 import Service
 import STCTextEditor
 import WxThreadSafe
+import threading
 #----------------------------------------------------------------------------
 # Utility
 #----------------------------------------------------------------------------
@@ -66,6 +67,7 @@ class OutputView(Service.ServiceView):
         txtCtrl.StyleClearAll()
         txtCtrl.UpdateStyles()
         wx.EVT_SET_FOCUS(txtCtrl, self.OnFocus)
+        self._lock = threading.Lock()
 
         return txtCtrl
 
@@ -124,10 +126,11 @@ class OutputView(Service.ServiceView):
 
     @WxThreadSafe.call_after
     def AddLines(self, text):
-        self.GetControl().SetCurrentPos(self.GetControl().GetTextLength())
-        self.GetControl().SetReadOnly(False)
-        self.GetControl().AddText(text)
-        self.GetControl().SetReadOnly(True)
+        with self._lock:
+            self.GetControl().SetCurrentPos(self.GetControl().GetTextLength())
+            self.GetControl().SetReadOnly(False)
+            self.GetControl().AddText(text)
+            self.GetControl().SetReadOnly(True)
 
 
     def GetText(self):
