@@ -2428,14 +2428,7 @@ class DebuggerService(Service.Service):
             return
         wx.MessageBox(msg,wx.GetApp().GetAppName(),wx.OK | wx.ICON_ERROR,doc_view.GetFrame())
         if line > 0:
-            doc_view.GotoLine(line)
-            
-    def GetActiveView(self):
-        active_book = wx.GetApp().MainFrame.GetActiveChild()
-        if not active_book:
-            return None
-        doc_view = active_book.GetView()
-        return doc_view
+            doc_view.GotoLine(line)           
         
     def DebugRunScript(self,event,showDialog=True):
         interpreter_manager = Interpreter.InterpreterManager()

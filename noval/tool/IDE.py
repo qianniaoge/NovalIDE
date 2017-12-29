@@ -549,7 +549,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         filePropertiesService.AddCustomEventHandler(projectService)
 
         outlineService.AddViewTypeForBackgroundHandler(PythonEditor.PythonView)
-        outlineService.AddViewTypeForBackgroundHandler(PHPEditor.PHPView)
+        ###outlineService.AddViewTypeForBackgroundHandler(PHPEditor.PHPView)
         outlineService.AddViewTypeForBackgroundHandler(ProjectEditor.ProjectView) # special case, don't clear outline if in project
         outlineService.AddViewTypeForBackgroundHandler(MessageService.MessageView) # special case, don't clear outline if in message window
         if not ACTIVEGRID_BASE_IDE:

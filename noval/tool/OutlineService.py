@@ -494,7 +494,7 @@ class OutlineService(Service.Service):
         
         foundRegisteredView = False
         if self.GetView():
-            currView = wx.GetApp().GetDocumentManager().GetCurrentView()
+            currView = self.GetActiveView()
             if currView:
                 for viewType in self._validViewTypes:
                     if isinstance(currView, viewType):
