@@ -29,6 +29,7 @@ import FindInDirService
 from UICommon import CaseInsensitiveCompare
 import codecs
 import re
+import noval.parser.config as parserconfig
 try:
     import checker # for pychecker
     _CHECKER_INSTALLED = True
@@ -125,7 +126,9 @@ class PythonView(CodeEditor.CodeView):
     def GetCtrlClass(self):
         """ Used in split window to instantiate new instances """
         return PythonCtrl
-
+    
+    def GetLangLexer(self):
+        return parserconfig.LANG_PYTHON_LEXER
 
     def ProcessUpdateUIEvent(self, event):
         if not self.GetCtrl():

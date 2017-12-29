@@ -24,6 +24,7 @@ import codecs
 import shutil
 import FileObserver
 import WxThreadSafe
+import noval.parser.config as parserconfig
 _ = wx.GetTranslation
 
 #----------------------------------------------------------------------------
@@ -279,7 +280,9 @@ class TextView(wx.lib.docview.View):
     def GetCtrlClass(self):
         """ Used in split window to instantiate new instances """
         return TextCtrl
-        
+    
+    def GetLangLexer(self):
+        return parserconfig.LANG_NONE_LEXER
 
     def GetCtrl(self):
         if wx.Platform == "__WXMAC__":

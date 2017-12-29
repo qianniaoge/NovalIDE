@@ -52,6 +52,7 @@ import Interpreter
 import OutputService
 import locale
 import OutputThread
+import noval.parser.config as parserconfig
 
 if wx.Platform == '__WXMSW__':
     try:
@@ -2402,8 +2403,10 @@ class DebuggerService(Service.Service):
         elif (an_id == DebuggerService.RUN_ID
         or an_id == DebuggerService.RUN_LAST_ID
         or an_id == DebuggerService.DEBUG_ID
-        or an_id == DebuggerService.DEBUG_LAST_ID):
-            event.Enable(self.HasAnyFiles())
+        or an_id == DebuggerService.DEBUG_LAST_ID
+        or an_id == DebuggerService.CHECK_ID):
+            event.Enable(self.HasAnyFiles() and \
+                    self.GetActiveView().GetLangLexer() == parserconfig.LANG_PYTHON_LEXER)
             return True
         else:
             return False
@@ -2413,28 +2416,33 @@ class DebuggerService(Service.Service):
     
     def CheckScript(self,event):
         interpreter = Interpreter.InterpreterManager().GetDefaultInterpreter()
-        active_book = wx.GetApp().MainFrame.GetActiveChild()
-        if not active_book:
+        doc_view = self.GetActiveView()
+        if not doc_view:
             return
-        view = active_book.GetView()
-        document = view.GetDocument()
+        document = doc_view.GetDocument()
         if not document.Save():
             return
         ok,line,msg = interpreter.CheckSyntax(document.GetFilename())
         if ok:
-            wx.MessageBox("Check Syntax Ok!",wx.GetApp().GetAppName(),wx.OK | wx.ICON_INFORMATION,view.GetFrame())
+            wx.MessageBox("Check Syntax Ok!",wx.GetApp().GetAppName(),wx.OK | wx.ICON_INFORMATION,doc_view.GetFrame())
             return
-        wx.MessageBox(msg,wx.GetApp().GetAppName(),wx.OK | wx.ICON_ERROR,view.GetFrame())
+        wx.MessageBox(msg,wx.GetApp().GetAppName(),wx.OK | wx.ICON_ERROR,doc_view.GetFrame())
         if line > 0:
-            view.GotoLine(line)
- 
+            doc_view.GotoLine(line)
+            
+    def GetActiveView(self):
+        active_book = wx.GetApp().MainFrame.GetActiveChild()
+        if not active_book:
+            return None
+        doc_view = active_book.GetView()
+        return doc_view
+        
     def DebugRunScript(self,event,showDialog=True):
         interpreter_manager = Interpreter.InterpreterManager()
         interpreter = interpreter_manager.GetDefaultInterpreter()
-        active_book = wx.GetApp().MainFrame.GetActiveChild()
-        if not active_book:
+        doc_view = self.GetActiveView()
+        if not doc_view:
             return
-        doc_view = active_book.GetView()
         document = doc_view.GetDocument()
         if not document.Save():
             return
@@ -2471,10 +2479,9 @@ class DebuggerService(Service.Service):
     def RunScript(self,event,showDialog=True):
         interpreter_manager = Interpreter.InterpreterManager()
         interpreter = interpreter_manager.GetDefaultInterpreter()
-        active_book = wx.GetApp().MainFrame.GetActiveChild()
-        if not active_book:
+        doc_view = self.GetActiveView()
+        if not doc_view:
             return
-        doc_view = active_book.GetView()
         document = doc_view.GetDocument()
         if not document.Save():
             return
