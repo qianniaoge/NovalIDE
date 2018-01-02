@@ -488,7 +488,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             docManager.AssociateTemplate(dataModelChildTemplate)
         
         textService             = self.InstallService(STCTextEditor.TextService())
-        pythonService           = self.InstallService(PythonEditor.PythonService())
+        pythonService           = self.InstallService(PythonEditor.PythonService("Python Interpreter",embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
         perlService             = self.InstallService(PerlEditor.PerlService())
         phpService              = self.InstallService(PHPEditor.PHPService())
         if not ACTIVEGRID_BASE_IDE:

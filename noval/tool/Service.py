@@ -13,6 +13,7 @@
 import wx
 import wx.lib.docview
 import wx.lib.pydocview
+import STCTextEditor
 _ = wx.GetTranslation
 
 
@@ -145,7 +146,7 @@ class ServiceView(wx.EvtHandler):
         menu = wx.Menu()
         x, y = event.GetX(), event.GetY()
         # 0 tab is always message. This code assumes the rest are run/debug windows
-        if index > 0:
+        if index > 2:
             page = ServiceView.bottomTab.GetPage(index)
             id = wx.NewId()
             menu.Append(id, _("Close"))
@@ -153,9 +154,9 @@ class ServiceView(wx.EvtHandler):
                 if hasattr(page, 'StopAndRemoveUI'):
                     page.StopAndRemoveUI(event)
             wx.EVT_MENU(ServiceView.bottomTab, id, OnRightMenuSelect)
-            if ServiceView.bottomTab.GetPageCount() > 1:
+            if ServiceView.bottomTab.GetPageCount() > 3:
                 id = wx.NewId()
-                menu.Append(id, _("Close All but \"Message\""))
+                menu.Append(id, _("Close All"))
                 def OnRightMenuSelect(event):
                     for i in range(ServiceView.bottomTab.GetPageCount()-1, 0, -1): # Go from len-1 to 1
                         page = ServiceView.bottomTab.GetPage(i)
@@ -369,4 +370,4 @@ class Service(wx.lib.pydocview.DocService):
         if not active_book:
             return None
         doc_view = active_book.GetView()
-        return doc_view
+        return doc_view if isinstance(doc_view,STCTextEditor.TextView) else None

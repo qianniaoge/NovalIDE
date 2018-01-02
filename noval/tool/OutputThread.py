@@ -18,10 +18,8 @@ class OutputThread(threading.Thread):
                     self._is_running = False
                     break
             else:
-                try:
-                    self._text_ctrl.AddLines(out)
-                except:
-                    self._text_ctrl.AddLines(out.decode("utf-8"))
+                self._text_ctrl.AddLines(out)
+      
                     
     @property
     def IsRunning(self):

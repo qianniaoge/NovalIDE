@@ -129,9 +129,11 @@ class OutputView(Service.ServiceView):
         with self._lock:
             self.GetControl().SetCurrentPos(self.GetControl().GetTextLength())
             self.GetControl().SetReadOnly(False)
-            self.GetControl().AddText(text)
+            try:
+                self.GetControl().AddText(text)
+            except:
+                self.GetControl().AddText(text.decode("utf-8"))
             self.GetControl().SetReadOnly(True)
-
 
     def GetText(self):
         return self.GetControl().GetText()

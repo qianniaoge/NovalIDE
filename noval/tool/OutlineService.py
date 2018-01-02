@@ -459,6 +459,7 @@ class OutlineService(Service.Service):
 
 
     def OnCloseFrame(self, event):
+        self.StopTimer()
         Service.Service.OnCloseFrame(self, event)
         self.SaveExpansionState(clear = True)
 
@@ -487,10 +488,12 @@ class OutlineService(Service.Service):
         self._timer = wx.PyTimer(self.DoBackgroundRefresh)
         self._timer.Start(250)
 
+    def StopTimer(self):
+        self._timer.Stop()
 
     def DoBackgroundRefresh(self):
         """ Refresh the outline view periodically """
-        self._timer.Stop()
+        self.StopTimer()
         
         foundRegisteredView = False
         if self.GetView():

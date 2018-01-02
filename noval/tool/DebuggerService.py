@@ -2420,7 +2420,7 @@ class DebuggerService(Service.Service):
         if not doc_view:
             return
         document = doc_view.GetDocument()
-        if not document.Save():
+        if not document.Save() or document.IsNewDocument:
             return
         ok,line,msg = interpreter.CheckSyntax(document.GetFilename())
         if ok:
@@ -2437,11 +2437,11 @@ class DebuggerService(Service.Service):
         if not doc_view:
             return
         document = doc_view.GetDocument()
-        if not document.Save():
+        if not document.Save() or document.IsNewDocument:
             return
         outputService = wx.GetApp().GetService(OutputService.OutputService)
         #change to output tab page
-        Service.ServiceView.bottomTab.ChangeSelection(1)
+        Service.ServiceView.bottomTab.SetSelection(2)
         output_view = outputService.GetView()
         output_view.ClearLines()
         sys_encoding = locale.getdefaultlocale()[1]
@@ -2476,7 +2476,7 @@ class DebuggerService(Service.Service):
         if not doc_view:
             return
         document = doc_view.GetDocument()
-        if not document.Save():
+        if not document.Save() or document.IsNewDocument:
             return
         sys_encoding = locale.getdefaultlocale()[1]
         if sysutilslib.isWindows():
@@ -2649,7 +2649,7 @@ class DebuggerService(Service.Service):
 
     def HasAnyFiles(self):
         docs = wx.GetApp().GetDocumentManager().GetDocuments()
-        return len(docs) > 0
+        return len(docs) > 0 and self.GetActiveView() != None
 
     def PromptToSaveFiles(self, running=True):
         filesModified = False

@@ -233,7 +233,10 @@ class TextDocument(wx.lib.docview.Document):
         if view:
             return view.IsModified()
         return False
-
+    
+    @property
+    def IsNewDocument(self):
+        return self._is_new_doc
 
     def Modify(self, modify):
         if self._inModify:

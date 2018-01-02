@@ -20,6 +20,7 @@ import noval.util.fileutils as fileutils
 import noval.util.strutils as strutils
 import noval.util.sysutils as sysutils
 import noval.util.xmlutils as xmlutils
+import Interpreter
 _ = wx.GetTranslation
 
 def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Directory:"), fileExtension="*", startingName="", startingDirectory=None, choiceDirs=None, appDirDefaultStartDir=False, returnAll=False, useDirDialog=False):
@@ -397,7 +398,10 @@ def MakeNameEndInExtension(name, extension):
 def GetPythonExecPath():
     pythonExecPath = wx.ConfigBase_Get().Read("ActiveGridPythonLocation")
     if not pythonExecPath:
-        pythonExecPath = sysutils.pythonExecPath
+        interpreter = Interpreter.InterpreterManager().GetDefaultInterpreter()
+        if interpreter is None:
+            return None
+        pythonExecPath = interpreter.Path
     return pythonExecPath
     
 
