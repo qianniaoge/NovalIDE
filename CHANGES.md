@@ -26,3 +26,5 @@ Version 1.0.1 -------------2017-12-27
 3.enbale open file path in terminator
 4.set debug or run script execution dir is script path
 5.support python script path contains chinese
+6.optimise debug run mode
+7.enable kill or stop debug run process
