@@ -147,13 +147,6 @@ class OutputReaderThread(threading.Thread):
 
 
 class Executor:
-    PHP_CGI_BIN_PATH_WIN  = "../../3rdparty/php"
-    PHP_CGI_BIN_PATH_UNIX = "../../../3rdparty/php/bin"
-    PHP_CGI_BIN_PATH_OSX  = "../3rdparty/php/bin"
-    PHP_CGI_EXEC_WIN      = "php-cgi.exe"
-    PHP_CGI_EXEC_UNIX     = "php"
-    PHP_CGI_EXEC_OSX      = "php-cgi"
-
     def GetPythonExecutablePath():
         path = UICommon.GetPythonExecPath()
         if path:
@@ -162,40 +155,14 @@ class Executor:
         return None
     GetPythonExecutablePath = staticmethod(GetPythonExecutablePath)
 
-    def GetPHPExecutablePath():
-        if sysutilslib.isWindows():
-            phpCgiBinPath = Executor.PHP_CGI_BIN_PATH_WIN
-            phpCgiExec    = Executor.PHP_CGI_EXEC_WIN
-        elif sys.platform == "darwin":
-            phpCgiBinPath = Executor.PHP_CGI_BIN_PATH_OSX
-            phpCgiExec    = Executor.PHP_CGI_EXEC_OSX
-        else:
-            phpCgiBinPath = Executor.PHP_CGI_BIN_PATH_UNIX
-            phpCgiExec    = Executor.PHP_CGI_EXEC_UNIX
-
-        if sysutilslib.isRelease():
-            phpCgiExecFullPath = os.path.normpath(os.path.join(sysutilslib.mainModuleDir, phpCgiBinPath, phpCgiExec))
-        else:
-            phpCgiExecFullPath = phpCgiExec
-
-        if _VERBOSE:
-            print "php cgi executable full path is: %s" % phpCgiExecFullPath
-
-        return phpCgiExecFullPath
-    GetPHPExecutablePath = staticmethod(GetPHPExecutablePath)
-
     def __init__(self, fileName, wxComponent, arg1=None, arg2=None, arg3=None, arg4=None, arg5=None, arg6=None, arg7=None, arg8=None, arg9=None, callbackOnExit=None):
         self._fileName = fileName
         self._stdOutCallback = self.OutCall
         self._stdErrCallback = self.ErrCall
         self._callbackOnExit = callbackOnExit
         self._wxComponent = wxComponent
-        if fileName.endswith('.py') or fileName.endswith('.pyc'):
-            self._path = Executor.GetPythonExecutablePath()
-            self._cmd = '"' + self._path + '" -u \"' + fileName + '\"'
-        else:
-            self._path = Executor.GetPHPExecutablePath()
-            self._cmd = '"' + self._path + '"'
+        self._path = Executor.GetPythonExecutablePath()
+        self._cmd = '"' + self._path + '" -u \"' + fileName + '\"'
         #Better way to do this? Quotes needed for windows file paths.
         def spaceAndQuote(text):
             if text.startswith("\"") and text.endswith("\""):
