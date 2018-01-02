@@ -69,7 +69,7 @@ if not _WINDOWS or _PYWIN32_INSTALLED:
 
 _ = wx.GetTranslation
 
-_VERBOSE = False
+_VERBOSE = True
 _WATCHES_ON = False
 
 import  wx.lib.newevent
@@ -125,6 +125,9 @@ class OutputReaderThread(threading.Thread):
                         # GUI was killed while we were blocked.
                         self._keepGoing = False
                     start = time.time()
+                    output = ""
+                elif not self._keepGoing:
+                    self._callback_function(output)
                     output = ""
             #except TypeError:
             #    pass
@@ -342,6 +345,7 @@ class RunCommandUI(wx.Panel):
                 newText = text.replace("Running", "Finished")
                 nb.SetPageText(i, newText)
                 break
+        self._stopped = True
 
     def StopExecution(self):
         if not self._stopped:
@@ -352,7 +356,10 @@ class RunCommandUI(wx.Panel):
 
     def AppendText(self, event):
         self._textCtrl.SetReadOnly(False)
-        self._textCtrl.AddText(event.value)
+        try:
+            self._textCtrl.AddText(event.value)
+        except:
+            self._textCtrl.AddText(event.value.decode("utf-8"))
         self._textCtrl.ScrollToLine(self._textCtrl.GetLineCount())
         self._textCtrl.SetReadOnly(True)
 
@@ -367,6 +374,12 @@ class RunCommandUI(wx.Panel):
         self._textCtrl.SetReadOnly(True)
 
     def StopAndRemoveUI(self, event):
+        if not self._stopped:
+            ret = wx.MessageBox(_("Process is still running,Do You Want to kill the process and remove it?"), _("Process Running.."),
+                       wx.YES_NO  | wx.ICON_QUESTION ,self)
+            if ret == wx.NO:
+                return
+
         self.StopExecution()
         self.StopExecution()
         index = self._noteBook.GetSelection()
@@ -385,7 +398,7 @@ class RunCommandUI(wx.Panel):
 
         elif id == self.CLOSE_TAB_ID:
             self.StopAndRemoveUI(event)
-
+            
     def OnDoubleClick(self, event):
         # Looking for a stack trace line.
         lineText, pos = self._textCtrl.GetCurLine()
@@ -2439,20 +2452,32 @@ class DebuggerService(Service.Service):
         document = doc_view.GetDocument()
         if not document.Save() or document.IsNewDocument:
             return
-        outputService = wx.GetApp().GetService(OutputService.OutputService)
+    #    outputService = wx.GetApp().GetService(OutputService.OutputService)
         #change to output tab page
-        Service.ServiceView.bottomTab.SetSelection(2)
-        output_view = outputService.GetView()
-        output_view.ClearLines()
+     #   Service.ServiceView.bottomTab.SetSelection(2)
+      #  output_view = outputService.GetView()
+      #  output_view.ClearLines()
         sys_encoding = locale.getdefaultlocale()[1]
         #cmd_list = [interpreter.Path,document.GetFilename().encode(sys_encoding)]
-        cmd_list = [interpreter.Path,'-u',document.GetFilename().encode(sys_encoding)]
-        p = subprocess.Popen(cmd_list,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE,cwd=os.path.dirname(document.GetFilename()).encode(sys_encoding))
+      #  cmd_list = [interpreter.Path,'-u',document.GetFilename().encode(sys_encoding)]
+       # p = subprocess.Popen(cmd_list,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE,cwd=os.path.dirname(document.GetFilename()).encode(sys_encoding))
         
-        stdout_thread = OutputThread.OutputThread(p.stdout,p,output_view)
-        stdout_thread.start()
-        stderr_thread = OutputThread.OutputThread(p.stderr,p,output_view)
-        stderr_thread.start()
+        #stdout_thread = OutputThread.OutputThread(p.stdout,p,output_view)
+        #stdout_thread.start()
+        #stderr_thread = OutputThread.OutputThread(p.stderr,p,output_view)
+        #stderr_thread.start()
+        
+        fileToRun = document.GetFilename()
+        self.ShowWindow(True)
+        shortFile = os.path.basename(fileToRun)
+        page = RunCommandUI(Service.ServiceView.bottomTab, -1, fileToRun)
+        count = Service.ServiceView.bottomTab.GetPageCount()
+        Service.ServiceView.bottomTab.AddPage(page, "Running: " + shortFile)
+        Service.ServiceView.bottomTab.SetSelection(count)
+        startIn = os.path.dirname(fileToRun)
+        initialArgs = None
+        environment = None
+        page.Execute(initialArgs, startIn, environment, onWebServer = False)
         
 ##        while True:
 ##            out = p.stdout.readline()

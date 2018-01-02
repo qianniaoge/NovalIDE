@@ -146,7 +146,7 @@ class ServiceView(wx.EvtHandler):
         menu = wx.Menu()
         x, y = event.GetX(), event.GetY()
         # 0 tab is always message. This code assumes the rest are run/debug windows
-        if index > 2:
+        if index > 1:
             page = ServiceView.bottomTab.GetPage(index)
             id = wx.NewId()
             menu.Append(id, _("Close"))
@@ -154,7 +154,7 @@ class ServiceView(wx.EvtHandler):
                 if hasattr(page, 'StopAndRemoveUI'):
                     page.StopAndRemoveUI(event)
             wx.EVT_MENU(ServiceView.bottomTab, id, OnRightMenuSelect)
-            if ServiceView.bottomTab.GetPageCount() > 3:
+            if ServiceView.bottomTab.GetPageCount() > 2:
                 id = wx.NewId()
                 menu.Append(id, _("Close All"))
                 def OnRightMenuSelect(event):

@@ -324,15 +324,15 @@ def _whichFirstArg(cmd, env=None):
     if os.sep in first:
         altpath = [os.path.dirname(first)]
         firstbase = os.path.basename(first)
-        candidates = list(which.which(firstbase, path=altpath))
+        candidates = [which.which(firstbase, path=altpath)]
     elif env:
         altpath = _getPathFromEnv(env)
         if altpath:
-            candidates = list(which.which(first, altpath.split(os.pathsep)))
+            candidates = [which.which(first, altpath.split(os.pathsep))]
         else:
-            candidates = list(which.which(first))
+            candidates = [which.which(first)]
     else:
-        candidates = list(which.which(first))
+        candidates = [which.which(first)]
     if candidates:
         return _joinArgv( [candidates[0]] ) + ' ' + rest
     else:

@@ -139,7 +139,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         import HtmlEditor
         import TabbedView
         import MessageService
-        import OutputService
+      ##  import OutputService
         import Service
         import ImageEditor
         import PerlEditor
@@ -502,7 +502,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         filePropertiesService   = self.InstallService(wx.lib.pydocview.FilePropertiesService())
         markerService           = self.InstallService(MarkerService.MarkerService())
         messageService          = self.InstallService(MessageService.MessageService("Search Results", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
-        outputService          = self.InstallService(OutputService.OutputService("Output", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
+    ##    outputService          = self.InstallService(OutputService.OutputService("Output", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
         debuggerService         = self.InstallService(DebuggerService.DebuggerService("Debugger", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
         if not ACTIVEGRID_BASE_IDE:
             processModelService = self.InstallService(ProcessModelEditor.ProcessModelService())
