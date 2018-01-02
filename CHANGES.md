@@ -28,3 +28,4 @@ Version 1.0.1 -------------2017-12-27
 5.support python script path contains chinese
 6.optimise debug run mode
 7.enable kill or stop debug run process
+8.enable debug have stdin input python script
