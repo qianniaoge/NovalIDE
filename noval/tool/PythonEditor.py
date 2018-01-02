@@ -30,6 +30,7 @@ from UICommon import CaseInsensitiveCompare
 import codecs
 import re
 import noval.parser.config as parserconfig
+import Service
 try:
     import checker # for pychecker
     _CHECKER_INSTALLED = True
@@ -266,20 +267,21 @@ class PythonView(CodeEditor.CodeView):
 
         
 
-class PythonInterpreterView(wx.lib.docview.View):
+class PythonInterpreterView(Service.ServiceView):
 
-
-    def OnCreate(self, doc, flags):
-        frame = wx.GetApp().CreateDocumentFrame(self, doc, flags)
-        sizer = wx.BoxSizer()        
-        self._pyCrust = wx.py.crust.Crust(frame)
+    def _CreateControl(self, parent, id):
+        sizer = wx.BoxSizer()
+        self._pyCrust = wx.py.crust.Crust(parent)
+        self._pyCrust._shouldsplit = False
         sizer.Add(self._pyCrust, 1, wx.EXPAND, 0)
-        frame.SetSizer(sizer)
-        frame.Layout()
-        self.Activate()
-        frame.Show()
-        return True
+        return self._pyCrust
+        
+    def GetDocument(self):
+        return None
 
+    def OnFocus(self, event):
+        wx.GetApp().GetDocumentManager().ActivateView(self)
+        event.Skip()        
 
     def ProcessEvent(self, event):
         if not hasattr(self, "_pyCrust") or not self._pyCrust:
@@ -356,41 +358,28 @@ class PythonInterpreterDocument(wx.lib.docview.Document):
     pass
     
 
-class PythonService(CodeEditor.CodeService):
+class PythonService(Service.Service):
 
+    #----------------------------------------------------------------------------
+    # Overridden methods
+    #----------------------------------------------------------------------------
 
-    def __init__(self):
-        CodeEditor.CodeService.__init__(self)
-        docManager = wx.GetApp().GetDocumentManager()
-        pythonInterpreterTemplate = wx.lib.docview.DocTemplate(docManager,
-                                          _("Python Interpreter"),
-                                          "*.Foobar",
-                                          "Foobar",
-                                          ".Foobar",
-                                          _("Python Interpreter Document"),
-                                          _("Python Interpreter View"),
-                                          PythonInterpreterDocument,
-                                          PythonInterpreterView,
-                                          flags = wx.lib.docview.TEMPLATE_INVISIBLE,
-                                          icon = getPythonIcon())
-        docManager.AssociateTemplate(pythonInterpreterTemplate)
-
+    def _CreateView(self):
+        return PythonInterpreterView(self)
 
     def InstallControls(self, frame, menuBar = None, toolBar = None, statusBar = None, document = None):
-        CodeEditor.CodeService.InstallControls(self, frame, menuBar, toolBar, statusBar, document)
+        Service.Service.InstallControls(self, frame, menuBar, toolBar, statusBar, document)
 
         if document and document.GetDocumentTemplate().GetDocumentType() != PythonDocument:
             return
         if not document and wx.GetApp().GetDocumentManager().GetFlags() & wx.lib.docview.DOC_SDI:
             return
 
-        viewMenu = menuBar.GetMenu(menuBar.FindMenu(_("&View")))
-
-        viewStatusBarItemPos = self.GetMenuItemPos(viewMenu, wx.lib.pydocview.VIEW_STATUSBAR_ID)
-        viewMenu.InsertCheckItem(viewStatusBarItemPos + 1, VIEW_PYTHON_INTERPRETER_ID, _("Python &Interpreter"), _("Shows or hides the Python interactive window"))
-        wx.EVT_MENU(frame, VIEW_PYTHON_INTERPRETER_ID, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, VIEW_PYTHON_INTERPRETER_ID, frame.ProcessUpdateUIEvent)
-
+        #viewMenu = menuBar.GetMenu(menuBar.FindMenu(_("&View")))
+        #viewStatusBarItemPos = self.GetMenuItemPos(viewMenu, wx.lib.pydocview.VIEW_STATUSBAR_ID)
+        #viewMenu.InsertCheckItem(viewStatusBarItemPos + 1, VIEW_PYTHON_INTERPRETER_ID, _("Python &Interpreter"), _("Shows or hides the Python interactive window"))
+        #wx.EVT_MENU(frame, VIEW_PYTHON_INTERPRETER_ID, frame.ProcessEvent)
+        #wx.EVT_UPDATE_UI(frame, VIEW_PYTHON_INTERPRETER_ID, frame.ProcessUpdateUIEvent)
 
     def ProcessEvent(self, event):
         id = event.GetId()
@@ -398,7 +387,7 @@ class PythonService(CodeEditor.CodeService):
             self.OnViewPythonInterpreter(event)
             return True
         else:
-            return CodeEditor.CodeService.ProcessEvent(self, event)
+            return Service.Service.ProcessEvent(self, event)
 
 
     def ProcessUpdateUIEvent(self, event):
@@ -413,7 +402,7 @@ class PythonService(CodeEditor.CodeService):
                     break
             return True
         else:
-            return CodeEditor.CodeService.ProcessUpdateUIEvent(self, event)
+            return Service.Service.ProcessUpdateUIEvent(self, event)
 
 
     def OnViewPythonInterpreter(self, event):
