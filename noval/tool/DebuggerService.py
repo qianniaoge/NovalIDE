@@ -53,6 +53,7 @@ import OutputService
 import locale
 import OutputThread
 import noval.parser.config as parserconfig
+import WxThreadSafe
 
 if wx.Platform == '__WXMSW__':
     try:
@@ -232,6 +233,11 @@ class Executor:
 
     def GetExecPath(self):
         return self._path
+        
+    def WriteInput(self,text):
+        if None == self._process:
+            return
+        self._process.stdin.write(text)
 
 class RunCommandUI(wx.Panel):
     runners = []
@@ -274,7 +280,7 @@ class RunCommandUI(wx.Panel):
         self._textCtrl = STCTextEditor.TextCtrl(self, wx.NewId()) #id)
         sizer.Add(self._textCtrl, 1, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 1)
         self._textCtrl.SetViewLineNumbers(False)
-        self._textCtrl.SetReadOnly(True)
+        self._textCtrl.SetReadOnly(False)
         if wx.Platform == '__WXMSW__':
             font = "Courier New"
         else:
@@ -284,6 +290,8 @@ class RunCommandUI(wx.Panel):
         self._textCtrl.StyleClearAll()
 
         wx.stc.EVT_STC_DOUBLECLICK(self._textCtrl, self._textCtrl.GetId(), self.OnDoubleClick)
+        
+        wx.EVT_KEY_DOWN(self._textCtrl, self.OnKeyPressed)
 
         self.SetSizer(sizer)
         sizer.Fit(self)
@@ -302,7 +310,8 @@ class RunCommandUI(wx.Panel):
 
     def Execute(self, initialArgs, startIn, environment, onWebServer = False):
         self._executor.Execute(initialArgs, startIn, environment)
-
+    
+    @WxThreadSafe.call_after
     def ExecutorFinished(self):
         self._tb.EnableTool(self.KILL_PROCESS_ID, False)
         nb = self.GetParent()
@@ -313,6 +322,7 @@ class RunCommandUI(wx.Panel):
                 nb.SetPageText(i, newText)
                 break
         self._stopped = True
+        self._textCtrl.SetReadOnly(True)
 
     def StopExecution(self):
         if not self._stopped:
@@ -320,6 +330,7 @@ class RunCommandUI(wx.Panel):
             self.Unbind(EVT_UPDATE_STDTEXT)
             self.Unbind(EVT_UPDATE_ERRTEXT)
             self._executor.DoStopExecution()
+            self._textCtrl.SetReadOnly(True)
 
     def AppendText(self, event):
         self._textCtrl.SetReadOnly(False)
@@ -328,17 +339,17 @@ class RunCommandUI(wx.Panel):
         except:
             self._textCtrl.AddText(event.value.decode("utf-8"))
         self._textCtrl.ScrollToLine(self._textCtrl.GetLineCount())
-        self._textCtrl.SetReadOnly(True)
+      ##  self._textCtrl.SetReadOnly(True)
 
     def AppendErrorText(self, event):
-        self._textCtrl.SetReadOnly(False)
+      ##  self._textCtrl.SetReadOnly(False)
         self._textCtrl.SetFontColor(wx.RED)
         self._textCtrl.StyleClearAll()
         self._textCtrl.AddText(event.value)
         self._textCtrl.ScrollToLine(self._textCtrl.GetLineCount())
         self._textCtrl.SetFontColor(wx.BLACK)
         self._textCtrl.StyleClearAll()
-        self._textCtrl.SetReadOnly(True)
+      ##  self._textCtrl.SetReadOnly(True)
 
     def StopAndRemoveUI(self, event):
         if not self._stopped:
@@ -372,7 +383,7 @@ class RunCommandUI(wx.Panel):
         fileBegin = lineText.find("File \"")
         fileEnd = lineText.find("\", line ")
         lineEnd = lineText.find(", in ")
-        if lineText == "\n" or  fileBegin == -1 or fileEnd == -1 or lineEnd == -1:
+        if lineText == "\n" or  fileBegin == -1 or fileEnd == -1:
             # Check the line before the one that was clicked on
             lineNumber = self._textCtrl.GetCurrentLine()
             if(lineNumber == 0):
@@ -381,11 +392,17 @@ class RunCommandUI(wx.Panel):
             fileBegin = lineText.find("File \"")
             fileEnd = lineText.find("\", line ")
             lineEnd = lineText.find(", in ")
-            if lineText == "\n" or  fileBegin == -1 or fileEnd == -1 or lineEnd == -1:
+            if lineText == "\n" or  fileBegin == -1 or fileEnd == -1:
                 return
 
         filename = lineText[fileBegin + 6:fileEnd]
-        lineNum = int(lineText[fileEnd + 8:lineEnd])
+        print filename,'------------------------'
+        if filename == "<string>" :
+            return
+        if -1 == lineEnd:
+            lineNum = int(lineText[fileEnd + 8:])
+        else:
+            lineNum = int(lineText[fileEnd + 8:lineEnd])
 
         foundView = None
         openDocs = wx.GetApp().GetDocumentManager().GetDocuments()
@@ -407,7 +424,16 @@ class RunCommandUI(wx.Panel):
             foundView.SetSelection(startPos, startPos + len(lineText.rstrip("\n")))
             import OutlineService
             wx.GetApp().GetService(OutlineService.OutlineService).LoadOutline(foundView, position=startPos)
-
+    
+    def OnKeyPressed(self, event):
+        key = event.GetKeyCode()
+        if key == wx.WXK_RETURN:
+            lineText, pos = self._textCtrl.GetCurLine()
+            print 'process return key',key,'line text is:',lineText
+            self._textCtrl.AddText('\n')
+            self._executor.WriteInput(lineText + "\n")
+        else:
+            STCTextEditor.TextCtrl.OnKeyPressed(self._textCtrl, event)
 
 DEFAULT_PORT = 32032
 DEFAULT_HOST = 'localhost'
