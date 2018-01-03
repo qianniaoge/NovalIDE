@@ -246,7 +246,8 @@ class RunCommandUI(wx.Panel):
         # See comment on PythonDebuggerUI.StopExecution
         for runner in RunCommandUI.runners:
             try:
-                runner.StopExecution(None)
+                runner.StopExecution()
+                runner.UpdateAllRunnerTerminateAllUI()
             except wx._core.PyDeadObjectError:
                 pass
         RunCommandUI.runners = []
@@ -260,6 +261,7 @@ class RunCommandUI(wx.Panel):
 
         self.KILL_PROCESS_ID = wx.NewId()
         self.CLOSE_TAB_ID = wx.NewId()
+        self.TERMINATE_ALL_PROCESS_ID = wx.NewId()
 
 
         # GUI Initialization follows
@@ -275,6 +277,10 @@ class RunCommandUI(wx.Panel):
         stop_bmp = getStopBitmap()
         tb.AddSimpleTool(self.KILL_PROCESS_ID, stop_bmp, _("Stop the Run."))
         wx.EVT_TOOL(self, self.KILL_PROCESS_ID, self.OnToolClicked)
+        
+        terminate_all_bmp = getTerminateAllBitmap()
+        tb.AddSimpleTool(self.TERMINATE_ALL_PROCESS_ID, terminate_all_bmp, _("Stop All the Run."))
+        wx.EVT_TOOL(self, self.TERMINATE_ALL_PROCESS_ID, self.OnToolClicked)
 
         tb.Realize()
         self._textCtrl = STCTextEditor.TextCtrl(self, wx.NewId()) #id)
@@ -285,12 +291,12 @@ class RunCommandUI(wx.Panel):
             font = "Courier New"
         else:
             font = "Courier"
-        self._textCtrl.SetFont(wx.Font(9, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = font))
+        self._font = wx.Font(9, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = font)
+        self._textCtrl.SetFont(self._font)
         self._textCtrl.SetFontColor(wx.BLACK)
         self._textCtrl.StyleClearAll()
 
-        wx.stc.EVT_STC_DOUBLECLICK(self._textCtrl, self._textCtrl.GetId(), self.OnDoubleClick)
-        
+        wx.stc.EVT_STC_DOUBLECLICK(self._textCtrl, self._textCtrl.GetId(), self.OnDoubleClick)        
         wx.EVT_KEY_DOWN(self._textCtrl, self.OnKeyPressed)
 
         self.SetSizer(sizer)
@@ -311,6 +317,21 @@ class RunCommandUI(wx.Panel):
     def Execute(self, initialArgs, startIn, environment, onWebServer = False):
         self._executor.Execute(initialArgs, startIn, environment)
     
+    def IsProcessRunning(self):
+        process_runners = [runner for runner in self.runners if not runner.Stopped]
+        return True if len(process_runners) > 0 else False
+    
+    @property
+    def Stopped(self):
+        return self._stopped
+        
+    def UpdateTerminateAllUI(self):
+        self._tb.EnableTool(self.TERMINATE_ALL_PROCESS_ID, self.IsProcessRunning())
+        
+    def UpdateAllRunnerTerminateAllUI(self):
+        for runner in self.runners:
+            runner.UpdateTerminateAllUI()
+        
     @WxThreadSafe.call_after
     def ExecutorFinished(self):
         self._tb.EnableTool(self.KILL_PROCESS_ID, False)
@@ -323,6 +344,7 @@ class RunCommandUI(wx.Panel):
                 break
         self._stopped = True
         self._textCtrl.SetReadOnly(True)
+        self.UpdateAllRunnerTerminateAllUI()
 
     def StopExecution(self):
         if not self._stopped:
@@ -343,12 +365,19 @@ class RunCommandUI(wx.Panel):
 
     def AppendErrorText(self, event):
       ##  self._textCtrl.SetReadOnly(False)
-        self._textCtrl.SetFontColor(wx.RED)
-        self._textCtrl.StyleClearAll()
+       ### self._textCtrl.SetFontColor(wx.RED)
+      ###  self._textCtrl.StyleSetSpec(2, 'fore:#221dff, back:#FFFFFF,face:Courier New,size:12') 
+        error_color_style = 2
+        self._textCtrl.StyleSetSpec(error_color_style, 'fore:#ff0000, back:#FFFFFF,face:%s,size:%d' % \
+                                    (self._font.GetFaceName(),self._font.GetPointSize())) 
+        pos = self._textCtrl.GetCurrentPos()
         self._textCtrl.AddText(event.value)
+     ###  self._textCtrl.StyleClearAll()
+        self._textCtrl.StartStyling(pos, 2)
+        self._textCtrl.SetStyling(len(event.value), error_color_style)
         self._textCtrl.ScrollToLine(self._textCtrl.GetLineCount())
-        self._textCtrl.SetFontColor(wx.BLACK)
-        self._textCtrl.StyleClearAll()
+        ##self._textCtrl.SetFontColor(wx.BLACK)
+        ###self._textCtrl.StyleClearAll()
       ##  self._textCtrl.SetReadOnly(True)
 
     def StopAndRemoveUI(self, event):
@@ -377,6 +406,9 @@ class RunCommandUI(wx.Panel):
         elif id == self.CLOSE_TAB_ID:
             self.StopAndRemoveUI(event)
             
+        elif id == self.TERMINATE_ALL_PROCESS_ID:
+            self.ShutdownAllRunners()
+            
     def OnDoubleClick(self, event):
         # Looking for a stack trace line.
         lineText, pos = self._textCtrl.GetCurLine()
@@ -396,7 +428,6 @@ class RunCommandUI(wx.Panel):
                 return
 
         filename = lineText[fileBegin + 6:fileEnd]
-        print filename,'------------------------'
         if filename == "<string>" :
             return
         if -1 == lineEnd:
@@ -426,14 +457,23 @@ class RunCommandUI(wx.Panel):
             wx.GetApp().GetService(OutlineService.OutlineService).LoadOutline(foundView, position=startPos)
     
     def OnKeyPressed(self, event):
+        input_color_style = 1
+        self._textCtrl.StyleSetSpec(input_color_style, 'fore:#221dff, back:#FFFFFF,face:%s,size:%d' % \
+                     (self._font.GetFaceName(),self._font.GetPointSize())) 
         key = event.GetKeyCode()
         if key == wx.WXK_RETURN:
             lineText, pos = self._textCtrl.GetCurLine()
-            print 'process return key',key,'line text is:',lineText
+            if pos-1 >= 0:
+                self._textCtrl.StartStyling(self._textCtrl.GetCurrentPos()-1, 31)
+                self._textCtrl.SetStyling(1, input_color_style)
             self._textCtrl.AddText('\n')
             self._executor.WriteInput(lineText + "\n")
         else:
+            pos = self._textCtrl.GetCurrentPos()
             STCTextEditor.TextCtrl.OnKeyPressed(self._textCtrl, event)
+            if pos-1 >= 0:
+                self._textCtrl.StartStyling(pos-1, 31)
+                self._textCtrl.SetStyling(1, input_color_style)
 
 DEFAULT_PORT = 32032
 DEFAULT_HOST = 'localhost'
@@ -3372,6 +3412,10 @@ def getStopImage():
 def getStopIcon():
     return wx.IconFromBitmap(getStopBitmap())
 
+def getTerminateAllBitmap():
+    image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "terminate_all.png")
+    image = wx.Image(image_path,wx.BITMAP_TYPE_ANY)
+    return BitmapFromImage(image)
 #----------------------------------------------------------------------
 def getStepReturnData():
     return \

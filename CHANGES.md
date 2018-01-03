@@ -29,3 +29,5 @@ Version 1.0.1 -------------2017-12-27
 6.optimise debug run mode
 7.enable kill or stop debug run process
 8.enable debug have stdin input python script
+9.enable colorize error output or input text
+10.enable terminate all running process
