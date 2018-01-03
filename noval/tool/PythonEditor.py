@@ -93,32 +93,26 @@ class PythonDocument(CodeEditor.CodeDocument):
         if self.IsDocEncodingChanged(declare_encoding):
             self.file_encoding = declare_encoding
     
+    def DoSaveBehind(self):
+        self.LoadViewModule(self.GetFilename())
+        
     def GetDocEncoding(self,encoding):
-
         lower_encoding = encoding.lower() 
-
         if lower_encoding == "utf-8" or lower_encoding == "utf-8-sig":
             return self.UTF_8_ENCODING
-
         elif lower_encoding == "gbk" or lower_encoding == "gb2312" \
              or lower_encoding == "gb18030":
             return self.GBK_ENCODING
-
         return self.ANSI_ENCODING
-         
 
     def IsUtf8Doc(self,encoding):
-
         if encoding.lower().find("utf-8"):
             return True
-
         return False
 
     def IsDocEncodingChanged(self,encoding):
-        
         if self.GetDocEncoding(encoding) != self.GetDocEncoding(self.file_encoding):
             return True
-
         return False
         
     def OnOpenDocument(self, filename):

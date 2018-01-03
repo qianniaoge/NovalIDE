@@ -54,8 +54,7 @@ TEXT_STATUS_BAR_ID = wx.NewId()
 class TextDocument(wx.lib.docview.Document):
     
     DEFAULT_FILE_ENCODING = "ascii"
-
-
+    
     def __init__(self):
         wx.lib.docview.Document .__init__(self)
         self._inModify = False
@@ -70,6 +69,9 @@ class TextDocument(wx.lib.docview.Document):
     def DoSaveBefore(self):
         if self._is_watched:
             self.file_watcher.StopWatchFile(self)
+    
+    def DoSaveBehind(self):
+        pass
 
     def OnSaveDocument(self, filename):
         """
@@ -138,6 +140,7 @@ class TextDocument(wx.lib.docview.Document):
         self._is_watched = True
         self._is_new_doc = False
         self.file_watcher.StartWatchFile(self)
+        self.DoSaveBehind()
         #if wx.Platform == '__WXMAC__':  # Not yet implemented in wxPython
         #    wx.FileName(file).MacSetDefaultTypeAndCreator()
         return True
@@ -815,6 +818,14 @@ class TextView(wx.lib.docview.View):
             return False
         	#If we got a match, the target is set to the found text
         return (self.GetCtrl().GetTargetStart() == start_pos) and (self.GetCtrl().GetTargetEnd() == end_pos);
+        
+    def FindTextInLine(self,line,text):
+        line_start = self.GetCtrl().PositionFromLine(line-1)
+        line_end = self.GetCtrl().PositionFromLine(line)
+        index = self.GetCtrl().FindText(line_start,line_end,text,0)
+        if -1 != index:
+            return index,index + len(text)
+        return -1,-1
         
     def DoFind(self, forceFindNext = False, forceFindPrevious = False, replace = False, replaceAll = False):
         findService = wx.GetApp().GetService(FindService.FindService)

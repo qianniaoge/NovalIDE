@@ -42,8 +42,7 @@ def parse(module_path):
         node = ast.parse(content,module_path)
         module = nodeast.Module(os.path.basename(module_path).split('.')[0],module_path)
         deep_walk(node,module)
-        return module
- 
+        return module 
 
 def deep_walk(node,parent):
     for element in node.body:
@@ -52,6 +51,15 @@ def deep_walk(node,parent):
             line_no = element.lineno
             col = element.col_offset
             args = []
+            is_property_def = False
+            for deco in element.decorator_list:
+                line_no += 1
+                if type(deco) == ast.Name and deco.id == "property":
+                    nodeast.PropertyDef(def_name,line_no,col,config.PROPERTY_TYPE_UNKNOWN,parent)
+                    is_property_def = True
+                    break
+            if is_property_def:
+                continue
             for arg in element.args.args:
                 if type(arg) == ast.Name:
                     arg = dict(name=arg.id)
@@ -82,10 +90,9 @@ def deep_walk(node,parent):
                     name = target.id
                   #  data = dict(name=name,line=line_no,col=col,type=config.NODE_OBJECT_PROPERTY)
                    # childs.append(data)
-                    nodeast.PropertyDef(name,line_no,col,config.PROPERTY_TYPE_NONE,parent)
+                    nodeast.PropertyDef(name,line_no,col,config.PROPERTY_TYPE_UNKNOWN,parent)
     
 def walk(node):
-    
     childs = []
     for element in node.body:
         if isinstance(element,ast.FunctionDef):
@@ -129,7 +136,6 @@ def walk(node):
                     childs.append(data)
             
     return childs
-
 
 def load(file_name):
     with open(file_name,'rb') as f:

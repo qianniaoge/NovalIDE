@@ -198,9 +198,8 @@ class CodeView(STCTextEditor.TextView):
             self.EnsureVisibleEnforcePolicy(node.Line)
             # wxBug: need to select in reverse order (end, start) to place cursor at begining of line,
             #        otherwise, display is scrolled over to the right hard and is hard to view
-            start_pos = self.PositionFromLine(node.Line) + node.Col
-            self.SetSelection(start_pos, start_pos + len(node.Name))
-
+            start,end = self.FindTextInLine(node.Line,node.Name)
+            self.SetSelection(start, end)
 
 ##    def checksum(self, bytes):        
 ##        def rotate_right(c):
