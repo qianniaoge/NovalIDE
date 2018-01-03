@@ -21,6 +21,7 @@ import string
 import sys
 import MarkerService
 from UICommon import CaseInsensitiveCompare
+import noval.parser.nodeast as nodeast
 _ = wx.GetTranslation
 if wx.Platform == '__WXMSW__':
     _WINDOWS = True
@@ -162,8 +163,6 @@ class CodeView(STCTextEditor.TextView):
             return True
         else:
             return STCTextEditor.TextView.ProcessUpdateUIEvent(self, event)
-
-
     #----------------------------------------------------------------------------
     # Methods for OutlineService
     #----------------------------------------------------------------------------
@@ -191,91 +190,16 @@ class CodeView(STCTextEditor.TextView):
             return
         outlineService.LoadOutline(self, force=force)
 
-
     def DoLoadOutlineCallback(self, force=False):
-        outlineService = wx.GetApp().GetService(OutlineService.OutlineService)
-        if not outlineService:
-            return False
+        return False
 
-        outlineView = outlineService.GetView()
-        if not outlineView:
-            return False
-
-        treeCtrl = outlineView.GetTreeCtrl()
-        if not treeCtrl:
-            return False
-
-        view = treeCtrl.GetCallbackView()
-        newCheckSum = self.GenCheckSum()
-        if not force:
-            if view and view is self:
-                if self._checkSum == newCheckSum:
-                    return False
-        self._checkSum = newCheckSum
-
-        treeCtrl.DeleteAllItems()
-
-        document = self.GetDocument()
-        if not document:
-            return True
-
-        filename = document.GetFilename()
-        if filename:
-            rootItem = treeCtrl.AddRoot(os.path.basename(filename))
-            treeCtrl.SetDoSelectCallback(rootItem, self, (0,0))
-        else:
-            return True
-
-        text = self.GetValue()
-        if not text:
-            return True
-
-        CLASS_PATTERN = 'class[ \t]+\w+.*?:'
-        DEF_PATTERN = 'def[ \t]+\w+\(.*?\)'
-        classPat = re.compile(CLASS_PATTERN, re.M|re.S)
-        defPat= re.compile(DEF_PATTERN, re.M|re.S)
-        pattern = re.compile('^[ \t]*((' + CLASS_PATTERN + ')|('+ DEF_PATTERN +'.*?:)).*?$', re.M|re.S)
-
-        iter = pattern.finditer(text)
-        indentStack = [(0, rootItem)]
-        for pattern in iter:
-            line = pattern.string[pattern.start(0):pattern.end(0)]
-            classLine = classPat.search(line)
-            if classLine:
-                indent = classLine.start(0)
-                itemStr = classLine.string[classLine.start(0):classLine.end(0)-1]  # don't take the closing ':'
-                itemStr = itemStr.replace("\n", "").replace("\r", "").replace(",\\", ",").replace("  ", "")  # remove line continuations and spaces from outline view
-            else:
-                defLine = defPat.search(line)
-                if defLine:
-                    indent = defLine.start(0)
-                    itemStr = defLine.string[defLine.start(0):defLine.end(0)]
-                    itemStr = itemStr.replace("\n", "").replace("\r", "").replace(",\\", ",").replace("  ", "")  # remove line continuations and spaces from outline view
-
-            if indent == 0:
-                parentItem = rootItem
-            else:
-                lastItem = indentStack.pop()
-                while lastItem[0] >= indent:
-                    lastItem = indentStack.pop()
-                indentStack.append(lastItem)
-                parentItem = lastItem[1]
-
-            item = treeCtrl.AppendItem(parentItem, itemStr)
-            treeCtrl.SetDoSelectCallback(item, self, (pattern.end(0), pattern.start(0) + indent))  # select in reverse order because we want the cursor to be at the start of the line so it wouldn't scroll to the right
-            indentStack.append((indent, item))
-
-        treeCtrl.Expand(rootItem)
-
-        return True
-
-
-    def DoSelectCallback(self, data):
-        if data:
-            self.EnsureVisibleEnforcePolicy(self.LineFromPosition(data[0]))
+    def DoSelectCallback(self, node):
+        if node and not isinstance(node,nodeast.Module):
+            self.EnsureVisibleEnforcePolicy(node.Line)
             # wxBug: need to select in reverse order (end, start) to place cursor at begining of line,
             #        otherwise, display is scrolled over to the right hard and is hard to view
-            self.SetSelection(data[1], data[0])
+            start_pos = self.PositionFromLine(node.Line) + node.Col
+            self.SetSelection(start_pos, start_pos + len(node.Name))
 
 
 ##    def checksum(self, bytes):        

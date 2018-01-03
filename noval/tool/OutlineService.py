@@ -14,6 +14,8 @@ import wx
 import wx.lib.docview
 import wx.lib.pydocview
 import Service
+import noval.util.sysutils as sysutilslib
+import os
 _ = wx.GetTranslation
 
 
@@ -186,7 +188,27 @@ class OutlineTreeCtrl(wx.TreeCtrl):
         wx.TreeCtrl.__init__(self, parent, id, style = style)
         self._origOrderIndex = 0
         self._sortOrder = SORT_NONE
+        
+        isz = (16,15)
+        il = wx.ImageList(isz[0], isz[1])
+        modulebmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "module.png")
+        modulebmp = wx.Bitmap(modulebmp_path, wx.BITMAP_TYPE_PNG)
+        self.moduleidx = il.Add(modulebmp)
 
+        funcbmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "func.png")
+        funcbmp = wx.Bitmap(funcbmp_path, wx.BITMAP_TYPE_PNG)
+        self.funcidx = il.Add(funcbmp)
+
+        classbmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "class.png")
+        classbmp = wx.Bitmap(classbmp_path, wx.BITMAP_TYPE_PNG)
+        self.classidx = il.Add(classbmp)
+
+        propertybmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "property.png")
+        propertybmp = wx.Bitmap(propertybmp_path, wx.BITMAP_TYPE_PNG)
+        self.propertyidx = il.Add(propertybmp)
+
+        self.SetImageList(il)
+        self.il = il
 
     def DeleteAllItems(self):
         self._origOrderIndex = 0

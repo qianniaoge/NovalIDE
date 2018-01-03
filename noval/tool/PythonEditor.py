@@ -31,6 +31,7 @@ import codecs
 import re
 import noval.parser.config as parserconfig
 import Service
+import noval.parser.fileparser as parser
 try:
     import checker # for pychecker
     _CHECKER_INSTALLED = True
@@ -78,7 +79,6 @@ def coding_spec(str):
 
 class PythonDocument(CodeEditor.CodeDocument): 
 
-
     UTF_8_ENCODING = 0
     GBK_ENCODING = 1
     ANSI_ENCODING = 2
@@ -120,10 +120,33 @@ class PythonDocument(CodeEditor.CodeDocument):
             return True
 
         return False
+        
+    def OnOpenDocument(self, filename):
+        if not CodeEditor.CodeDocument.OnOpenDocument(self,filename):
+            return False
+            
+        self.LoadViewModule(filename)
+        return True
+        
+    def LoadViewModule(self,filename):
+        view = self.GetFirstView()
+        module = parser.parse(filename)
+        view.Module = module
 
 class PythonView(CodeEditor.CodeView):
 
-
+    def __init__(self):
+        super(PythonView,self).__init__()
+        self._module = None
+        
+    @property
+    def Module(self):
+        return self._module
+        
+    @Module.setter
+    def Module(self,module):
+        self._module = module
+        
     def GetCtrlClass(self):
         """ Used in split window to instantiate new instances """
         return PythonCtrl
@@ -265,7 +288,111 @@ class PythonView(CodeEditor.CodeView):
             foundView.SetSelection(endPos, startPos)
             wx.GetApp().GetService(OutlineService.OutlineService).LoadOutline(foundView, position=startPos)
 
+    def DoLoadOutlineCallback(self, force=False):
+        outlineService = wx.GetApp().GetService(OutlineService.OutlineService)
+        if not outlineService:
+            return False
+
+        outlineView = outlineService.GetView()
+        if not outlineView:
+            return False
+
+        treeCtrl = outlineView.GetTreeCtrl()
+        if not treeCtrl:
+            return False
+
+        view = treeCtrl.GetCallbackView()
+        newCheckSum = self.GenCheckSum()
+        if not force:
+            if view and view is self:
+                if self._checkSum == newCheckSum:
+                    return False
+        self._checkSum = newCheckSum
+
+        treeCtrl.DeleteAllItems()
+
+        document = self.GetDocument()
+        if not document:
+            return True
+            
+        if self.Module == None:
+            return
+
+        filename = document.GetFilename()
+        if filename:
+            rootItem = treeCtrl.AddRoot(self.Module.Name)
+            treeCtrl.SetItemImage(rootItem,treeCtrl.moduleidx,wx.TreeItemIcon_Normal)
+            treeCtrl.SetDoSelectCallback(rootItem, self, self.Module)
+        else:
+            return True
+
+        text = self.GetValue()
+        if not text:
+            return True
+        self.TranverseItem(treeCtrl,self.Module,rootItem)   
+
+##            indentStack.append((indent, item))
+                
+
+##        CLASS_PATTERN = 'class[ \t]+\w+.*?:'
+##        DEF_PATTERN = 'def[ \t]+\w+\(.*?\)'
+##        classPat = re.compile(CLASS_PATTERN, re.M|re.S)
+##        defPat= re.compile(DEF_PATTERN, re.M|re.S)
+##        pattern = re.compile('^[ \t]*((' + CLASS_PATTERN + ')|('+ DEF_PATTERN +'.*?:)).*?$', re.M|re.S)
+##
+##        iter = pattern.finditer(text)
+##        indentStack = [(0, rootItem)]
+##        for pattern in iter:
+##            line = pattern.string[pattern.start(0):pattern.end(0)]
+##            classLine = classPat.search(line)
+##            if classLine:
+##                indent = classLine.start(0)
+##                itemStr = classLine.string[classLine.start(0):classLine.end(0)-1]  # don't take the closing ':'
+##                itemStr = itemStr.replace("\n", "").replace("\r", "").replace(",\\", ",").replace("  ", "")  # remove line continuations and spaces from outline view
+##            else:
+##                defLine = defPat.search(line)
+##                if defLine:
+##                    indent = defLine.start(0)
+##                    itemStr = defLine.string[defLine.start(0):defLine.end(0)]
+##                    itemStr = itemStr.replace("\n", "").replace("\r", "").replace(",\\", ",").replace("  ", "")  # remove line continuations and spaces from outline view
+##
+##            if indent == 0:
+##                parentItem = rootItem
+##            else:
+##                lastItem = indentStack.pop()
+##                while lastItem[0] >= indent:
+##                    lastItem = indentStack.pop()
+##                indentStack.append(lastItem)
+##                parentItem = lastItem[1]
+##
+##            item = treeCtrl.AppendItem(parentItem, itemStr)
+##            treeCtrl.SetDoSelectCallback(item, self, (pattern.end(0), pattern.start(0) + indent))  # select in reverse order because we want the cursor to be at the start of the line so it wouldn't scroll to the right
+##            indentStack.append((indent, item))
+
+        treeCtrl.Expand(rootItem)
+
+        return True
+           
+    def TranverseItem(self,treeCtrl,node,parent):
         
+        for child in node.Childs:
+            if child.Type == parserconfig.NODE_FUNCDEF_TYPE:
+                item_image_index = 1
+                item = treeCtrl.AppendItem(parent, child.Name)
+                treeCtrl.SetItemImage(item,item_image_index,wx.TreeItemIcon_Normal)
+                treeCtrl.SetDoSelectCallback(item, self, child)
+                self.TranverseItem(treeCtrl,child,item)
+            elif child.Type == parserconfig.NODE_CLASSDEF_TYPE:
+                item_image_index = 2
+                item = treeCtrl.AppendItem(parent, child.Name)
+                treeCtrl.SetItemImage(item,item_image_index,wx.TreeItemIcon_Normal)
+                treeCtrl.SetDoSelectCallback(item, self, child)
+                self.TranverseItem(treeCtrl,child,item)
+            elif child.Type == parserconfig.NODE_OBJECT_PROPERTY:
+                item_image_index = 3
+                item = treeCtrl.AppendItem(parent, child.Name)
+                treeCtrl.SetItemImage(item,item_image_index,wx.TreeItemIcon_Normal)
+                treeCtrl.SetDoSelectCallback(item, self, child)
 
 class PythonInterpreterView(Service.ServiceView):
 
