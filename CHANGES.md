@@ -31,3 +31,5 @@ Version 1.0.1 -------------2017-12-27
 8.enable debug have stdin input python script
 9.enable colorize error output or input text
 10.enable terminate all running process
+11.change application splash image
+12.delete ide splash embed bitmap data
