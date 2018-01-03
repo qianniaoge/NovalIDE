@@ -26,9 +26,9 @@ _ = wx.GetTranslation
 
 
 licenseData = [  # add licenses for base IDE features
-    ("ActiveGrid", "Apache License, Version 2.0", "http://apache.org/licenses/LICENSE-2.0"),
-    ("Python 2.4", "Python Software Foundation License", "http://www.python.org/2.4/license.html"),
-    ("wxPython 2.6", "wxWidgets 2 - LGPL", "http://wxwidgets.org/newlicen.htm"),
+    ("NovalIDE", "Apache License, Version 2.0", "http://apache.org/licenses/LICENSE-2.0"),
+    ("Python 2.7", "Python Software Foundation License", "http://www.python.org/2.7/license.html"),
+    ("wxPython 3.0", "wxWidgets 2 - LGPL", "http://wxwidgets.org/newlicen.htm"),
     ("wxWidgets", "wxWindows Library License 3", "http://www.wxwidgets.org/manuals/2.6.1/wx_wxlicense.html"),
     ("pychecker", "MetaSlash - BSD", "http://pychecker.sourceforge.net/COPYRIGHT"),
     ("process.py", "See file", "http://starship.python.net/~tmick/"),
@@ -84,8 +84,8 @@ class AboutDialog(wx.Dialog):
 
         image = wx.StaticBitmap(aboutPage, -1, splash_bmp, (0,0), (splash_bmp.GetWidth(), splash_bmp.GetHeight()))
         sizer.Add(image, 0, wx.ALIGN_CENTER|wx.ALL, 0)
-        sizer.Add(wx.StaticText(aboutPage, -1, wx.GetApp().GetAppName() + _("\n%s\n\nCopyright (c) 2003-2006 ActiveGrid Incorporated and Contributors.  All rights reserved.") % version), 0, wx.ALIGN_LEFT|wx.ALL, 10)
-        sizer.Add(wx.StaticText(aboutPage, -1, _("http://www.activegrid.com")), 0, wx.ALIGN_LEFT|wx.LEFT|wx.BOTTOM, 10)
+        sizer.Add(wx.StaticText(aboutPage, -1, wx.GetApp().GetAppName() + _("\n%s\n\nCopyright (c) 2014-2018 Genetalks Incorporated and Contributors.  All rights reserved.") % version), 0, wx.ALIGN_LEFT|wx.ALL, 10)
+        sizer.Add(wx.StaticText(aboutPage, -1, _("http://www.genetalks.com")), 0, wx.ALIGN_LEFT|wx.LEFT|wx.BOTTOM, 10)
         aboutPage.SetSizer(sizer)
         nb.AddPage(aboutPage, _("Copyright"))
 
@@ -133,7 +133,7 @@ class AboutDialog(wx.Dialog):
 
         creditsPage = wx.Panel(nb, -1)
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(wx.StaticText(creditsPage, -1, _("ActiveGrid Development Team:\n\nLarry Abrahams\nLawrence Bruhmuller\nEric Chu\nBeth Fryer\nMatt Fryer\nFrankie Fu\nJoel Hare\nMorgan Hua\nMatt McNulty\nPratik Mehta\nAlan Mullendore\nJeff Norton\nKevin Ollivier\nMatt Small\nSimon Toens\nKevin Wang\nPeter Yared\nJeremy Yun")), 0, wx.ALIGN_LEFT|wx.ALL, 10)
+        sizer.Add(wx.StaticText(creditsPage, -1, _("NovalIDE Developer:\n\nNAME:wukan\nMAIL:wekay102200@sohu.com\nQQ:273655394\nWX:w89730387")), 0, wx.ALIGN_LEFT|wx.ALL, 10)
         creditsPage.SetSizer(sizer)
         nb.AddPage(creditsPage, _("Credits"))
 

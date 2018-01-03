@@ -4968,7 +4968,9 @@ H\xa0\xb6W\xf6\x8b3\xd4\xb0\x0e\xb4O{\x8b\x16w\x8dF3\x01\x04\xeb\xbf\xb5\xf9\
 \xaeB`\x82' 
 
 def getIDESplashBitmap():
-    return BitmapFromImage(getIDESplashImage())
+    splash_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "splash.jpg")
+    splash_image = wx.Image(splash_image_path,wx.BITMAP_TYPE_ANY)
+    return BitmapFromImage(splash_image)
 
 def getIDESplashImage():
     stream = cStringIO.StringIO(getIDESplashData())
