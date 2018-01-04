@@ -530,7 +530,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
 
         # order of these added determines display order of Options Panels
         optionsService.AddOptionsPanel(ProjectEditor.ProjectOptionsPanel)
-        optionsService.AddOptionsPanel(DebuggerService.DebuggerOptionsPanel)
+       ## optionsService.AddOptionsPanel(DebuggerService.DebuggerOptionsPanel)
         if not ACTIVEGRID_BASE_IDE:
             optionsService.AddOptionsPanel(WebServerService.WebServerOptionsPanel)
             optionsService.AddOptionsPanel(DataModelEditor.DataSourceOptionsPanel)
@@ -538,12 +538,12 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             optionsService.AddOptionsPanel(WebBrowserService.WebBrowserOptionsPanel)
             optionsService.AddOptionsPanel(ImportServiceWizard.ServiceOptionsPanel)
         optionsService.AddOptionsPanel(PythonEditor.PythonOptionsPanel)
-        optionsService.AddOptionsPanel(PHPEditor.PHPOptionsPanel)
-        optionsService.AddOptionsPanel(PerlEditor.PerlOptionsPanel)
+  ##      optionsService.AddOptionsPanel(PHPEditor.PHPOptionsPanel)
+    ##    optionsService.AddOptionsPanel(PerlEditor.PerlOptionsPanel)
         optionsService.AddOptionsPanel(XmlEditor.XmlOptionsPanel)
         optionsService.AddOptionsPanel(HtmlEditor.HtmlOptionsPanel)
         optionsService.AddOptionsPanel(STCTextEditor.TextOptionsPanel)
-        optionsService.AddOptionsPanel(SVNService.SVNOptionsPanel)
+  ##      optionsService.AddOptionsPanel(SVNService.SVNOptionsPanel)
         optionsService.AddOptionsPanel(ExtensionService.ExtensionOptionsPanel)
 
         filePropertiesService.AddCustomEventHandler(projectService)

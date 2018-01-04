@@ -152,7 +152,7 @@ class Executor:
         path = UICommon.GetPythonExecPath()
         if path:
             return path
-        wx.MessageBox(_("To proceed we need to know the location of the python.exe you would like to use.\nTo set this, go to Tools-->Options and use the 'Python' tab to enter a value.\n"), _("Python Executable Location Unknown"))
+        wx.MessageBox(_("To proceed we need to know the location of the python.exe you would like to use.\nTo set this, go to Tools-->Options and use the 'Python' tab to configuration a interpreter.\n"), _("Python Executable Location Unknown"))
         return None
     GetPythonExecutablePath = staticmethod(GetPythonExecutablePath)
 
@@ -2461,6 +2461,8 @@ class DebuggerService(Service.Service):
     #----------------------------------------------------------------------------
     
     def CheckScript(self,event):
+        if not Executor.GetPythonExecutablePath():
+            return
         interpreter = Interpreter.InterpreterManager().GetDefaultInterpreter()
         doc_view = self.GetActiveView()
         if not doc_view:
@@ -2477,8 +2479,8 @@ class DebuggerService(Service.Service):
             doc_view.GotoLine(line)           
         
     def DebugRunScript(self,event,showDialog=True):
-        interpreter_manager = Interpreter.InterpreterManager()
-        interpreter = interpreter_manager.GetDefaultInterpreter()
+        if not Executor.GetPythonExecutablePath():
+            return
         doc_view = self.GetActiveView()
         if not doc_view:
             return
@@ -2528,8 +2530,9 @@ class DebuggerService(Service.Service):
 
 
     def RunScript(self,event,showDialog=True):
-        interpreter_manager = Interpreter.InterpreterManager()
-        interpreter = interpreter_manager.GetDefaultInterpreter()
+        python_executable_path = Executor.GetPythonExecutablePath()
+        if not python_executable_path:
+            return
         doc_view = self.GetActiveView()
         if not doc_view:
             return
@@ -2538,7 +2541,7 @@ class DebuggerService(Service.Service):
             return
         sys_encoding = locale.getdefaultlocale()[1]
         if sysutilslib.isWindows():
-            cmd_list = ['cmd.exe',"/c",interpreter.Path,document.GetFilename().encode(sys_encoding),"&pause"]
+            cmd_list = ['cmd.exe',"/c",python_executable_path,document.GetFilename().encode(sys_encoding),"&pause"]
             subprocess.Popen(cmd_list,shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE,cwd=os.path.dirname(document.GetFilename()).encode(sys_encoding))
         else:
             python_cmd = "%s \"%s\";echo 'Please enter any to continue';read" % (interpreter.Path,document.GetFilename().encode(sys_encoding))

@@ -5,6 +5,7 @@ from Singleton import *
 import wx
 import locale
 import noval.util.sysutils as sysutils
+import pickle
 
 class Interpreter(object):
     
@@ -59,6 +60,7 @@ class PythonInterpreter(Interpreter):
         super(PythonInterpreter,self).__init__(name,executable_path)
         self._is_valid_interpreter = False
         self.GetVersion()
+        self._is_default = False
         
     def GetVersion(self):
         output = GetCommandOutput("%s -V" % self.Path,True).strip().lower()
@@ -106,6 +108,13 @@ class PythonInterpreter(Interpreter):
     @property
     def IsValidInterpreter(self):
          return self._is_valid_interpreter
+    @property
+    def Default(self):
+        return self._is_default
+        
+    @Default.setter
+    def Default(self,is_default):
+        self._is_default = is_default
          
 class InterpreterManager(Singleton):
     
@@ -113,7 +122,8 @@ class InterpreterManager(Singleton):
     DefaultInterpreter = None
     
     def LoadDefaultInterpreter(self):
-        
+        if self.LoadPythonInterpretersFromConfig():
+            return
         self.LoadPythonInterpreters()
         if 0 == len(self.interpreters):
              dlg = wx.MessageDialog(None, "No Default Python Interpreter Found!", "No Interpreter", wx.OK | wx.ICON_WARNING)  
@@ -123,6 +133,8 @@ class InterpreterManager(Singleton):
             self.MakeDefaultInterpreter()
         else:
             self.ChooseDefaultInterpreter()
+            
+        self.SavePythonInterpretersConfig()
         
     def ChooseDefaultInterpreter(self):
         choices = []
@@ -133,6 +145,10 @@ class InterpreterManager(Singleton):
             name = dlg.GetStringSelection()
             interpreter = self.GetInterpreterByName(name)
             self.SetDefaultInterpreter(interpreter)
+        else:
+            wx.MessageBox("No Default Interpreter Selected, Application May not run normal!",\
+                          "Choose Interpreter",wx.OK | wx.ICON_WARNING)
+            self.interpreters = []
         dlg.Destroy()
         
     def GetInterpreterByName(self,name):
@@ -165,6 +181,41 @@ class InterpreterManager(Singleton):
             install_path = os.path.dirname(executable_path)
             interpreter = PythonInterpreter("default",executable_path)
             self.interpreters.append(interpreter)
+            
+    def LoadPythonInterpretersFromConfig(self):
+        config = wx.ConfigBase_Get()
+        if sysutils.isWindows():
+            dct = self.ConvertInterpretersToDictList()
+            data = config.Read("interpreters")
+            if not data:
+                return False
+            lst = pickle.loads(data.encode('ascii'))
+            for l in lst:
+                interpreter = PythonInterpreter(l['name'],l['path'])
+                interpreter.Default = l['default']
+                if interpreter.Default:
+                    self.SetDefaultInterpreter(interpreter)
+                self.interpreters.append(interpreter)
+        
+        if len(self.interpreters) > 0:
+            return True
+        return False
+    
+    def ConvertInterpretersToDictList(self):
+        lst = []
+        for interpreter in self.interpreters:
+            d = dict(name=interpreter.Name,version=interpreter.Version,path=interpreter.Path,\
+                     default=interpreter.Default)
+            lst.append(d)
+        return lst
+        
+    def SavePythonInterpretersConfig(self):
+        config = wx.ConfigBase_Get()
+        if sysutils.isWindows():
+            dct = self.ConvertInterpretersToDictList()
+            if dct == []:
+                return
+            config.Write("interpreters" ,pickle.dumps(dct))            
         
     def AddPythonInterpreter(self,interpreter_path):
         interpreter = PythonInterpreter("",interpreter_path)
@@ -178,9 +229,17 @@ class InterpreterManager(Singleton):
         
     def SetDefaultInterpreter(self,interpreter):
         self.DefaultInterpreter = interpreter
+        interpreter.Default = True
         
     def MakeDefaultInterpreter(self):
         self.DefaultInterpreter = self.interpreters[0]
+        self.DefaultInterpreter.Default = True
         
     def GetDefaultInterpreter(self):
         return self.DefaultInterpreter
+    
+    def GetChoices(self):
+        choices = []
+        for interpreter in self.interpreters:
+            choices.append(interpreter.Name)
+        return choices

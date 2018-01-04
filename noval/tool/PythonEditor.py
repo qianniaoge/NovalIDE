@@ -32,6 +32,7 @@ import re
 import noval.parser.config as parserconfig
 import Service
 import noval.parser.fileparser as parser
+import Interpreter
 try:
     import checker # for pychecker
     _CHECKER_INSTALLED = True
@@ -770,12 +771,15 @@ class PythonOptionsPanel(wx.Panel):
 
     def __init__(self, parent, id):
         wx.Panel.__init__(self, parent, id)
-        pathLabel = wx.StaticText(self, -1, _("python.exe Path:"))
+        pathLabel = wx.StaticText(self, -1, _("Interpreters:"))
         config = wx.ConfigBase_Get()
         path = config.Read("ActiveGridPythonLocation")
-        self._pathTextCtrl = wx.TextCtrl(self, -1, path, size = (150, -1))
-        self._pathTextCtrl.SetToolTipString(self._pathTextCtrl.GetValue())
-        self._pathTextCtrl.SetInsertionPointEnd()
+        choices = Interpreter.InterpreterManager().GetChoices()
+        self._pathTextCtrl = wx.ComboBox(self, -1,choices=choices, style = wx.CB_READONLY)
+        if len(choices) > 0:
+            self._pathTextCtrl.SetSelection(0)
+       ## self._pathTextCtrl.SetToolTipString(self._pathTextCtrl.GetValue())
+        ##self._pathTextCtrl.SetInsertionPointEnd()
         choosePathButton = wx.Button(self, -1, _("Browse..."))
         pathSizer = wx.BoxSizer(wx.HORIZONTAL)
         HALF_SPACE = 5
