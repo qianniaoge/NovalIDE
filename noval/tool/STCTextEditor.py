@@ -97,7 +97,8 @@ class TextDocument(wx.lib.docview.Document):
 
                 # Check if read-only.
                 if not os.access(filename, os.W_OK):
-                    wx.MessageBox("Could not save '%s'.  No write permission to overwrite existing file." % FileNameFromPath(filename),
+                    wx.MessageBox("Could not save '%s'.  No write permission to overwrite existing file." % \
+                                  wx.lib.docview.FileNameFromPath(filename),
                                   msgTitle,
                                   wx.OK | wx.ICON_EXCLAMATION,
                                   self.GetDocumentWindow())

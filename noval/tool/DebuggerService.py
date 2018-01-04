@@ -434,7 +434,12 @@ class RunCommandUI(wx.Panel):
             lineNum = int(lineText[fileEnd + 8:])
         else:
             lineNum = int(lineText[fileEnd + 8:lineEnd])
-
+        if filename and not os.path.exists(filename):
+            wx.MessageBox("The file '%s' doesn't exist and couldn't be opened!" % filename,
+                              _("File Error"),
+                              wx.OK | wx.ICON_ERROR,
+                              wx.GetApp().GetTopWindow())
+            return
         foundView = None
         openDocs = wx.GetApp().GetDocumentManager().GetDocuments()
         for openDoc in openDocs:
@@ -2544,7 +2549,7 @@ class DebuggerService(Service.Service):
             cmd_list = ['cmd.exe',"/c",python_executable_path,document.GetFilename().encode(sys_encoding),"&pause"]
             subprocess.Popen(cmd_list,shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE,cwd=os.path.dirname(document.GetFilename()).encode(sys_encoding))
         else:
-            python_cmd = "%s \"%s\";echo 'Please enter any to continue';read" % (interpreter.Path,document.GetFilename().encode(sys_encoding))
+            python_cmd = "%s \"%s\";echo 'Please enter any to continue';read" % (python_executable_path,document.GetFilename().encode(sys_encoding))
             cmd_list = ['gnome-terminal','-x','bash','-c',python_cmd]
             subprocess.Popen(cmd_list,shell = False,cwd=os.path.dirname(document.GetFilename()).encode(sys_encoding))
 
