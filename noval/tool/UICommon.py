@@ -396,12 +396,10 @@ def MakeNameEndInExtension(name, extension):
  
 
 def GetPythonExecPath():
-    pythonExecPath = wx.ConfigBase_Get().Read("ActiveGridPythonLocation")
-    if not pythonExecPath:
-        interpreter = Interpreter.InterpreterManager().GetDefaultInterpreter()
-        if interpreter is None:
-            return None
-        pythonExecPath = interpreter.Path
+    interpreter = wx.GetApp().GetCurrentInterpreter()
+    if interpreter is None:
+        return None
+    pythonExecPath = interpreter.Path
     return pythonExecPath
     
 

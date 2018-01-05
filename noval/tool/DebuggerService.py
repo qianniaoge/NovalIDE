@@ -315,7 +315,12 @@ class RunCommandUI(wx.Panel):
         self._executor.DoStopExecution()
 
     def Execute(self, initialArgs, startIn, environment, onWebServer = False):
-        self._executor.Execute(initialArgs, startIn, environment)
+        try:
+            self._executor.Execute(initialArgs, startIn, environment)
+        except Exception,e:
+            wx.MessageBox(str(e),_("Run Error"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
+            self.StopExecution()
+            self.ExecutorFinished()
     
     def IsProcessRunning(self):
         process_runners = [runner for runner in self.runners if not runner.Stopped]
@@ -2265,6 +2270,7 @@ class DebuggerService(Service.Service):
     RUN_WEBSERVER_ID = wx.NewId()
     DEBUG_WEBSERVER_CONTINUE_ID = wx.NewId()
     DEBUG_WEBSERVER_NOW_RUN_PROJECT_ID = wx.NewId()
+    COMBO_INTERPRETERS_ID = wx.NewId()
     def ComparePaths(first, second):
         one = DebuggerService.ExpandPath(first)
         two = DebuggerService.ExpandPath(second)
@@ -2384,8 +2390,11 @@ class DebuggerService(Service.Service):
         toolBar.AddSeparator()
         toolBar.AddTool(DebuggerService.RUN_ID, getRunningManBitmap(), shortHelpString = _("Run a file"), longHelpString = _("Run a file in system teminator"))
         toolBar.AddTool(DebuggerService.DEBUG_ID, getDebuggingManBitmap(), shortHelpString = _("Debug a file"), longHelpString = _("Debug a file in Editor"))
+        choices = [_("Configuration")]
+        toolBar.AddControl(wx.ComboBox(toolBar, DebuggerService.COMBO_INTERPRETERS_ID, "", \
+                                       choices=choices,size=(150,-1), style=wx.CB_READONLY))
+        wx.EVT_COMBOBOX(frame,DebuggerService.COMBO_INTERPRETERS_ID,self.OnCombo)
         toolBar.Realize()
-
         return True
 
 
@@ -2393,7 +2402,19 @@ class DebuggerService(Service.Service):
     #----------------------------------------------------------------------------
     # Event Processing Methods
     #----------------------------------------------------------------------------
-
+    def OnCombo(self, event):
+        cb = wx.GetApp().ToolbarCombox
+        if event.GetSelection() == cb.GetCount() - 1:
+            wx.MessageBox("No implement yet","xxx")
+            wx.GetApp().SetCurrentDefaultInterpreter()
+        print ("combobox item selected: %s\n" % event.GetString())
+        
+    def AddInterpreters(self):
+        cb = wx.GetApp().ToolbarCombox
+        for interpreter in Interpreter.InterpreterManager().interpreters:
+            cb.Insert(interpreter.Name,0,interpreter)
+        wx.GetApp().SetCurrentDefaultInterpreter()
+        
     def ProcessEventBeforeWindows(self, event):
         return False
 

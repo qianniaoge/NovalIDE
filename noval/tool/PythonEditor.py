@@ -773,7 +773,7 @@ class PythonOptionsPanel(wx.Panel):
         wx.Panel.__init__(self, parent, id)
         pathLabel = wx.StaticText(self, -1, _("Interpreters:"))
         config = wx.ConfigBase_Get()
-        path = config.Read("ActiveGridPythonLocation")
+      ###  path = config.Read("ActiveGridPythonLocation")
         choices = Interpreter.InterpreterManager().GetChoices()
         self._pathTextCtrl = wx.ComboBox(self, -1,choices=choices, style = wx.CB_READONLY)
         if len(choices) > 0:
@@ -824,7 +824,6 @@ class PythonOptionsPanel(wx.Panel):
 
     def OnOK(self, optionsDialog):
         config = wx.ConfigBase_Get()
-        config.Write("ActiveGridPythonLocation", self._pathTextCtrl.GetValue().strip())
 
         self._otherOptions.OnOK(optionsDialog)
         

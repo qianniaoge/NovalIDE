@@ -20,6 +20,7 @@ import noval.util.sysutils as sysutilslib
 import noval.util.appdirs as appdirs
 import shutil
 import TabbedFrame
+import Interpreter
 
 # Required for Unicode support with python
 # site.py sets this, but Windows builds don't have site.py because of py2exe problems
@@ -644,7 +645,8 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         else:
             self.frame = IDEMDIParentFrame(docManager, None, -1, wx.GetApp().GetAppName(), embeddedWindows=embeddedWindows, minSize=150)
         self.frame.Show(True)
-
+        self.toolbar = self.frame.GetToolBar()
+        self.toolbar_combox = self.toolbar.FindControl(DebuggerService.DebuggerService.COMBO_INTERPRETERS_ID)
 
         wx.lib.pydocview.DocApp.CloseSplash(self)
         self.OpenCommandLineArgs()
@@ -670,12 +672,38 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 self.ShowTip(docManager.FindSuitableParent(), wx.CreateFileTipProvider(tips_path, 0))
                    
         Interpreter.InterpreterManager().LoadDefaultInterpreter()
+        debuggerService.AddInterpreters()
         wx.UpdateUIEvent.SetUpdateInterval(1000)  # Overhead of updating menus was too much.  Change to update every n milliseconds.
 
         return True
     @property
     def MainFrame(self):
         return self.frame
+    @property		
+    def ToolbarCombox(self):
+        return self.toolbar_combox
+        
+    def GetCurrentInterpreter(self):
+        if 0 == len(Interpreter.InterpreterManager().interpreters):
+            return None
+        item_index = self.toolbar_combox.GetCurrentSelection()
+        if item_index < 0:
+            item_index = 0
+        data = self.toolbar_combox.GetClientData(item_index)
+        if data is None:
+            data = self.toolbar_combox.GetClientData(item_index)
+        return data
+        
+    def SetCurrentDefaultInterpreter(self):
+        default_interpreter = Interpreter.InterpreterManager().GetDefaultInterpreter()
+        if default_interpreter is None:
+            self.toolbar_combox.SetSelection(-1)
+            return
+        for i in range(self.toolbar_combox.GetCount()):
+            data = self.toolbar_combox.GetClientData(i)
+            if data == default_interpreter:
+                self.toolbar_combox.SetSelection(i)
+                break
 
 class IDEDocManager(wx.lib.docview.DocManager):
     
