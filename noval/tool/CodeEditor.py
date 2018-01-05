@@ -562,6 +562,8 @@ class CodeCtrl(STCTextEditor.TextCtrl):
     BREAKPOINT_MARKER_NUM = 1
     CURRENT_LINE_MARKER_MASK = 0x4
     BREAKPOINT_MARKER_MASK = 0x2
+    GO_TO_DEFINITION = wx.NewId()
+    DEFAULT_WORD_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
     
             
     def __init__(self, parent, id=-1, style = wx.NO_FULL_REPAINT_ON_RESIZE, clearTab=True):
@@ -594,7 +596,8 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         self.StyleClearAll()
         self.UpdateStyles()
         
-
+        self.SetWordChars(self.DEFAULT_WORD_CHARS)
+        
     def OnRightUp(self, event):
         #Hold onto the current line number, no way to get it later.
         self._rightClickPosition = self.PositionFromPoint(event.GetPosition())
@@ -614,6 +617,12 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         self.Bind(wx.EVT_MENU, self.OnPopSyncOutline, id=SYNCTREE_ID)
         item = wx.MenuItem(menu, SYNCTREE_ID, _("Find in Outline View"))
         menu.AppendItem(item)
+        
+        self.Bind(wx.EVT_MENU, self.OnGotoDefinition, id=self.GO_TO_DEFINITION)
+        item = wx.MenuItem(menu, self.GO_TO_DEFINITION, _("Goto Definition"))
+        wx.EVT_UPDATE_UI(self,self.GO_TO_DEFINITION, self.DSProcessUpdateUIEvent)
+        menu.AppendItem(item)
+        
         menu.AppendSeparator()
         self.Bind(wx.EVT_MENU, self.OnPopToggleBP, id=TOGGLEBREAKPOINT_ID)
         item = wx.MenuItem(menu, TOGGLEBREAKPOINT_ID, _("Toggle Breakpoint"))
@@ -638,7 +647,14 @@ class CodeCtrl(STCTextEditor.TextCtrl):
                     wx.EVT_UPDATE_UI(self, itemID, self.DSProcessUpdateUIEvent)  # wxHack: for customized right mouse menu doesn't work with new DynamicSashWindow
         return menu
                 
-
+    def DSProcessUpdateUIEvent(self, event):
+        id = event.GetId()
+        if id ==  self.GO_TO_DEFINITION:
+            event.Enable(self.IsCaretLocateInWord())
+            return True
+        else:
+            return STCTextEditor.TextCtrl.DSProcessUpdateUIEvent(self,event)
+                
     def OnPopToggleBP(self, event):
         """ Toggle break point on right click line, not current line """
         import DebuggerService
@@ -652,7 +668,30 @@ class CodeCtrl(STCTextEditor.TextCtrl):
 
     def OnPopSyncOutline(self, event):
         wx.GetApp().GetService(OutlineService.OutlineService).LoadOutline(wx.GetApp().GetDocumentManager().GetCurrentView(), position=self._rightClickPosition)
+        
+    def OnGotoDefinition(self, event):
+        pos = self.GetCurrentPos()
+        start_pos = self.WordStartPosition(pos,True)
+        end_pos = self.WordEndPosition(pos,True)
+        at = self.GetCharAt(start_pos)
+        rem_chars = self.DEFAULT_WORD_CHARS + "."
+        while chr(at) in rem_chars:
+            start_pos -=1
+            at = self.GetCharAt(start_pos)
+        wx.MessageBox(self.GetTextRange(start_pos+1,end_pos),"")
           
+    def IsCaretLocateInWord(self):
+        pos = self.GetCurrentPos()
+        line = self.LineFromPosition(pos)
+        line_text = self.GetLine(line).strip()
+        if line_text == "":
+            return False
+        if line_text[0] == '#':
+            return False
+        start_pos = self.WordStartPosition(pos,True)
+        end_pos = self.WordEndPosition(pos,True)
+        word = self.GetTextRange(start_pos,end_pos).strip()
+        return False if word == "" else True
 
     def HasSelection(self):
         return self.GetSelectionStart() - self.GetSelectionEnd() != 0  
