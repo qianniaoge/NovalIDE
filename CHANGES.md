@@ -33,3 +33,4 @@ Version 1.0.1 -------------2017-12-27
 10.enable terminate all running process
 11.change application splash image
 12.delete ide splash embed bitmap data
+13.enable user choose one interpreter from multiple choices

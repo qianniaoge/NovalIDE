@@ -315,7 +315,12 @@ class RunCommandUI(wx.Panel):
         self._executor.DoStopExecution()
 
     def Execute(self, initialArgs, startIn, environment, onWebServer = False):
-        self._executor.Execute(initialArgs, startIn, environment)
+        try:
+            self._executor.Execute(initialArgs, startIn, environment)
+        except Exception,e:
+            wx.MessageBox(str(e),_("Run Error"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
+            self.StopExecution()
+            self.ExecutorFinished()
     
     def IsProcessRunning(self):
         process_runners = [runner for runner in self.runners if not runner.Stopped]
@@ -434,7 +439,12 @@ class RunCommandUI(wx.Panel):
             lineNum = int(lineText[fileEnd + 8:])
         else:
             lineNum = int(lineText[fileEnd + 8:lineEnd])
-
+        if filename and not os.path.exists(filename):
+            wx.MessageBox("The file '%s' doesn't exist and couldn't be opened!" % filename,
+                              _("File Error"),
+                              wx.OK | wx.ICON_ERROR,
+                              wx.GetApp().GetTopWindow())
+            return
         foundView = None
         openDocs = wx.GetApp().GetDocumentManager().GetDocuments()
         for openDoc in openDocs:
@@ -2260,6 +2270,7 @@ class DebuggerService(Service.Service):
     RUN_WEBSERVER_ID = wx.NewId()
     DEBUG_WEBSERVER_CONTINUE_ID = wx.NewId()
     DEBUG_WEBSERVER_NOW_RUN_PROJECT_ID = wx.NewId()
+    COMBO_INTERPRETERS_ID = wx.NewId()
     def ComparePaths(first, second):
         one = DebuggerService.ExpandPath(first)
         two = DebuggerService.ExpandPath(second)
@@ -2379,8 +2390,11 @@ class DebuggerService(Service.Service):
         toolBar.AddSeparator()
         toolBar.AddTool(DebuggerService.RUN_ID, getRunningManBitmap(), shortHelpString = _("Run a file"), longHelpString = _("Run a file in system teminator"))
         toolBar.AddTool(DebuggerService.DEBUG_ID, getDebuggingManBitmap(), shortHelpString = _("Debug a file"), longHelpString = _("Debug a file in Editor"))
+        choices = [_("Configuration")]
+        toolBar.AddControl(wx.ComboBox(toolBar, DebuggerService.COMBO_INTERPRETERS_ID, "", \
+                                       choices=choices,size=(150,-1), style=wx.CB_READONLY))
+        wx.EVT_COMBOBOX(frame,DebuggerService.COMBO_INTERPRETERS_ID,self.OnCombo)
         toolBar.Realize()
-
         return True
 
 
@@ -2388,7 +2402,19 @@ class DebuggerService(Service.Service):
     #----------------------------------------------------------------------------
     # Event Processing Methods
     #----------------------------------------------------------------------------
-
+    def OnCombo(self, event):
+        cb = wx.GetApp().ToolbarCombox
+        if event.GetSelection() == cb.GetCount() - 1:
+            wx.MessageBox("No implement yet","xxx")
+            wx.GetApp().SetCurrentDefaultInterpreter()
+        print ("combobox item selected: %s\n" % event.GetString())
+        
+    def AddInterpreters(self):
+        cb = wx.GetApp().ToolbarCombox
+        for interpreter in Interpreter.InterpreterManager().interpreters:
+            cb.Insert(interpreter.Name,0,interpreter)
+        wx.GetApp().SetCurrentDefaultInterpreter()
+        
     def ProcessEventBeforeWindows(self, event):
         return False
 
@@ -2544,7 +2570,7 @@ class DebuggerService(Service.Service):
             cmd_list = ['cmd.exe',"/c",python_executable_path,document.GetFilename().encode(sys_encoding),"&pause"]
             subprocess.Popen(cmd_list,shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE,cwd=os.path.dirname(document.GetFilename()).encode(sys_encoding))
         else:
-            python_cmd = "%s \"%s\";echo 'Please enter any to continue';read" % (interpreter.Path,document.GetFilename().encode(sys_encoding))
+            python_cmd = "%s \"%s\";echo 'Please enter any to continue';read" % (python_executable_path,document.GetFilename().encode(sys_encoding))
             cmd_list = ['gnome-terminal','-x','bash','-c',python_cmd]
             subprocess.Popen(cmd_list,shell = False,cwd=os.path.dirname(document.GetFilename()).encode(sys_encoding))
 
