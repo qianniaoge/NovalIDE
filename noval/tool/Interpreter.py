@@ -60,7 +60,10 @@ class PythonInterpreter(Interpreter):
         super(PythonInterpreter,self).__init__(name,executable_path)
         self._is_valid_interpreter = False
         self.GetVersion()
+        if self._is_valid_interpreter:
+            self.GetSyspathList()
         self._is_default = False
+        self._sys_path_list = []
         
     def GetVersion(self):
         output = GetCommandOutput("%s -V" % self.Path,True).strip().lower()
@@ -115,6 +118,15 @@ class PythonInterpreter(Interpreter):
     @Default.setter
     def Default(self,is_default):
         self._is_default = is_default
+        
+    def GetSyspathList(self):
+        run_cmd ="%s -c \"import sys;print sys.path\"" % (self.Path)
+        output = GetCommandOutput(run_cmd).strip()
+        lst = eval(output)
+        self._sys_path_list = lst
+    @property
+    def SyspathList(self):
+        return self._sys_path_list        
          
 class InterpreterManager(Singleton):
     

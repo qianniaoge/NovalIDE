@@ -1,4 +1,4 @@
-from __future__ import print_function
+###from __future__ import print_function
 import sys
 import os
 import pickle
@@ -6,13 +6,11 @@ import config
 import json
 import types
 import time
-from concurrent import futures
+###from concurrent import futures
 import functools
 import multiprocessing
 import fileparser
-
-sys.path.append("../../")
-import noval.util.sysutils as sysutils
+import utils
 
 def generate_builtin_data(dest_path):
     
@@ -40,7 +38,7 @@ def generate_builtin_data(dest_path):
         return childs
         
     dest_path = os.path.join(dest_path,"builtins")
-    sysutils.MakeDirs(dest_path)
+    utils.MakeDirs(dest_path)
     for built_module in sys.builtin_module_names:
         module_instance = __import__(built_module)
         childs = work_builtin_type(module_instance)
@@ -54,9 +52,15 @@ def generate_builtin_data(dest_path):
             pickle.dump(module_dict, j)
             
 def generate_intelligent_data(root_path):
-    version = str(sys.version_info.major) + "." +  str(sys.version_info.minor) + "."  + str(sys.version_info.micro)
+    if isinstance(sys.version_info,tuple):
+        version = str(sys.version_info[0]) + "." +  str(sys.version_info[1]) 
+        if sys.version_info[2] > 0:
+            version += "."
+            version += str(sys.version_info[2])
+    else:
+        version = str(sys.version_info.major) + "." +  str(sys.version_info.minor) + "."  + str(sys.version_info.micro)
     dest_path = os.path.join(root_path,version)
-    sysutils.MakeDirs(dest_path)
+    utils.MakeDirs(dest_path)
     sys_path_list = sys.path
     for i,path in enumerate(sys_path_list):
         sys_path_list[i] = os.path.abspath(path)
@@ -67,7 +71,7 @@ def generate_intelligent_data(root_path):
 def quick_generate_intelligent_data(root_path):
     version = str(sys.version_info.major) + "." +  str(sys.version_info.minor) + "."  + str(sys.version_info.micro)
     dest_path = os.path.join(root_path,version)
-    sysutils.MakeDirs(dest_path)
+    utils.MakeDirs(dest_path)
     sys_path_list = sys.path
     for i,path in enumerate(sys_path_list):
         sys_path_list[i] = os.path.abspath(path)
@@ -86,7 +90,7 @@ def quick_generate_intelligent_data(root_path):
 def generate_intelligent_data_by_pool(root_path):
     version = str(sys.version_info.major) + "." +  str(sys.version_info.minor) + "."  + str(sys.version_info.micro)
     dest_path = os.path.join(root_path,version)
-    sysutils.MakeDirs(dest_path)
+    utils.MakeDirs(dest_path)
     sys_path_list = sys.path
     for i,path in enumerate(sys_path_list):
         sys_path_list[i] = os.path.abspath(path)
@@ -103,11 +107,11 @@ def scan_sys_path(src_path,dest_path):
     for root,path,files in os.walk(src_path):
         if root != src_path and is_test_dir(root):
             ignore_path_list.append(root)
-            print ('path',root,'is a test dir')
+          ##  print ('path',root,'is a test dir')
             continue
-        elif root != src_path and not is_package_dir(root):
+        elif root != src_path and not fileparser.is_package_dir(root):
             ignore_path_list.append(root)
-            print ('path',root,'is not a package dir')
+           ### print ('path',root,'is not a package dir')
             continue
         is_path_ignore = False
         for ignore_path in ignore_path_list:
@@ -121,10 +125,17 @@ def scan_sys_path(src_path,dest_path):
             ext = os.path.splitext(fullpath)[1]
             if not ext in ['.py','.pyw']:
                 continue
+            top_module_name,is_package = get_top_modulename(fullpath)
+            if top_module_name == "":
+                continue
+            module_members_file = os.path.join(dest_path,top_module_name+ ".$members")
+            if os.path.exists(module_members_file):
+             ###   print fullpath,'has been already analyzed'
+                continue
             #print get_data_name(fullpath)
-            with open("filelist.txt","a") as f:
-                print (fullpath,file=f)
-                fileparser.dump(fullpath,get_top_modulename(fullpath),dest_path)
+           # with open("filelist.txt","a") as f:
+            #    print (fullpath,file=f)
+            fileparser.dump(fullpath,top_module_name,dest_path,is_package)
            
 def get_top_modulename(fullpath):
     path = os.path.dirname(fullpath)
@@ -138,14 +149,15 @@ def get_top_modulename(fullpath):
     path_name = fullpath.replace(recent_path + os.sep,'').split('.')[0]
     path_name = path_name.replace("\\",'/')
     parts = path_name.split('/')
-    data_file_name = '.'.join(parts)
-    return data_file_name
+    if parts[-1] == "__init__":
+        data_file_name = '.'.join(parts[0:-1])
+        is_package = True
+    else:
+        data_file_name = '.'.join(parts)
+        is_package = False
+    return data_file_name,is_package
     
-def is_package_dir(dir_name):
-    package_file = "__init__.py"
-    if os.path.exists(os.path.join(dir_name,package_file)):
-        return True
-    return False
+
     
 def is_test_dir(dir_path):
     dir_name = os.path.basename(dir_path)
@@ -156,10 +168,11 @@ def is_test_dir(dir_path):
     
 if __name__ == "__main__":
     start_time = time.time()
-    generate_builtin_data('./')
-    generate_intelligent_data("interlicense")
+    root_path = sys.argv[1]
+  ###  generate_builtin_data('./')
+    generate_intelligent_data(root_path)
     ###quick_generate_intelligent_data("interlicense")
-   ## generate_intelligent_data_by_pool("interlicense")
+    ###generate_intelligent_data_by_pool(root_path)
     end_time = time.time()
     elapse = end_time - start_time
     print ('elapse time:',elapse,'s')

@@ -112,7 +112,7 @@ def getAppDataFolder():
     # wxBug: on *nix, it wants to point to ~/.appname, but
     # so does wxConfig... For now, redirect this to ~/.appbuilder
     # when this is fixed, we'll migrate settings to the correct place
-    return os.path.join(os.path.expanduser("~"), ".appbuilder")
+    return os.path.join(os.path.expanduser("~"), ".NovalIDE_")
 endIfDef()
 
 ifDefPy()

@@ -9,7 +9,37 @@ import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
-def dump(module_path,output_name,dest_path):
+
+def is_package_dir(dir_name):
+    package_file = "__init__.py"
+    if os.path.exists(os.path.join(dir_name,package_file)):
+        return True
+    return False
+
+def get_package_childs(module_path):
+    module_dir = os.path.dirname(module_path)
+    file_name = os.path.basename(module_path)
+    assert(file_name == "__init__.py")
+    childs = []
+    for file_name in os.listdir(module_dir):
+        file_path_name = os.path.join(module_dir,file_name)
+        if os.path.isfile(file_path_name) and not file_name.endswith(".py"):
+            continue
+        if file_name == "__init__.py":
+            continue
+            
+        if os.path.isdir(file_path_name) and not is_package_dir(file_path_name) :
+            continue
+        if os.path.isfile(file_path_name):
+            module_name = '.'.join(os.path.basename(file_name).split('.')[0:-1])
+        else:
+            module_name = file_name
+        d = dict(name=module_name,path=file_path_name,type=config.NODE_MODULE_TYPE)
+        childs.append(d)
+        
+    return childs
+
+def dump(module_path,output_name,dest_path,is_package):
     with open(module_path) as f:
         content = f.read()
         try:
@@ -19,6 +49,9 @@ def dump(module_path,output_name,dest_path):
             print e
             return
         module_name = os.path.basename(module_path).split(".")[0]
+        if is_package:
+            module_childs = get_package_childs(module_path)
+            childs.extend(module_childs)
         module_dict = make_module_dict(module_name,module_path,False,childs)
         dest_file_name = os.path.join(dest_path,output_name )
         with open(dest_file_name + ".$members", 'wb') as o1:
@@ -144,7 +177,9 @@ def load(file_name):
         print json.dumps(datas,indent=4)
         
 if __name__ == "__main__":
-    module = parse(r"G:\work\Noval\noval\test\ast_test_file.py")
-    print module
+    
+    print get_package_childs(r"C:\Python27\Lib\site-packages\aliyunsdkcore\auth\__init__.py")
+  ##  module = parse(r"G:\work\Noval\noval\test\ast_test_file.py")
+    ##print module
    ## dump(r"G:\work\Noval\noval\test\ast_test_file.py","tt","./")
   ##  load("tt.$members")

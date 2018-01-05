@@ -21,6 +21,7 @@ import noval.util.appdirs as appdirs
 import shutil
 import TabbedFrame
 import Interpreter
+import noval.parser.intellisence as intellisence
 
 # Required for Unicode support with python
 # site.py sets this, but Windows builds don't have site.py because of py2exe problems
@@ -673,6 +674,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                    
         Interpreter.InterpreterManager().LoadDefaultInterpreter()
         debuggerService.AddInterpreters()
+        intellisence.IntellisenceManager().generate_default_intellisence_data()
         wx.UpdateUIEvent.SetUpdateInterval(1000)  # Overhead of updating menus was too much.  Change to update every n milliseconds.
 
         return True
