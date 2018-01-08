@@ -376,7 +376,7 @@ class PythonView(CodeEditor.CodeView):
                 item = treeCtrl.AppendItem(parent, child.Name)
                 treeCtrl.SetItemImage(item,item_image_index,wx.TreeItemIcon_Normal)
                 treeCtrl.SetDoSelectCallback(item, self, child)
-                self.TranverseItem(treeCtrl,child,item)
+                ##self.TranverseItem(treeCtrl,child,item)
             elif child.Type == parserconfig.NODE_CLASSDEF_TYPE:
                 item_image_index = 2
                 item = treeCtrl.AppendItem(parent, child.Name)
@@ -388,6 +388,24 @@ class PythonView(CodeEditor.CodeView):
                 item = treeCtrl.AppendItem(parent, child.Name)
                 treeCtrl.SetItemImage(item,item_image_index,wx.TreeItemIcon_Normal)
                 treeCtrl.SetDoSelectCallback(item, self, child)
+            elif child.Type == parserconfig.NODE_IMPORT_TYPE:
+                item_image_index = 4
+                name = child.Name
+                if child.AsName is not None:
+                    name = child.AsName
+                item = treeCtrl.AppendItem(parent,name)
+                treeCtrl.SetItemImage(item,item_image_index,wx.TreeItemIcon_Normal)
+                treeCtrl.SetDoSelectCallback(item, self, child)
+            elif child.Type == parserconfig.NODE_FROMIMPORT_TYPE:
+                item_image_index = 5
+                from_import_item = treeCtrl.AppendItem(parent,child.Name)
+                treeCtrl.SetItemImage(from_import_item,item_image_index,wx.TreeItemIcon_Normal)
+                treeCtrl.SetDoSelectCallback(from_import_item, self, child)
+                for node_import in child.Childs:
+                    item_image_index = 4
+                    import_item = treeCtrl.AppendItem(from_import_item,node_import.Name)
+                    treeCtrl.SetItemImage(import_item,item_image_index,wx.TreeItemIcon_Normal)
+                    treeCtrl.SetDoSelectCallback(import_item, self, node_import)
 
 class PythonInterpreterView(Service.ServiceView):
 

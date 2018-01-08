@@ -157,3 +157,16 @@ class PropertyDef(Node):
     def __str__(self):
         print 'type is property, name is',self.Name,'line is',self.Line,'col is',self.Col
         return self.Name
+        
+class ImportNode(Node):
+     def __init__(self,name,line,col,parent,as_name=None):
+        super(ImportNode,self).__init__(name,line,col,config.NODE_IMPORT_TYPE,parent)
+        self._as_name = as_name
+     @property
+     def AsName(self):
+         return self._as_name
+         
+class FromImportNode(Node):
+     def __init__(self,name,line,col,parent):
+        super(FromImportNode,self).__init__(name,line,col,config.NODE_FROMIMPORT_TYPE,parent)
+        

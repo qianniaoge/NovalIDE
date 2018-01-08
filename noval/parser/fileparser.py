@@ -105,7 +105,7 @@ def deep_walk(node,parent):
                         is_method = True
                     args.append(arg)
             func_def = nodeast.FuncDef(def_name,line_no,col,parent,is_method=is_method)
-            deep_walk(element,func_def)
+            #deep_walk(element,func_def)
         elif isinstance(element,ast.ClassDef):
             class_name = element.name
             line_no = element.lineno
@@ -132,7 +132,7 @@ def deep_walk(node,parent):
                    # childs.append(data)
                     nodeast.PropertyDef(name,line_no,col,config.PROPERTY_TYPE_UNKNOWN,parent)
                 elif type(target) == ast.Attribute:
-                    if target.value.id == "self" and parent.Type == config.NODE_FUNCDEF_TYPE and \
+                    if type(target.value) == ast.Name and target.value.id == "self" and parent.Type == config.NODE_FUNCDEF_TYPE and \
                             parent.IsMethod:
                         name = target.attr
                         if parent.Parent.HasChild(name):
@@ -141,7 +141,13 @@ def deep_walk(node,parent):
                             else:
                                 continue
                         nodeast.PropertyDef(name,line_no,col,config.PROPERTY_TYPE_UNKNOWN,parent.Parent)
-                    
+        elif isinstance(element,ast.Import):
+            for name in element.names:
+                nodeast.ImportNode(name.name,element.lineno,element.col_offset,parent,name.asname)
+        elif isinstance(element,ast.ImportFrom):
+            from_import_node = nodeast.FromImportNode(element.module,element.lineno,element.col_offset,parent)   
+            for name in element.names:
+                nodeast.ImportNode(name.name,element.lineno,element.col_offset,from_import_node,name.asname)            
     
 def walk(node):
     childs = []

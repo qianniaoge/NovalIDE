@@ -206,6 +206,14 @@ class OutlineTreeCtrl(wx.TreeCtrl):
         propertybmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "property.png")
         propertybmp = wx.Bitmap(propertybmp_path, wx.BITMAP_TYPE_PNG)
         self.propertyidx = il.Add(propertybmp)
+        
+        importbmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "import.png")
+        importbmp = wx.Bitmap(importbmp_path, wx.BITMAP_TYPE_PNG)
+        self.importidx = il.Add(importbmp)
+        
+        from_importbmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "from_import.png")
+        from_import_bmp = wx.Bitmap(from_importbmp_path, wx.BITMAP_TYPE_PNG)
+        self.from_import_idx = il.Add(from_import_bmp)
 
         self.SetImageList(il)
         self.il = il

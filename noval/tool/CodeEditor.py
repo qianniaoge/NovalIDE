@@ -23,6 +23,7 @@ import MarkerService
 from UICommon import CaseInsensitiveCompare
 import noval.parser.nodeast as nodeast
 import noval.parser.intellisence as intellisence
+import noval.parser.config as parserconfig
 _ = wx.GetTranslation
 if wx.Platform == '__WXMSW__':
     _WINDOWS = True
@@ -199,7 +200,10 @@ class CodeView(STCTextEditor.TextView):
             self.EnsureVisibleEnforcePolicy(node.Line)
             # wxBug: need to select in reverse order (end, start) to place cursor at begining of line,
             #        otherwise, display is scrolled over to the right hard and is hard to view
-            start,end = self.FindTextInLine(node.Line,node.Name)
+            if node.Type == parserconfig.NODE_IMPORT_TYPE and node.AsName != None:
+                start,end = self.FindTextInLine(node.Line,node.AsName)
+            else:
+                start,end = self.FindTextInLine(node.Line,node.Name)
             self.SetSelection(start, end)
 
 ##    def checksum(self, bytes):        
