@@ -445,26 +445,7 @@ class RunCommandUI(wx.Panel):
                               wx.OK | wx.ICON_ERROR,
                               wx.GetApp().GetTopWindow())
             return
-        foundView = None
-        openDocs = wx.GetApp().GetDocumentManager().GetDocuments()
-        for openDoc in openDocs:
-            if openDoc.GetFilename() == filename:
-                foundView = openDoc.GetFirstView()
-                break
-
-        if not foundView:
-            doc = wx.GetApp().GetDocumentManager().CreateDocument(filename, wx.lib.docview.DOC_SILENT)
-            foundView = doc.GetFirstView()
-
-        if foundView:
-            foundView.GetFrame().SetFocus()
-            foundView.Activate()
-            foundView.GotoLine(lineNum)
-            startPos = foundView.PositionFromLine(lineNum)
-            lineText = foundView.GetCtrl().GetLine(lineNum - 1)
-            foundView.SetSelection(startPos, startPos + len(lineText.rstrip("\n")))
-            import OutlineService
-            wx.GetApp().GetService(OutlineService.OutlineService).LoadOutline(foundView, position=startPos)
+        wx.GetApp().GotoView(filename,lineNum)
     
     def OnKeyPressed(self, event):
         input_color_style = 1

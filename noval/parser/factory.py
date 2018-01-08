@@ -125,7 +125,7 @@ def scan_sys_path(src_path,dest_path):
             ext = os.path.splitext(fullpath)[1]
             if not ext in ['.py','.pyw']:
                 continue
-            top_module_name,is_package = get_top_modulename(fullpath)
+            top_module_name,is_package = utils.get_top_modulename(fullpath)
             if top_module_name == "":
                 continue
             module_members_file = os.path.join(dest_path,top_module_name+ ".$members")
@@ -137,28 +137,6 @@ def scan_sys_path(src_path,dest_path):
             #    print (fullpath,file=f)
             fileparser.dump(fullpath,top_module_name,dest_path,is_package)
            
-def get_top_modulename(fullpath):
-    path = os.path.dirname(fullpath)
-    data_name = ""
-    recent_path = ''
-    while True:
-        if path in sys.path:
-            recent_path = path
-            break
-        path = os.path.dirname(path)
-    path_name = fullpath.replace(recent_path + os.sep,'').split('.')[0]
-    path_name = path_name.replace("\\",'/')
-    parts = path_name.split('/')
-    if parts[-1] == "__init__":
-        data_file_name = '.'.join(parts[0:-1])
-        is_package = True
-    else:
-        data_file_name = '.'.join(parts)
-        is_package = False
-    return data_file_name,is_package
-    
-
-    
 def is_test_dir(dir_path):
     dir_name = os.path.basename(dir_path)
     if dir_name.lower() == "test" or dir_name.lower() == "tests":

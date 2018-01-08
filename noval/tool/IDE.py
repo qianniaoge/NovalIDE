@@ -706,6 +706,28 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             if data == default_interpreter:
                 self.toolbar_combox.SetSelection(i)
                 break
+                
+    def GotoView(self,file_path,lineNum):
+		foundView = None
+		openDocs = self.GetDocumentManager().GetDocuments()
+		for openDoc in openDocs:
+			if openDoc.GetFilename() == file_path:
+				foundView = openDoc.GetFirstView()
+				break
+
+		if not foundView:
+			doc = self.GetDocumentManager().CreateDocument(file_path, wx.lib.docview.DOC_SILENT)
+			foundView = doc.GetFirstView()
+
+		if foundView:
+			foundView.GetFrame().SetFocus()
+			foundView.Activate()
+			foundView.GotoLine(lineNum)
+			startPos = foundView.PositionFromLine(lineNum)
+			lineText = foundView.GetCtrl().GetLine(lineNum - 1)
+			foundView.SetSelection(startPos, startPos + len(lineText.rstrip("\n")))
+			import OutlineService
+			self.GetService(OutlineService.OutlineService).LoadOutline(foundView, position=startPos)
 
 class IDEDocManager(wx.lib.docview.DocManager):
     

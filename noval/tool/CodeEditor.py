@@ -22,6 +22,7 @@ import sys
 import MarkerService
 from UICommon import CaseInsensitiveCompare
 import noval.parser.nodeast as nodeast
+import noval.parser.intellisence as intellisence
 _ = wx.GetTranslation
 if wx.Platform == '__WXMSW__':
     _WINDOWS = True
@@ -676,9 +677,22 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         at = self.GetCharAt(start_pos)
         rem_chars = self.DEFAULT_WORD_CHARS + "."
         while chr(at) in rem_chars:
-            start_pos -=1
-            at = self.GetCharAt(start_pos)
-        wx.MessageBox(self.GetTextRange(start_pos+1,end_pos),"")
+             if chr(at) == '.':
+                 start_pos -=1
+                 at = self.GetCharAt(start_pos)
+                 while chr(at) == ' ':
+                     start_pos -=1
+                     at = self.GetCharAt(start_pos)
+             else:
+                 start_pos -=1
+                 at = self.GetCharAt(start_pos)        
+        text = self.GetTextRange(start_pos+1,end_pos)
+        found_path,lineNum = intellisence.IntellisenceManager().find_name_definition(text)
+        if found_path is None:
+            wx.MessageBox(_("Cannot find definition\"" + text + "\""),"Goto Definition",wx.OK|wx.ICON_EXCLAMATION,wx.GetApp().GetTopWindow())
+        else:
+            wx.GetApp().GotoView(found_path,lineNum)
+            
           
     def IsCaretLocateInWord(self):
         pos = self.GetCurrentPos()

@@ -5,6 +5,7 @@ import pickle
 import config
 import nodeast
 import sys
+import utils
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -32,11 +33,13 @@ def get_package_childs(module_path):
             continue
         if os.path.isfile(file_path_name):
             module_name = '.'.join(os.path.basename(file_name).split('.')[0:-1])
+            full_module_name,_ = utils.get_top_modulename(file_path_name)
         else:
             module_name = file_name
-        d = dict(name=module_name,path=file_path_name,type=config.NODE_MODULE_TYPE)
-        childs.append(d)
-        
+            file_path_name = os.path.join(file_path_name,"__init__.py")
+            full_module_name,_ = utils.get_top_modulename(file_path_name)
+        d = dict(name=module_name,full_name=full_module_name,path=file_path_name,type=config.NODE_MODULE_TYPE)
+        childs.append(d)        
     return childs
 
 def dump(module_path,output_name,dest_path,is_package):
@@ -174,7 +177,8 @@ def load(file_name):
     with open(file_name,'rb') as f:
         datas = pickle.load(f)
         import json
-        print json.dumps(datas,indent=4)
+        ###json.dumps(datas,indent=4)
+        return datas
         
 if __name__ == "__main__":
     

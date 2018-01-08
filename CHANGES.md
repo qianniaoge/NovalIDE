@@ -36,3 +36,7 @@ Version 1.0.1 -------------2017-12-27
 13.enable user choose one interpreter from multiple choices
 14.auto analyse intepreter interllisence data
 15.go to definition of text
+
+
+Version 1.0.2 -------------2018-01-08
+1.implement go to word definition in global scope search
