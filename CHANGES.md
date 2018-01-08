@@ -40,3 +40,5 @@ Version 1.0.1 -------------2017-12-27
 
 Version 1.0.2 -------------2018-01-08
 1.implement go to word definition in global scope search
+2.interligent analyze class self property in class object method
+3.remove duplicate child name of class object property

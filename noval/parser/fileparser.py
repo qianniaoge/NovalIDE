@@ -96,11 +96,15 @@ def deep_walk(node,parent):
                     break
             if is_property_def:
                 continue
+                
+            is_method = False
             for arg in element.args.args:
                 if type(arg) == ast.Name:
                     arg = dict(name=arg.id)
+                    if arg['name'] == 'self' and parent.Type == config.NODE_CLASSDEF_TYPE:
+                        is_method = True
                     args.append(arg)
-            func_def = nodeast.FuncDef(def_name,line_no,col,parent)
+            func_def = nodeast.FuncDef(def_name,line_no,col,parent,is_method=is_method)
             deep_walk(element,func_def)
         elif isinstance(element,ast.ClassDef):
             class_name = element.name
@@ -127,6 +131,17 @@ def deep_walk(node,parent):
                   #  data = dict(name=name,line=line_no,col=col,type=config.NODE_OBJECT_PROPERTY)
                    # childs.append(data)
                     nodeast.PropertyDef(name,line_no,col,config.PROPERTY_TYPE_UNKNOWN,parent)
+                elif type(target) == ast.Attribute:
+                    if target.value.id == "self" and parent.Type == config.NODE_FUNCDEF_TYPE and \
+                            parent.IsMethod:
+                        name = target.attr
+                        if parent.Parent.HasChild(name):
+                            if parent.Name == "__init__":
+                                parent.Parent.RemoveChild(name)
+                            else:
+                                continue
+                        nodeast.PropertyDef(name,line_no,col,config.PROPERTY_TYPE_UNKNOWN,parent.Parent)
+                    
     
 def walk(node):
     childs = []

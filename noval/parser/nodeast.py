@@ -25,6 +25,18 @@ class AbstractAst(object):
     def Childs(self):
         return self._childs
         
+    def HasChild(self,name):
+        for child in self.Childs:
+            if child.Name == name:
+                return True
+        return False
+            
+    def RemoveChild(self,name):
+        for child in self.Childs:
+            if child.Name == name:
+                self.Childs.remove(child)
+                break
+        
 class BuiltinNode(AbstractAst):
     
     def __init__(self,name,type,parent,is_built_in):
