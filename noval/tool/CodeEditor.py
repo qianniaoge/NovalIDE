@@ -675,6 +675,7 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         wx.GetApp().GetService(OutlineService.OutlineService).LoadOutline(wx.GetApp().GetDocumentManager().GetCurrentView(), position=self._rightClickPosition)
         
     def OnGotoDefinition(self, event):
+        line = self.GetCurrentLine()
         pos = self.GetCurrentPos()
         start_pos = self.WordStartPosition(pos,True)
         end_pos = self.WordEndPosition(pos,True)
@@ -691,6 +692,10 @@ class CodeCtrl(STCTextEditor.TextCtrl):
                  start_pos -=1
                  at = self.GetCharAt(start_pos)        
         text = self.GetTextRange(start_pos+1,end_pos)
+        scope = wx.GetApp().GetDocumentManager().GetCurrentView().ModuleScope.FindScope(line)
+        scope_found_line = scope.FindDefinition(text)
+        if scope_found_line != -1:
+            return wx.GetApp().GetDocumentManager().GetCurrentView().GotoLine(scope_found_line)
         found_path,lineNum = intellisence.IntellisenceManager().find_name_definition(text)
         if found_path is None:
             wx.MessageBox(_("Cannot find definition\"" + text + "\""),"Goto Definition",wx.OK|wx.ICON_EXCLAMATION,wx.GetApp().GetTopWindow())

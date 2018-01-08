@@ -105,7 +105,7 @@ def deep_walk(node,parent):
                         is_method = True
                     args.append(arg)
             func_def = nodeast.FuncDef(def_name,line_no,col,parent,is_method=is_method)
-            #deep_walk(element,func_def)
+            deep_walk(element,func_def)
         elif isinstance(element,ast.ClassDef):
             class_name = element.name
             line_no = element.lineno

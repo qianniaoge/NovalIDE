@@ -32,6 +32,7 @@ import re
 import noval.parser.config as parserconfig
 import Service
 import noval.parser.fileparser as parser
+import noval.parser.scope as scope
 import Interpreter
 try:
     import checker # for pychecker
@@ -126,21 +127,24 @@ class PythonDocument(CodeEditor.CodeDocument):
     def LoadViewModule(self,filename):
         view = self.GetFirstView()
         module = parser.parse(filename)
-        view.Module = module
+        module_scope = scope.ModuleScope(module,view.GetCtrl().GetLineCount())
+        module_scope.MakeModuleScopes()
+        module_scope.RouteChildScopes()
+        view.ModuleScope = module_scope
 
 class PythonView(CodeEditor.CodeView):
 
     def __init__(self):
         super(PythonView,self).__init__()
-        self._module = None
+        self._module_scope = None
         
     @property
-    def Module(self):
-        return self._module
+    def ModuleScope(self):
+        return self._module_scope
         
-    @Module.setter
-    def Module(self,module):
-        self._module = module
+    @ModuleScope.setter
+    def ModuleScope(self,module_scope):
+        self._module_scope = module_scope
         
     def GetCtrlClass(self):
         """ Used in split window to instantiate new instances """
@@ -310,21 +314,21 @@ class PythonView(CodeEditor.CodeView):
         if not document:
             return True
             
-        if self.Module == None:
+        if self.ModuleScope == None:
             return
 
         filename = document.GetFilename()
         if filename:
-            rootItem = treeCtrl.AddRoot(self.Module.Name)
+            rootItem = treeCtrl.AddRoot(self.ModuleScope.Module.Name)
             treeCtrl.SetItemImage(rootItem,treeCtrl.moduleidx,wx.TreeItemIcon_Normal)
-            treeCtrl.SetDoSelectCallback(rootItem, self, self.Module)
+            treeCtrl.SetDoSelectCallback(rootItem, self, self.ModuleScope.Module)
         else:
             return True
 
         text = self.GetValue()
         if not text:
             return True
-        self.TranverseItem(treeCtrl,self.Module,rootItem)   
+        self.TranverseItem(treeCtrl,self.ModuleScope.Module,rootItem)   
 
 ##            indentStack.append((indent, item))
                 
