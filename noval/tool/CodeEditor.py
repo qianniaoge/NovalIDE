@@ -67,6 +67,8 @@ class CodeView(STCTextEditor.TextView):
 
 
     def ProcessEvent(self, event):
+        if not isinstance(wx.Window_FindFocus(),CodeCtrl):
+            return wx.lib.docview.View.ProcessEvent(self,event)
         id = event.GetId()
         if id == EXPAND_TEXT_ID:
             self.GetCtrl().ToggleFold(self.GetCtrl().GetCurrentLine())
@@ -118,7 +120,7 @@ class CodeView(STCTextEditor.TextView):
 
 
     def ProcessUpdateUIEvent(self, event):
-        if not self.GetCtrl():
+        if not self.GetCtrl() or not isinstance(wx.Window_FindFocus(),CodeCtrl):
             return False
         id = event.GetId()
         if id == EXPAND_TEXT_ID:
