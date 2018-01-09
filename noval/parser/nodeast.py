@@ -126,10 +126,11 @@ class FuncDef(Node):
 
 class ClassDef(Node):
     
-    def __init__(self,name,line,col,parent,is_decorated = False,is_built_in = False):
+    def __init__(self,name,line,col,parent,is_decorated = False,is_built_in = False,bases = []):
         super(ClassDef,self).__init__(name,line,col,config.NODE_CLASSDEF_TYPE,parent,is_built_in)
         self._is_decorated = is_decorated
         self._child_defs = []
+        self._bases = bases
         
     @property
     def IsBuiltIn(self):
@@ -140,6 +141,10 @@ class ClassDef(Node):
         for child in self.Childs:
             print 'class child:', child
         return self.Name
+        
+    @property        
+    def Bases(self):
+        return self._bases
         
 class PropertyDef(Node):
     

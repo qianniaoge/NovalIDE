@@ -80,6 +80,15 @@ def parse(module_path):
         deep_walk(node,module)
         return module 
 
+def get_attribute_name(node):
+    value = node.value
+    names = [node.attr]
+    while type(value) == ast.Attribute:
+        names.append(value.attr)
+        value = value.value
+    names.append(value.id)
+    return '.'.join(names[::-1])
+    
 def deep_walk(node,parent):
     for element in node.body:
         if isinstance(element,ast.FunctionDef):
@@ -108,9 +117,16 @@ def deep_walk(node,parent):
             deep_walk(element,func_def)
         elif isinstance(element,ast.ClassDef):
             class_name = element.name
+            base_names = []
+            for base in element.bases:
+                if type(base) == ast.Name:
+                    base_names.append(base.id)
+                elif type(base) == ast.Attribute:
+                    base_name = get_attribute_name(base)
+                    base_names.append(base_name)
             line_no = element.lineno
             col = element.col_offset
-            class_def = nodeast.ClassDef(class_name,line_no,col,parent)
+            class_def = nodeast.ClassDef(class_name,line_no,col,parent,bases=base_names)
             deep_walk(element,class_def)
         elif isinstance(element,ast.Assign):
             targets = element.targets
@@ -205,8 +221,8 @@ def load(file_name):
         
 if __name__ == "__main__":
     
-    print get_package_childs(r"C:\Python27\Lib\site-packages\aliyunsdkcore\auth\__init__.py")
-  ##  module = parse(r"G:\work\Noval\noval\test\ast_test_file.py")
+  ###  print get_package_childs(r"C:\Python27\Lib\site-packages\aliyunsdkcore\auth\__init__.py")
+    module = parse(r"G:\work\Noval\noval\tool\STCTextEditor.py")
     ##print module
    ## dump(r"G:\work\Noval\noval\test\ast_test_file.py","tt","./")
   ##  load("tt.$members")
