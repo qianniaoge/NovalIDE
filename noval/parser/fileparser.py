@@ -147,7 +147,9 @@ def deep_walk(node,parent):
         elif isinstance(element,ast.ImportFrom):
             from_import_node = nodeast.FromImportNode(element.module,element.lineno,element.col_offset,parent)   
             for name in element.names:
-                nodeast.ImportNode(name.name,element.lineno,element.col_offset,from_import_node,name.asname)            
+                nodeast.ImportNode(name.name,element.lineno,element.col_offset,from_import_node,name.asname)
+        else:
+            nodeast.UnknownNode(element.lineno,element.col_offset,parent)
     
 def walk(node):
     childs = []

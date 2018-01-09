@@ -170,3 +170,7 @@ class FromImportNode(Node):
      def __init__(self,name,line,col,parent):
         super(FromImportNode,self).__init__(name,line,col,config.NODE_FROMIMPORT_TYPE,parent)
         
+class UnknownNode(Node):
+     def __init__(self,line,col,parent):
+        super(UnknownNode,self).__init__("___UnknownNode",line,col,config.NODE_UNKNOWN_TYPE,parent)
+        

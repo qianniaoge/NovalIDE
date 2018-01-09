@@ -46,21 +46,30 @@ class Scope(object):
                 child_scope.RouteChildScopes()
             if last_scope is not None:
                 last_scope.LineEnd = child_scope.LineStart -1
+                last_scope.Parent.LineEnd = last_scope.LineEnd
             last_scope = child_scope
+        if last_scope is not None:    
+            last_scope.Parent.LineEnd = last_scope.LineEnd
             
     def FindScope(self,line):
         for child_scope in self.ChildScopes:
             if child_scope.IslocateInScope(line):
-                if not child_scope.HasNoChild():
-                    return child_scope.FindScope(line)
-                else:
+                if self.IsRoutetoEnd(child_scope):
                     return child_scope
+                else:
+                    return child_scope.FindScope(line)
                     
     def FindInChildScopes(self,name):
         for child_scope in self.ChildScopes:
             if child_scope.Node.Name == name:
                 return child_scope.Node.Line
         return -1
+        
+    def IsRoutetoEnd(self,scope):
+        for child_scope in scope.ChildScopes:
+            if not child_scope.HasNoChild():
+                return False
+        return True        
         
     def FindInScope(self,name):
         found_line = -1
@@ -102,6 +111,8 @@ class ModuleScope(Scope):
                     self.MakeScopes(child,class_def_scope)
                 elif child.Type == config.NODE_OBJECT_PROPERTY:
                     NameScope(child,parent_scope)
+                elif child.Type == config.NODE_UNKNOWN_TYPE:
+                    UnknownScope(child,parent_scope)
                     
         def __str__(self):
             print 'module name is',self.Module.Name,'path is',self.Module.Path
@@ -149,6 +160,14 @@ class NameScope(NodeScope):
             
         def __str__(self):
             print 'type is name scope, name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
+            return self.Node.Name
+            
+class UnknownScope(NodeScope):
+        def __init__(self,unknown_type_node,parent):
+            super(UnknownScope,self).__init__(unknown_type_node,parent)
+            
+        def __str__(self):
+            print 'type is unknown scope, name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
             return self.Node.Name
     
 def search_node_scope(name,node):
