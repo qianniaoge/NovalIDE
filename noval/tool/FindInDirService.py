@@ -108,7 +108,12 @@ class FindInDirService(FindService.FindService):
         else:
             return FindService.FindService.ProcessUpdateUIEvent(self, event)
 
-
+    def GetFileTypeList(self,file_type_str):
+        if file_type_str == "" or file_type_str == "*.*":
+            return []
+        type_parts = file_type_str.split(";")
+        return [str(part.replace("*.","")) for part in type_parts]
+        
     def ShowFindInDirDialog(self, findString=None):
         config = wx.ConfigBase_Get()
 
@@ -153,10 +158,18 @@ class FindInDirService(FindService.FindService):
         lineSizer.Add(wx.StaticText(frame, -1, _("Find what:")), 0, wx.ALIGN_CENTER | wx.RIGHT, HALF_SPACE)
         if not findString:
             findString = config.Read(FindService.FIND_MATCHPATTERN, "")
-        findCtrl = wx.TextCtrl(frame, -1, findString, size=(200,-1))
+        findCtrl = wx.TextCtrl(frame, -1, findString, size=(150,-1))
         findCtrl.SetFocus()
         findCtrl.SetSelection(0,-1)
         lineSizer.Add(findCtrl, 0, wx.LEFT, HALF_SPACE)
+        
+        lineSizer.Add(wx.StaticText(frame, -1, _("File types:")), 0, wx.ALIGN_CENTER |wx.LEFT , HALF_SPACE )
+        filetype_Ctrl = wx.TextCtrl(frame, -1, "*.py", size=(100,-1))
+        filetype_Ctrl.SetToolTipString(_("Multiple file types seperated by semicolon"))
+        filetype_Ctrl.SetFocus()
+        filetype_Ctrl.SetSelection(0,-1)
+        lineSizer.Add(filetype_Ctrl, 0, wx.LEFT, HALF_SPACE)
+        
         contentSizer.Add(lineSizer, 0, wx.BOTTOM, SPACE)
         wholeWordCtrl = wx.CheckBox(frame, -1, _("Match whole word only"))
         wholeWordCtrl.SetValue(config.ReadInt(FindService.FIND_MATCHWHOLEWORD, False))
@@ -223,7 +236,9 @@ class FindInDirService(FindService.FindService):
         wholeWord = wholeWordCtrl.IsChecked()
         regExpr = regExprCtrl.IsChecked()
         self.SaveFindConfig(findString, wholeWord, matchCase, regExpr)
-
+        
+        file_type = filetype_Ctrl.GetValue()
+        file_type_list = self.GetFileTypeList(file_type)
         frame.Destroy()
         if status == wx.ID_OK:
             messageService = wx.GetApp().GetService(MessageService.MessageService)
@@ -264,8 +279,15 @@ class FindInDirService(FindService.FindService):
                         for root, dirs, files in os.walk(dirString):
                             if not searchSubfolders and root != dirString:
                                 break
-    
                             for name in files:
+                                if file_type_list != []:
+                                    parts = name.split('.')
+                                    if 1 == len(parts):
+                                        file_ext = ''
+                                    else:
+                                        file_ext = parts[1].lower()
+                                    if file_ext not in file_type_list:
+                                        continue
                                 filename = os.path.join(root, name)
                                 try:
                                     docFile = file(filename, 'r')

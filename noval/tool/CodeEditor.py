@@ -24,6 +24,7 @@ from UICommon import CaseInsensitiveCompare
 import noval.parser.nodeast as nodeast
 import noval.parser.intellisence as intellisence
 import noval.parser.config as parserconfig
+import FindService
 _ = wx.GetTranslation
 if wx.Platform == '__WXMSW__':
     _WINDOWS = True
@@ -67,9 +68,12 @@ class CodeView(STCTextEditor.TextView):
 
 
     def ProcessEvent(self, event):
+        id = event.GetId()
+        if id == FindService.FindService.REPLACEONE_ID or id == FindService.FindService.FINDONE_ID or\
+                id == FindService.FindService.REPLACEALL_ID:
+            return STCTextEditor.TextView.ProcessEvent(self, event)
         if not isinstance(wx.Window_FindFocus(),CodeCtrl):
             return wx.lib.docview.View.ProcessEvent(self,event)
-        id = event.GetId()
         if id == EXPAND_TEXT_ID:
             self.GetCtrl().ToggleFold(self.GetCtrl().GetCurrentLine())
             return True
@@ -120,9 +124,12 @@ class CodeView(STCTextEditor.TextView):
 
 
     def ProcessUpdateUIEvent(self, event):
+        id = event.GetId()
+        if id == FindService.FindService.REPLACEONE_ID or id == FindService.FindService.FINDONE_ID or\
+                id == FindService.FindService.REPLACEALL_ID:
+            return STCTextEditor.TextView.ProcessUpdateUIEvent(self, event)
         if not self.GetCtrl() or not isinstance(wx.Window_FindFocus(),CodeCtrl):
             return False
-        id = event.GetId()
         if id == EXPAND_TEXT_ID:
             if self.GetCtrl().GetViewFolding():
                 event.Enable(self.GetCtrl().CanLineExpand(self.GetCtrl().GetCurrentLine()))
