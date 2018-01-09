@@ -115,7 +115,6 @@ class ModuleScope(Scope):
                     ImportScope(child,parent_scope)
                 elif child.Type == config.NODE_FROMIMPORT_TYPE:
                     from_import_scope = FromImportScope(child,parent_scope)
-                    print child.Childs,'++++++++++++++++++'
                     self.MakeScopes(child,from_import_scope)
                 elif child.Type == config.NODE_UNKNOWN_TYPE:
                     UnknownScope(child,parent_scope)

@@ -448,6 +448,8 @@ class RunCommandUI(wx.Panel):
         wx.GetApp().GotoView(filename,lineNum)
     
     def OnKeyPressed(self, event):
+        if self._textCtrl.GetReadOnly():
+            return
         input_color_style = 1
         self._textCtrl.StyleSetSpec(input_color_style, 'fore:#221dff, back:#FFFFFF,face:%s,size:%d' % \
                      (self._font.GetFaceName(),self._font.GetPointSize())) 
