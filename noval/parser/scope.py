@@ -61,7 +61,7 @@ class Scope(object):
                     
     def FindInChildScopes(self,name):
         for child_scope in self.ChildScopes:
-            if child_scope.Node.Name == name:
+            if child_scope.EqualName(name):
                 return child_scope.Node.Line
         return -1
         
@@ -111,6 +111,12 @@ class ModuleScope(Scope):
                     self.MakeScopes(child,class_def_scope)
                 elif child.Type == config.NODE_OBJECT_PROPERTY:
                     NameScope(child,parent_scope)
+                elif child.Type == config.NODE_IMPORT_TYPE:
+                    ImportScope(child,parent_scope)
+                elif child.Type == config.NODE_FROMIMPORT_TYPE:
+                    from_import_scope = FromImportScope(child,parent_scope)
+                    print child.Childs,'++++++++++++++++++'
+                    self.MakeScopes(child,from_import_scope)
                 elif child.Type == config.NODE_UNKNOWN_TYPE:
                     UnknownScope(child,parent_scope)
                     
@@ -132,7 +138,10 @@ class NodeScope(Scope):
             self._node= node
         @property
         def Node(self):
-            return self._node       
+            return self._node
+        
+        def EqualName(self,name):
+            return self.Node.Name == name
             
 class FuncDefScope(NodeScope):
         def __init__(self,func_def_node,parent):
@@ -169,7 +178,29 @@ class UnknownScope(NodeScope):
         def __str__(self):
             print 'type is unknown scope, name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
             return self.Node.Name
-    
+
+class ImportScope(NodeScope):
+        def __init__(self,import_node,parent):
+            super(ImportScope,self).__init__(import_node,parent)
+            
+        def __str__(self):
+            print 'type is import scope, import name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
+            return self.Node.Name
+            
+class FromImportScope(NodeScope):
+        def __init__(self,from_import_node,parent):
+            super(FromImportScope,self).__init__(from_import_node,parent)
+            
+        def __str__(self):
+            print 'type is from import scope, from name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
+            return self.Node.Name
+            
+        def EqualName(self,name):
+            for child_scope in self.ChildScopes:
+                if child_scope.EqualName(name):
+                    return True
+            return False
+            
 def search_node_scope(name,node):
     
     for child in node.Childs:
