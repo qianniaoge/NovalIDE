@@ -44,3 +44,4 @@ Version 1.0.2 -------------2018-01-08
 3.remove duplicate child name of class object property
 4.find definition in document scope
 5.enable sort in outline service
+6.enable custom context menu in debug output tab,and enable word wrap in line

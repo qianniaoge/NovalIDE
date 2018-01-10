@@ -54,6 +54,7 @@ import locale
 import OutputThread
 import noval.parser.config as parserconfig
 import WxThreadSafe
+import DebugOutputCtrl
 
 if wx.Platform == '__WXMSW__':
     try:
@@ -283,7 +284,7 @@ class RunCommandUI(wx.Panel):
         wx.EVT_TOOL(self, self.TERMINATE_ALL_PROCESS_ID, self.OnToolClicked)
 
         tb.Realize()
-        self._textCtrl = STCTextEditor.TextCtrl(self, wx.NewId()) #id)
+        self._textCtrl = DebugOutputCtrl.DebugOutputCtrl(self, wx.NewId()) #id)
         sizer.Add(self._textCtrl, 1, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 1)
         self._textCtrl.SetViewLineNumbers(False)
         self._textCtrl.SetReadOnly(False)

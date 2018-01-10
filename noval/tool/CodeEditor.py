@@ -25,6 +25,7 @@ import noval.parser.nodeast as nodeast
 import noval.parser.intellisence as intellisence
 import noval.parser.config as parserconfig
 import FindService
+import DebugOutputCtrl
 _ = wx.GetTranslation
 if wx.Platform == '__WXMSW__':
     _WINDOWS = True
@@ -71,8 +72,11 @@ class CodeView(STCTextEditor.TextView):
         id = event.GetId()
         if id == FindService.FindService.REPLACEONE_ID or id == FindService.FindService.FINDONE_ID or\
                 id == FindService.FindService.REPLACEALL_ID:
-            return STCTextEditor.TextView.ProcessEvent(self, event)
-        if not isinstance(wx.Window_FindFocus(),CodeCtrl):
+            return STCTextEditor.TextView.ProcessEvent(self, event)            
+        focus_ctrl = wx.Window_FindFocus()
+        if not isinstance(focus_ctrl,CodeCtrl):
+            if isinstance(focus_ctrl,DebugOutputCtrl.DebugOutputCtrl) and id in DebugOutputCtrl.DebugOutputCtrl.ItemIDs:
+                return focus_ctrl.DSProcessEvent(event)
             return wx.lib.docview.View.ProcessEvent(self,event)
         if id == EXPAND_TEXT_ID:
             self.GetCtrl().ToggleFold(self.GetCtrl().GetCurrentLine())
@@ -128,8 +132,13 @@ class CodeView(STCTextEditor.TextView):
         if id == FindService.FindService.REPLACEONE_ID or id == FindService.FindService.FINDONE_ID or\
                 id == FindService.FindService.REPLACEALL_ID:
             return STCTextEditor.TextView.ProcessUpdateUIEvent(self, event)
-        if not self.GetCtrl() or not isinstance(wx.Window_FindFocus(),CodeCtrl):
+        focus_ctrl = wx.Window_FindFocus()
+        if not isinstance(focus_ctrl,CodeCtrl):
+            if isinstance(focus_ctrl,DebugOutputCtrl.DebugOutputCtrl) and id in DebugOutputCtrl.DebugOutputCtrl.ItemIDs:
+                return focus_ctrl.DSProcessUpdateUIEvent(event)
             return False
+        if not self.GetCtrl():
+           return False                
         if id == EXPAND_TEXT_ID:
             if self.GetCtrl().GetViewFolding():
                 event.Enable(self.GetCtrl().CanLineExpand(self.GetCtrl().GetCurrentLine()))
