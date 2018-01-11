@@ -82,8 +82,15 @@ class PythonBuiltinsPanel(wx.Panel):
 class EnviromentPanel(wx.Panel):
     def __init__(self,parent):
         wx.Panel.__init__(self, parent)
-        wx.StaticText(self,label='Enviroment Variable')
-        pass
+        self.Sizer = wx.BoxSizer()
+        self.dvlc = dataview.DataViewListCtrl(self)
+        self.dvlc.AppendTextColumn('Key', width=100)
+        self.dvlc.AppendTextColumn('Value',width=500)
+        self.Sizer.Add(self.dvlc, 1, wx.EXPAND)
+        
+    def SetVariables(self):
+        for env in os.environ:
+            self.dvlc.AppendItem([env, os.environ[env]])
         
 class InterpreterConfigDialog(wx.Dialog):
     def __init__(self,parent,dlg_id,title,size=(700,500)):
@@ -201,7 +208,10 @@ class InterpreterConfigDialog(wx.Dialog):
             else:
                 return "No"
         self.dvlc.AppendItem([interpreter.Name,interpreter.Version,interpreter.Path,GetDefaultFlag(interpreter.Default)],interpreter.Id)
-        
+        self.path_panel.AppendSysPath(interpreter)
+        self.builtin_panel.SetBuiltiins(interpreter)
+        self.enviroment_panel.SetVariables()
+    
     def RemoveInterpreter(self,event):
         index = self.dvlc.GetSelectedRow()
         if index == wx.NOT_FOUND:
@@ -243,8 +253,6 @@ class InterpreterConfigDialog(wx.Dialog):
     def ScanAllInterpreters(self):
         for interpreter in Interpreter.InterpreterManager.interpreters:
             self.AddOneInterpreter(interpreter)
-            self.path_panel.AppendSysPath(interpreter)
-            self.builtin_panel.SetBuiltiins(interpreter)
             
     def ReloadAllInterpreters(self):
         self.dvlc.DeleteAllItems()
@@ -265,5 +273,6 @@ class InterpreterConfigDialog(wx.Dialog):
             interpreter = Interpreter.InterpreterManager().GetInterpreterById(id)
             self.path_panel.AppendSysPath(interpreter)
             self.builtin_panel.SetBuiltiins(interpreter)
+            self.enviroment_panel.SetVariables()
             
         
