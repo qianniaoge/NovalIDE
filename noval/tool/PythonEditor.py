@@ -34,6 +34,7 @@ import Service
 import noval.parser.fileparser as parser
 import noval.parser.scope as scope
 import Interpreter
+import InterpreterConfigDialog
 try:
     import checker # for pychecker
     _CHECKER_INSTALLED = True
@@ -796,13 +797,13 @@ class PythonOptionsPanel(wx.Panel):
         pathLabel = wx.StaticText(self, -1, _("Interpreters:"))
         config = wx.ConfigBase_Get()
       ###  path = config.Read("ActiveGridPythonLocation")
-        choices = Interpreter.InterpreterManager().GetChoices()
+        choices,default_selection = Interpreter.InterpreterManager().GetChoices()
         self._pathTextCtrl = wx.ComboBox(self, -1,choices=choices, style = wx.CB_READONLY)
         if len(choices) > 0:
-            self._pathTextCtrl.SetSelection(0)
+            self._pathTextCtrl.SetSelection(default_selection)
        ## self._pathTextCtrl.SetToolTipString(self._pathTextCtrl.GetValue())
         ##self._pathTextCtrl.SetInsertionPointEnd()
-        choosePathButton = wx.Button(self, -1, _("Browse..."))
+        choosePathButton = wx.Button(self, -1, _("Configure..."))
         pathSizer = wx.BoxSizer(wx.HORIZONTAL)
         HALF_SPACE = 5
         SPACE = 10
@@ -818,36 +819,21 @@ class PythonOptionsPanel(wx.Panel):
         self.SetSizer(mainSizer)
         parent.AddPage(self, _("Python"))
         
-
     def OnChoosePath(self, event):
-        defaultDir = os.path.dirname(self._pathTextCtrl.GetValue().strip())
-        defaultFile = os.path.basename(self._pathTextCtrl.GetValue().strip())
-        if _WINDOWS:
-            wildcard = _("Executable (*.exe)|*.exe|All|*.*")
-            if not defaultFile:
-                defaultFile = "python.exe"
-        else:
-            wildcard = _("*")
-        dlg = wx.FileDialog(wx.GetApp().GetTopWindow(),
-                               _("Select a File"),
-                               defaultDir=defaultDir,
-                               defaultFile=defaultFile,
-                               wildcard=wildcard,
-                               style=wx.OPEN|wx.FILE_MUST_EXIST|wx.HIDE_READONLY)
-        # dlg.CenterOnParent()  # wxBug: caused crash with wx.FileDialog
-        if dlg.ShowModal() == wx.ID_OK:
-            path = dlg.GetPath()
-            if path:  
-                self._pathTextCtrl.SetValue(path)
-                self._pathTextCtrl.SetToolTipString(self._pathTextCtrl.GetValue())
-                self._pathTextCtrl.SetInsertionPointEnd()
-        dlg.Destroy()            
-
+        dlg = InterpreterConfigDialog.InterpreterConfigDialog(self,-1,_("Configure Interpreter"))
+        dlg.CenterOnParent()
+        status = dlg.ShowModal()
+        dlg.Destroy()
+        choices,default_selection = Interpreter.InterpreterManager().GetChoices()
+        self._pathTextCtrl.Clear()
+        self._pathTextCtrl.InsertItems(choices,0)
+        if len(choices) > 0:
+            self._pathTextCtrl.SetSelection(default_selection)
 
     def OnOK(self, optionsDialog):
         config = wx.ConfigBase_Get()
-
         self._otherOptions.OnOK(optionsDialog)
+        wx.GetApp().AddInterpreters()
         
 
     def GetIcon(self):

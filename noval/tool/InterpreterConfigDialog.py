@@ -10,31 +10,31 @@ SPACE = 10
 HALF_SPACE = 5
 
 class AddInterpreterDialog(wx.Dialog):
-    def __init__(self,parent,dlg_id,title,size=(400,150)):
+    def __init__(self,parent,dlg_id,title,size=(420,150)):
         wx.Dialog.__init__(self,parent,dlg_id,title,size=size)
         contentSizer = wx.BoxSizer(wx.VERTICAL)
         
         lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        lineSizer.Add(wx.StaticText(self, -1, _("Interpreter Path:")), 0, wx.ALIGN_CENTER | wx.RIGHT, HALF_SPACE)
+        lineSizer.Add(wx.StaticText(self, -1, _("Interpreter Path:")), 0, wx.ALIGN_CENTER | wx.LEFT, HALF_SPACE)
         self.path_ctrl = wx.TextCtrl(self, -1, "", size=(200,-1))
-        lineSizer.Add(self.path_ctrl, 0, wx.LEFT, HALF_SPACE)
+        lineSizer.Add(self.path_ctrl, 0, wx.LEFT|wx.ALIGN_BOTTOM, HALF_SPACE)
         
         self.browser_btn = wx.Button(self, -1, _("Browse..."))
         wx.EVT_BUTTON(self.browser_btn, -1, self.ChooseExecutablePath)
-        lineSizer.Add(self.browser_btn, 0, wx.LEFT, HALF_SPACE)
+        lineSizer.Add(self.browser_btn, 0, wx.LEFT|wx.ALIGN_BOTTOM, SPACE)
         contentSizer.Add(lineSizer, 0, wx.BOTTOM, SPACE)
         
         lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        lineSizer.Add(wx.StaticText(self, -1, _("Interpreter Name:")), 0, wx.ALIGN_CENTER | wx.RIGHT, HALF_SPACE)
-        self.name_ctrl = wx.TextCtrl(self, -1, "", size=(80,-1))
+        lineSizer.Add(wx.StaticText(self, -1, _("Interpreter Name:")), 0, wx.ALIGN_CENTER | wx.LEFT, HALF_SPACE)
+        self.name_ctrl = wx.TextCtrl(self, -1, "", size=(190,-1))
         lineSizer.Add(self.name_ctrl, 0, wx.LEFT, HALF_SPACE)
         contentSizer.Add(lineSizer, 0, wx.BOTTOM, SPACE)
         
         lineSizer = wx.BoxSizer(wx.HORIZONTAL)
         ok_btn = wx.Button(self, wx.ID_OK, _("&Ok"))
-        lineSizer.Add(ok_btn, 0, wx.RIGHT, SPACE)
+        lineSizer.Add(ok_btn, 0, wx.LEFT, SPACE*22)
         cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
-        lineSizer.Add(cancel_btn, 0, wx.RIGHT, SPACE)
+        lineSizer.Add(cancel_btn, 0, wx.LEFT, SPACE)
         contentSizer.Add(lineSizer, 0, wx.BOTTOM|wx.RIGHT, SPACE)
         self.SetSizer(contentSizer)
         
@@ -93,8 +93,8 @@ class InterpreterConfigDialog(wx.Dialog):
         top_sizer = wx.BoxSizer(wx.HORIZONTAL)
         
         contentSizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.dvlc = dataview.DataViewListCtrl(self,size=(480,150))
-        self.dvlc.AppendTextColumn('Name', width=70)
+        self.dvlc = dataview.DataViewListCtrl(self,size=(510,150))
+        self.dvlc.AppendTextColumn('Name', width=100)
         self.dvlc.AppendTextColumn('Version', width=70)
         self.dvlc.AppendTextColumn('Path', width=260)
         self.dvlc.AppendTextColumn('Default', width=70)
@@ -121,7 +121,7 @@ class InterpreterConfigDialog(wx.Dialog):
         wx.EVT_BUTTON(self.set_default_btn, -1, self.SetDefaultInterpreter)
         right_sizer.Add(self.set_default_btn, 0, wx.BOTTOM|wx.EXPAND, SPACE)
         
-        top_sizer.Add(right_sizer, 0, wx.RIGHT, 0)
+        top_sizer.Add(right_sizer, 0, wx.LEFT, SPACE*2)
         
         bottom_sizer = wx.BoxSizer(wx.HORIZONTAL)
         nb = wx.Notebook(self,size=(650,330))
@@ -145,6 +145,7 @@ class InterpreterConfigDialog(wx.Dialog):
     def ModifyInterpreterNameDlg(self,event):
         index = self.dvlc.GetSelectedRow()
         if index == wx.NOT_FOUND:
+            self.UpdateUI()
             return
         item = self.dvlc.RowToItem(index)
         id = self.dvlc.GetItemData(item)
@@ -242,7 +243,8 @@ class InterpreterConfigDialog(wx.Dialog):
     def ScanAllInterpreters(self):
         for interpreter in Interpreter.InterpreterManager.interpreters:
             self.AddOneInterpreter(interpreter)
-          ##  self.dvlc.AppendItem([interpreter.Name,interpreter.Version,interpreter.Path,GetDefaultFlag(interpreter.Default)],interpreter.Id)
+            self.path_panel.AppendSysPath(interpreter)
+            self.builtin_panel.SetBuiltiins(interpreter)
             
     def ReloadAllInterpreters(self):
         self.dvlc.DeleteAllItems()

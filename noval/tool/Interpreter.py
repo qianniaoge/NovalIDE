@@ -284,9 +284,12 @@ class InterpreterManager(Singleton):
     
     def GetChoices(self):
         choices = []
-        for interpreter in self.interpreters:
+        default_index = -1
+        for i,interpreter in enumerate(self.interpreters):
+            if interpreter.Default:
+                default_index = i
             choices.append(interpreter.Name)
-        return choices
+        return choices,default_index
         
     def GetInterpreterById(self,id):
         for interpreter in self.interpreters:
