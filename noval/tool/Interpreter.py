@@ -13,6 +13,7 @@ class Interpreter(object):
         self._path = executable_path
         self._install_path = os.path.dirname(self._path)
         self._name = name
+        self._id = wx.NewId()
         
     @property
     def Path(self):
@@ -34,6 +35,9 @@ class Interpreter(object):
     def Name(self,name):
         self._name = name
         
+    @property
+    def Id(self):
+        return self._id        
 
 def GetCommandOutput(command,read_error=False):
     p = subprocess.Popen(command,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -69,7 +73,10 @@ class PythonInterpreter(Interpreter):
         output = GetCommandOutput("%s -V" % self.Path,True).strip().lower()
         version_flag = "python "
         if output.find(version_flag) == -1:
-            return
+            output = GetCommandOutput("%s -V" % self.Path,False).strip().lower()
+            version_flag = "python "
+            if output.find(version_flag) == -1:
+                return
         self._version = output.replace(version_flag,"").strip()
         self._is_valid_interpreter = True
         
@@ -120,7 +127,10 @@ class PythonInterpreter(Interpreter):
         self._is_default = is_default
         
     def GetSyspathList(self):
-        run_cmd ="%s -c \"import sys;print sys.path\"" % (self.Path)
+        if int(self._version.split(".")[0]) == 2:
+            run_cmd ="%s -c \"import sys;print sys.path\"" % (self.Path)
+        elif int(self._version.split(".")[0]) == 3:
+            run_cmd ="%s -c \"import sys;print (sys.path)\"" % (self.Path)
         output = GetCommandOutput(run_cmd).strip()
         lst = eval(output)
         self._sys_path_list = lst
@@ -232,16 +242,22 @@ class InterpreterManager(Singleton):
     def AddPythonInterpreter(self,interpreter_path):
         interpreter = PythonInterpreter("",interpreter_path)
         if not interpreter.IsValidInterpreter:
-            raise "%s is not a valid interpreter path" % interpreter_path
+            raise InterpreterValidError("%s is not a valid interpreter path" % interpreter_path)
+            ##raise "%s is not a valid interpreter path" % interpreter_path
         interpreter.Name = interpreter.Version
-        interpreters.append(interpreter)
+        self.interpreters.append(interpreter)
+        return interpreter
         
     def RemovePythonInterpreter(self,interpreter):
         self.interpreters.remove(interpreter)
         
     def SetDefaultInterpreter(self,interpreter):
         self.DefaultInterpreter = interpreter
-        interpreter.Default = True
+        for kl in self.interpreters:
+            if kl.Id == interpreter.Id:
+                interpreter.Default = True
+            else:
+                kl.Default = False
         
     def MakeDefaultInterpreter(self):
         self.DefaultInterpreter = self.interpreters[0]
@@ -255,3 +271,17 @@ class InterpreterManager(Singleton):
         for interpreter in self.interpreters:
             choices.append(interpreter.Name)
         return choices
+        
+    def GetInterpreterById(self,id):
+        for interpreter in self.interpreters:
+            if interpreter.Id == id:
+                return interpreter
+        return None
+
+class InterpreterValidError(Exception):
+    
+    def __init__(self, error_msg):
+        self.msg = error_msg
+        
+    def __str__(self):
+        return repr(self.msg)

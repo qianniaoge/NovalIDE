@@ -119,8 +119,8 @@ class FindService(wx.lib.pydocview.DocService):
                 # No reason to have both find and replace dialogs up at the same time
                 self._findDialog.DoClose()
                 self._findDialog = None
-
-            self._replaceDialog = FindReplaceDialog(self.GetDocumentManager().FindSuitableParent(), -1, _("Replace"), size=(320,200), findString=findString)
+            if self._replaceDialog == None:
+                self._replaceDialog = FindReplaceDialog(self.GetDocumentManager().FindSuitableParent(), -1, _("Replace"), size=(320,200), findString=findString)
             self._replaceDialog.CenterOnParent()
             self._replaceDialog.Show(True)
         else:
@@ -128,8 +128,8 @@ class FindService(wx.lib.pydocview.DocService):
                 # No reason to have both find and replace dialogs up at the same time
                 self._replaceDialog.DoClose()
                 self._replaceDialog = None
-
-            self._findDialog = FindDialog(self.GetDocumentManager().FindSuitableParent(), -1, _("Find"), size=(320,200), findString=findString)
+            if self._findDialog == None:
+                self._findDialog = FindDialog(self.GetDocumentManager().FindSuitableParent(), -1, _("Find"), size=(320,200), findString=findString)
             self._findDialog.CenterOnParent()
             self._findDialog.Show(True)
 
