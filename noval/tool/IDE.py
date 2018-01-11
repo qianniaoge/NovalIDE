@@ -673,7 +673,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 self.ShowTip(docManager.FindSuitableParent(), wx.CreateFileTipProvider(tips_path, 0))
                    
         Interpreter.InterpreterManager().LoadDefaultInterpreter()
-        debuggerService.AddInterpreters()
+        self.AddInterpreters()
         intellisence.IntellisenceManager().generate_default_intellisence_data()
         wx.UpdateUIEvent.SetUpdateInterval(1000)  # Overhead of updating menus was too much.  Change to update every n milliseconds.
 
@@ -728,6 +728,14 @@ class IDEApplication(wx.lib.pydocview.DocApp):
 			foundView.SetSelection(startPos, startPos + len(lineText.rstrip("\n")))
 			import OutlineService
 			self.GetService(OutlineService.OutlineService).LoadOutline(foundView, position=startPos)
+			
+    def AddInterpreters(self):
+        cb = self.ToolbarCombox
+        cb.Clear()
+        for interpreter in Interpreter.InterpreterManager().interpreters:
+            cb.Append(interpreter.Name,interpreter)
+        cb.Append(_("Configuration"),)
+        self.SetCurrentDefaultInterpreter()
 
 class IDEDocManager(wx.lib.docview.DocManager):
     

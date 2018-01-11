@@ -64,11 +64,13 @@ class PythonInterpreter(Interpreter):
         super(PythonInterpreter,self).__init__(name,executable_path)
         self._is_valid_interpreter = False
         self.GetVersion()
-        if self._is_valid_interpreter:
-            self.GetSyspathList()
         self._is_default = False
         self._sys_path_list = []
-        
+        self._buitins = []
+        if self._is_valid_interpreter:
+            self.GetSyspathList()
+            self.GetBuiltins()
+            
     def GetVersion(self):
         output = GetCommandOutput("%s -V" % self.Path,True).strip().lower()
         version_flag = "python "
@@ -134,9 +136,21 @@ class PythonInterpreter(Interpreter):
         output = GetCommandOutput(run_cmd).strip()
         lst = eval(output)
         self._sys_path_list = lst
+        
+    def GetBuiltins(self):
+        if int(self._version.split(".")[0]) == 2:
+            run_cmd ="%s -c \"import sys;print sys.builtin_module_names\"" % (self.Path)
+        elif int(self._version.split(".")[0]) == 3:
+            run_cmd ="%s -c \"import sys;print (sys.builtin_module_names)\"" % (self.Path)
+        output = GetCommandOutput(run_cmd).strip()
+        lst = eval(output)
+        self._builtins = lst
     @property
     def SyspathList(self):
         return self._sys_path_list        
+    @property    
+    def Builtins(self):
+        return self._builtins
          
 class InterpreterManager(Singleton):
     
@@ -226,8 +240,8 @@ class InterpreterManager(Singleton):
     def ConvertInterpretersToDictList(self):
         lst = []
         for interpreter in self.interpreters:
-            d = dict(name=interpreter.Name,version=interpreter.Version,path=interpreter.Path,\
-                     default=interpreter.Default)
+            d = dict(id=interpreter.Id,name=interpreter.Name,version=interpreter.Version,path=interpreter.Path,\
+                     default=interpreter.Default,path_list=interpreter.SyspathList,builtins=interpreter.Builtins)
             lst.append(d)
         return lst
         
@@ -239,12 +253,14 @@ class InterpreterManager(Singleton):
                 return
             config.Write("interpreters" ,pickle.dumps(dct))            
         
-    def AddPythonInterpreter(self,interpreter_path):
+    def AddPythonInterpreter(self,interpreter_path,name):
         interpreter = PythonInterpreter("",interpreter_path)
         if not interpreter.IsValidInterpreter:
-            raise InterpreterValidError("%s is not a valid interpreter path" % interpreter_path)
+            raise InterpreterAddError("%s is not a valid interpreter path" % interpreter_path)
             ##raise "%s is not a valid interpreter path" % interpreter_path
-        interpreter.Name = interpreter.Version
+        interpreter.Name = name
+        if self.CheckInterpreterExist(interpreter):
+            raise InterpreterAddError("interpreter have already exist")
         self.interpreters.append(interpreter)
         return interpreter
         
@@ -277,8 +293,16 @@ class InterpreterManager(Singleton):
             if interpreter.Id == id:
                 return interpreter
         return None
+        
+    def CheckInterpreterExist(self,interpreter):
+        for kb in self.interpreters:
+            if kb.Name.lower() == interpreter.Name.lower():
+                return True  
+            elif kb.Path.lower() == interpreter.Path.lower():
+                return True
+        return False 
 
-class InterpreterValidError(Exception):
+class InterpreterAddError(Exception):
     
     def __init__(self, error_msg):
         self.msg = error_msg

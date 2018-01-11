@@ -55,6 +55,7 @@ import OutputThread
 import noval.parser.config as parserconfig
 import WxThreadSafe
 import DebugOutputCtrl
+import InterpreterConfigDialog
 
 if wx.Platform == '__WXMSW__':
     try:
@@ -2374,9 +2375,8 @@ class DebuggerService(Service.Service):
         toolBar.AddSeparator()
         toolBar.AddTool(DebuggerService.RUN_ID, getRunningManBitmap(), shortHelpString = _("Run a file"), longHelpString = _("Run a file in system teminator"))
         toolBar.AddTool(DebuggerService.DEBUG_ID, getDebuggingManBitmap(), shortHelpString = _("Debug a file"), longHelpString = _("Debug a file in Editor"))
-        choices = [_("Configuration")]
         toolBar.AddControl(wx.ComboBox(toolBar, DebuggerService.COMBO_INTERPRETERS_ID, "", \
-                                       choices=choices,size=(150,-1), style=wx.CB_READONLY))
+                                       choices=[],size=(150,-1), style=wx.CB_READONLY))
         wx.EVT_COMBOBOX(frame,DebuggerService.COMBO_INTERPRETERS_ID,self.OnCombo)
         toolBar.Realize()
         return True
@@ -2389,19 +2389,14 @@ class DebuggerService(Service.Service):
     def OnCombo(self, event):
         cb = wx.GetApp().ToolbarCombox
         if event.GetSelection() == cb.GetCount() - 1:
-            wx.MessageBox("No implement yet","xxx")
-            wx.GetApp().SetCurrentDefaultInterpreter()
-        print ("combobox item selected: %s\n" % event.GetString())
-        
-    def AddInterpreters(self):
-        cb = wx.GetApp().ToolbarCombox
-        for interpreter in Interpreter.InterpreterManager().interpreters:
-            cb.Insert(interpreter.Name,0,interpreter)
-        wx.GetApp().SetCurrentDefaultInterpreter()
+            dlg = InterpreterConfigDialog.InterpreterConfigDialog(wx.GetApp().GetTopWindow(),-1,_("Configure Interpreter"))
+            dlg.CenterOnParent()
+            status = dlg.ShowModal()
+            dlg.Destroy()
+            wx.GetApp().AddInterpreters()
         
     def ProcessEventBeforeWindows(self, event):
         return False
-
 
     def ProcessEvent(self, event):
         if Service.Service.ProcessEvent(self, event):
@@ -2575,10 +2570,7 @@ class DebuggerService(Service.Service):
 
         self.ShowWindow(True)
         projectService = wx.GetApp().GetService(ProjectEditor.ProjectService)
-        try:
-            dlg = CommandPropertiesDialog(self.GetView().GetFrame(), 'Debug File', projectService, None, okButtonName="Debug", debugging=True)
-        except:
-            return
+        dlg = CommandPropertiesDialog(self.GetView().GetFrame(), 'Debug File', projectService, None, okButtonName="Debug", debugging=True)
         dlg.CenterOnParent()
         if not showDialog:
             showDialog = dlg.MustShowDialog()
@@ -3101,6 +3093,7 @@ class CommandPropertiesDialog(wx.Dialog):
     def GetKey(self, lastPart):
         if self._currentProj:
             return "%s/%s/%s" % (ProjectEditor.PROJECT_KEY, self._currentProj.GetFilename().replace(os.sep, '|'), lastPart)
+        return lastPart
 
 
     def OnOKClick(self, event):

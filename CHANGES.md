@@ -47,3 +47,4 @@ Version 1.0.2 -------------2018-01-08
 6.enable custom context menu in debug output tab,and enable word wrap in line
 7.can only launch one find or replace dialog instance
 8.enable to add one interpreter to editor
+9.add configure interpreter function

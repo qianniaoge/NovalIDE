@@ -20,7 +20,8 @@ class IntellisenceDataLoader(object):
     
     def Load(self,interpreter,p_obj):
         p_obj.wait()
-        intellisence_data_path = os.path.join(self._data_location,interpreter.Version)
+        root_path = os.path.join(self._data_location,str(interpreter.Id))
+        intellisence_data_path = os.path.join(root_path,interpreter.Version)
         if not os.path.exists(intellisence_data_path):
             return
         name_sets = set()
@@ -41,7 +42,7 @@ class IntellisenceManager(object):
     def generate_intellisence_data(self,interpreter):
         sys_path_list = interpreter.SyspathList
         script_path = os.path.join(sysutilslib.mainModuleDir, "noval", "parser", "factory.py")
-        cmd_list = [interpreter.Path,script_path,self.data_root_path]
+        cmd_list = [interpreter.Path,script_path,os.path.join(self.data_root_path,str(interpreter.Id))]
       ##  p = subprocess.Popen(cmd_list,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     ##    subprocess.Popen(cmd_list,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         p = subprocess.Popen(cmd_list,shell=False)
