@@ -13,7 +13,6 @@ class Interpreter(object):
         self._path = executable_path
         self._install_path = os.path.dirname(self._path)
         self._name = name
-        self._id = wx.NewId()
         
     @property
     def Path(self):
@@ -49,7 +48,7 @@ class PythonInterpreter(Interpreter):
     
     CONSOLE_EXECUTABLE_NAME = "python.exe"
     WINDOW_EXECUTABLE_NAME = "pythonw.exe"
-    def __init__(self,name,executable_path):
+    def __init__(self,name,executable_path,id=None,is_valid_interpreter = False):
         if sysutils.isWindows():
             if os.path.basename(executable_path) == PythonInterpreter.WINDOW_EXECUTABLE_NAME:
                 self._window_path = executable_path
@@ -62,12 +61,17 @@ class PythonInterpreter(Interpreter):
                 self._window_path = window_path
                 
         super(PythonInterpreter,self).__init__(name,executable_path)
-        self._is_valid_interpreter = False
-        self.GetVersion()
+        if id is None:
+            self._id = InterpreterManager.GenerateId()
+        else:
+            self._id = int(id)
+        self._is_valid_interpreter = is_valid_interpreter
         self._is_default = False
         self._sys_path_list = []
-        self._buitins = []
-        if self._is_valid_interpreter:
+        self._builtins = []
+        if not is_valid_interpreter:
+            self.GetVersion()
+        if not is_valid_interpreter and self._is_valid_interpreter:
             self.GetSyspathList()
             self.GetBuiltins()
             
@@ -151,11 +155,19 @@ class PythonInterpreter(Interpreter):
     @property    
     def Builtins(self):
         return self._builtins
+        
+    def SetInterpreterInfo(self,version,builtins,sys_path_list):
+        self._version = version
+        assert(0 == len(self._builtins))
+        self._builtins = builtins
+        assert(0 == len(self._sys_path_list))
+        self._sys_path_list = sys_path_list
          
 class InterpreterManager(Singleton):
     
     interpreters = []
     DefaultInterpreter = None
+    KEY_PREFIX = "interpreters"
     
     def LoadDefaultInterpreter(self):
         if self.LoadPythonInterpretersFromConfig():
@@ -222,15 +234,35 @@ class InterpreterManager(Singleton):
         config = wx.ConfigBase_Get()
         if sysutils.isWindows():
             dct = self.ConvertInterpretersToDictList()
-            data = config.Read("interpreters")
+            data = config.Read(self.KEY_PREFIX)
             if not data:
                 return False
             lst = pickle.loads(data.encode('ascii'))
             for l in lst:
-                interpreter = PythonInterpreter(l['name'],l['path'])
+                interpreter = PythonInterpreter(l['name'],l['path'],l['id'],True)
                 interpreter.Default = l['default']
                 if interpreter.Default:
                     self.SetDefaultInterpreter(interpreter)
+                interpreter.SetInterpreterInfo(l['version'],l['builtins'],l['path_list'])
+                self.interpreters.append(interpreter)
+        else:
+            prefix = self.KEY_PREFIX
+            data = config.Read(prefix)
+            if not data:
+                return False
+            ids = data.split(";")
+            for id in ids:
+                name = config.Read("%s/%s/Name" % (prefix,id))
+                path = config.Read("%s/%s/Path" % (prefix,id))
+                is_default = config.ReadInt("%s/%s/Default" % (prefix,id))
+                version = config.Read("%s/%s/Version" % (prefix,id))
+                sys_paths = config.Read("%s/%s/SysPathList" % (prefix,id))
+                builtins = config.Read("%s/%s/Builtins" % (prefix,id))
+                interpreter = PythonInterpreter(name,path,id,True)
+                interpreter.Default = is_default
+                if interpreter.Default:
+                    self.SetDefaultInterpreter(interpreter)
+                interpreter.SetInterpreterInfo(version,builtins.split(';'),sys_paths.split(';'))
                 self.interpreters.append(interpreter)
         
         if len(self.interpreters) > 0:
@@ -251,13 +283,24 @@ class InterpreterManager(Singleton):
             dct = self.ConvertInterpretersToDictList()
             if dct == []:
                 return
-            config.Write("interpreters" ,pickle.dumps(dct))            
+            config.Write(self.KEY_PREFIX ,pickle.dumps(dct))   
+        else:
+            prefix = self.KEY_PREFIX
+            id_list = [ str(kl.Id) for kl in self.interpreters ]
+            config.Write(prefix,";".join(id_list))
+            for kl in self.interpreters:
+                config.WriteInt("%s/%d/Id"%(prefix,kl.Id),kl.Id)
+                config.Write("%s/%d/Name"%(prefix,kl.Id),kl.Name)
+                config.Write("%s/%d/Version"%(prefix,kl.Id),kl.Version)
+                config.Write("%s/%d/Path"%(prefix,kl.Id),kl.Path)
+                config.WriteInt("%s/%d/Default"%(prefix,kl.Id),kl.Default)
+                config.Write("%s/%d/SysPathList"%(prefix,kl.Id),';'.join(kl.SyspathList))
+                config.Write("%s/%d/Builtins"%(prefix,kl.Id),';'.join(kl.Builtins))
         
     def AddPythonInterpreter(self,interpreter_path,name):
         interpreter = PythonInterpreter("",interpreter_path)
         if not interpreter.IsValidInterpreter:
             raise InterpreterAddError("%s is not a valid interpreter path" % interpreter_path)
-            ##raise "%s is not a valid interpreter path" % interpreter_path
         interpreter.Name = name
         if self.CheckInterpreterExist(interpreter):
             raise InterpreterAddError("interpreter have already exist")
@@ -303,7 +346,21 @@ class InterpreterManager(Singleton):
                 return True  
             elif kb.Path.lower() == interpreter.Path.lower():
                 return True
-        return False 
+        return False
+        
+    @classmethod
+    def CheckIdExist(cls,id):
+        for kb in cls.interpreters:
+            if kb.Id == id:
+                return True
+        return False
+        
+    @classmethod        
+    def GenerateId(cls):
+        id = wx.NewId()
+        while cls.CheckIdExist(id):
+            id = wx.NewId()
+        return id
 
 class InterpreterAddError(Exception):
     

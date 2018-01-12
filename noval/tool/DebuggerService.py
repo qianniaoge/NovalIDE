@@ -2394,6 +2394,7 @@ class DebuggerService(Service.Service):
             status = dlg.ShowModal()
             dlg.Destroy()
             wx.GetApp().AddInterpreters()
+            Interpreter.InterpreterManager().SavePythonInterpretersConfig()
         
     def ProcessEventBeforeWindows(self, event):
         return False

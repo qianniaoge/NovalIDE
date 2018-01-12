@@ -829,6 +829,8 @@ class PythonOptionsPanel(wx.Panel):
         self._pathTextCtrl.InsertItems(choices,0)
         if len(choices) > 0:
             self._pathTextCtrl.SetSelection(default_selection)
+        if status == wx.ID_OK:
+            Interpreter.InterpreterManager().SavePythonInterpretersConfig()
 
     def OnOK(self, optionsDialog):
         config = wx.ConfigBase_Get()

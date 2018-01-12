@@ -248,6 +248,11 @@ class InterpreterConfigDialog(wx.Dialog):
         item = self.dvlc.RowToItem(index)
         id = self.dvlc.GetItemData(item)
         interpreter = Interpreter.InterpreterManager().GetInterpreterById(id)
+        interpreter.GetSyspathList()
+        interpreter.GetBuiltins()
+        self.path_panel.AppendSysPath(interpreter)
+        self.builtin_panel.SetBuiltiins(interpreter)
+        self.enviroment_panel.SetVariables()
         intellisence.IntellisenceManager().generate_intellisence_data(interpreter)
           
     def ScanAllInterpreters(self):
