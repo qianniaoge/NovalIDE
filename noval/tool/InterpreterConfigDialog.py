@@ -253,7 +253,27 @@ class InterpreterConfigDialog(wx.Dialog):
         self.path_panel.AppendSysPath(interpreter)
         self.builtin_panel.SetBuiltiins(interpreter)
         self.enviroment_panel.SetVariables()
-        intellisence.IntellisenceManager().generate_intellisence_data(interpreter)
+        self.smart_analyse_btn.Enable(False)
+
+        dlg = AnalyseProgressDialog(self)
+        if sysutils.isWindows():
+            dlg.Pulse()
+            intellisence.IntellisenceManager().generate_intellisence_data(interpreter,dlg)
+        else:
+            interpreter.Analysing = True
+            intellisence.IntellisenceManager().generate_intellisence_data(interpreter,dlg)
+            self.temp = 0
+            while True:
+                if not interpreter.Analysing:
+                    dlg.Destroy()
+                    self.smart_analyse_btn.Enable(True)
+                    break
+                if self.temp >=100:
+                    self.temp = 0
+                wx.MilliSleep(50)
+                wx.Yield()
+                dlg.Update(self.temp)
+                self.temp += 1
           
     def ScanAllInterpreters(self):
         for interpreter in Interpreter.InterpreterManager.interpreters:
@@ -270,14 +290,35 @@ class InterpreterConfigDialog(wx.Dialog):
             self.remove_btn.Enable(False)
             self.set_default_btn.Enable(False)
         else:
-            self.smart_analyse_btn.Enable(True)
             self.remove_btn.Enable(True)
             self.set_default_btn.Enable(True)
             item = self.dvlc.RowToItem(index)
             id = self.dvlc.GetItemData(item)
             interpreter = Interpreter.InterpreterManager().GetInterpreterById(id)
+            if Interpreter.InterpreterManager().IsInterpreterAnalysing():
+                self.smart_analyse_btn.Enable(False)
+            else:
+                self.smart_analyse_btn.Enable(True)
             self.path_panel.AppendSysPath(interpreter)
             self.builtin_panel.SetBuiltiins(interpreter)
             self.enviroment_panel.SetVariables()
             
         
+class AnalyseProgressDialog(wx.ProgressDialog):
+    
+    Parent = None
+    def __init__(self,parent):
+        wx.ProgressDialog.__init__(self,"Interpreter Smart Analyse",
+                               "Please wait a minute for end analysing",
+                               maximum = 100,
+                               parent=parent,
+                               style = 0
+                                | wx.PD_APP_MODAL
+                                | wx.PD_SMOOTH
+                                )
+                                
+        AnalyseProgressDialog.Parent = parent
+        
+    def Destroy(self):
+        wx.ProgressDialog.Destroy(self)
+        AnalyseProgressDialog.Parent.smart_analyse_btn.Enable(True)

@@ -14,12 +14,15 @@ class IntellisenceDataLoader(object):
         self._data_location = data_location
         self.module_dicts = {}
         
-    def Start(self,interpreter,p_obj):
-        t = threading.Thread(target=self.Load,args=(interpreter,p_obj))
+    def Start(self,interpreter,p_obj,progress_dlg):
+        t = threading.Thread(target=self.Load,args=(interpreter,p_obj,progress_dlg))
         t.start()
     
-    def Load(self,interpreter,p_obj):
+    def Load(self,interpreter,p_obj,progress_dlg):
         p_obj.wait()
+        interpreter.Analysing = False
+        if progress_dlg != None and sysutilslib.isWindows():
+            progress_dlg.Destroy()
         root_path = os.path.join(self._data_location,str(interpreter.Id))
         intellisence_data_path = os.path.join(root_path,interpreter.Version)
         if not os.path.exists(intellisence_data_path):
@@ -39,7 +42,7 @@ class IntellisenceManager(object):
         self.module_dicts = {}
         self._loader = IntellisenceDataLoader(self.data_root_path )
         
-    def generate_intellisence_data(self,interpreter):
+    def generate_intellisence_data(self,interpreter,progress_dlg = None):
         sys_path_list = interpreter.SyspathList
         script_path = os.path.join(sysutilslib.mainModuleDir, "noval", "parser", "factory.py")
         cmd_list = [interpreter.Path,script_path,os.path.join(self.data_root_path,str(interpreter.Id))]
@@ -51,8 +54,9 @@ class IntellisenceManager(object):
             startupinfo.wShowWindow = subprocess.SW_HIDE
         else:
             startupinfo = None
+        interpreter.Analysing = True
         p = subprocess.Popen(cmd_list,startupinfo=startupinfo)
-        self.load_intellisence_data(Interpreter.InterpreterManager().GetDefaultInterpreter(),p)
+        self.load_intellisence_data(interpreter,p,progress_dlg)
         
     def generate_default_intellisence_data(self):
         default_interpreter = Interpreter.InterpreterManager().GetDefaultInterpreter()
@@ -60,8 +64,8 @@ class IntellisenceManager(object):
             return
         self.generate_intellisence_data(default_interpreter)
         
-    def load_intellisence_data(self,interpreter,p_obj):
-        self._loader.Start(interpreter,p_obj)
+    def load_intellisence_data(self,interpreter,p_obj,progress_dlg):
+        self._loader.Start(interpreter,p_obj,progress_dlg)
 
     def load_member_list(self,member_list_path):
         with open(member_list_path) as f:

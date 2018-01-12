@@ -67,6 +67,7 @@ class PythonInterpreter(Interpreter):
             self._id = int(id)
         self._is_valid_interpreter = is_valid_interpreter
         self._is_default = False
+        self._is_analysing = False
         self._sys_path_list = []
         self._builtins = []
         if not is_valid_interpreter:
@@ -162,6 +163,13 @@ class PythonInterpreter(Interpreter):
         self._builtins = builtins
         assert(0 == len(self._sys_path_list))
         self._sys_path_list = sys_path_list
+    @property
+    def Analysing(self):
+        return self._is_analysing
+        
+    @Analysing.setter
+    def Analysing(self,is_analysing):
+        self._is_analysing = is_analysing
          
 class InterpreterManager(Singleton):
     
@@ -361,7 +369,13 @@ class InterpreterManager(Singleton):
         while cls.CheckIdExist(id):
             id = wx.NewId()
         return id
-
+        
+    def IsInterpreterAnalysing(self):
+        for kb in self.interpreters:
+            if kb.Analysing:
+                return True
+        return False
+        
 class InterpreterAddError(Exception):
     
     def __init__(self, error_msg):
