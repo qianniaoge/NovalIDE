@@ -7,7 +7,8 @@ if sys.platform == "win32":
     setup(windows=[{"script":"NovalIDE.py","icon_resources":[(1, u"noval.ico")]}],
           options = { "py2exe":{"dll_excludes":["MSVCP90.dll"]}},
             data_files=[("noval/tool/bmp_source", glob.glob("noval/tool/bmp_source/*.ico") + glob.glob("noval/tool/bmp_source/*.jpg") + glob.glob("noval/tool/bmp_source/*.png")),
-                ("noval/tool/data",["noval/tool/data/tips.txt"])],)
+                ("noval/tool/data",["noval/tool/data/tips.txt"]),
+                 ("noval/parser",glob.glob("noval/parser/*.py"))],)
 
 elif sys.platform.find('linux') != -1:
     from distutils.core import setup

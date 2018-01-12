@@ -45,7 +45,13 @@ class IntellisenceManager(object):
         cmd_list = [interpreter.Path,script_path,os.path.join(self.data_root_path,str(interpreter.Id))]
       ##  p = subprocess.Popen(cmd_list,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     ##    subprocess.Popen(cmd_list,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        p = subprocess.Popen(cmd_list,shell=False)
+        if sysutilslib.isWindows():
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = subprocess.SW_HIDE
+        else:
+            startupinfo = None
+        p = subprocess.Popen(cmd_list,startupinfo=startupinfo)
         self.load_intellisence_data(Interpreter.InterpreterManager().GetDefaultInterpreter(),p)
         
     def generate_default_intellisence_data(self):
