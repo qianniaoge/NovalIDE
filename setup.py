@@ -2,14 +2,11 @@ import sys
 if sys.platform == "win32":
     from distutils.core import setup
     import py2exe
+    import glob
 
     setup(windows=[{"script":"NovalIDE.py","icon_resources":[(1, u"noval.ico")]}],
           options = { "py2exe":{"dll_excludes":["MSVCP90.dll"]}},
-            data_files=[("noval/tool/bmp_source", [
-                "noval/tool/bmp_source/noval.ico","noval/tool/bmp_source/splash.jpg",\
-                "noval/tool/bmp_source/terminate_all.png","noval/tool/bmp_source/class.png",\
-                "noval/tool/bmp_source/func.png","noval/tool/bmp_source/module.png",\
-                "noval/tool/bmp_source/property.png",]),
+            data_files=[("noval/tool/bmp_source", glob.glob("noval/tool/bmp_source/*.ico") + glob.glob("noval/tool/bmp_source/*.jpg") + glob.glob("noval/tool/bmp_source/*.png")),
                 ("noval/tool/data",["noval/tool/data/tips.txt"])],)
 
 elif sys.platform.find('linux') != -1:

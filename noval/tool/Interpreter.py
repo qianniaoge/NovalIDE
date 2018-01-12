@@ -250,7 +250,7 @@ class InterpreterManager(Singleton):
             data = config.Read(prefix)
             if not data:
                 return False
-            ids = data.split(";")
+            ids = data.split(os.pathsep)
             for id in ids:
                 name = config.Read("%s/%s/Name" % (prefix,id))
                 path = config.Read("%s/%s/Path" % (prefix,id))
@@ -262,7 +262,7 @@ class InterpreterManager(Singleton):
                 interpreter.Default = is_default
                 if interpreter.Default:
                     self.SetDefaultInterpreter(interpreter)
-                interpreter.SetInterpreterInfo(version,builtins.split(';'),sys_paths.split(';'))
+                interpreter.SetInterpreterInfo(version,builtins.split(os.pathsep),sys_paths.split(os.pathsep))
                 self.interpreters.append(interpreter)
         
         if len(self.interpreters) > 0:
@@ -287,18 +287,18 @@ class InterpreterManager(Singleton):
         else:
             prefix = self.KEY_PREFIX
             id_list = [ str(kl.Id) for kl in self.interpreters ]
-            config.Write(prefix,";".join(id_list))
+            config.Write(prefix,os.pathsep.join(id_list))
             for kl in self.interpreters:
                 config.WriteInt("%s/%d/Id"%(prefix,kl.Id),kl.Id)
                 config.Write("%s/%d/Name"%(prefix,kl.Id),kl.Name)
                 config.Write("%s/%d/Version"%(prefix,kl.Id),kl.Version)
                 config.Write("%s/%d/Path"%(prefix,kl.Id),kl.Path)
                 config.WriteInt("%s/%d/Default"%(prefix,kl.Id),kl.Default)
-                config.Write("%s/%d/SysPathList"%(prefix,kl.Id),';'.join(kl.SyspathList))
-                config.Write("%s/%d/Builtins"%(prefix,kl.Id),';'.join(kl.Builtins))
+                config.Write("%s/%d/SysPathList"%(prefix,kl.Id),os.pathsep.join(kl.SyspathList))
+                config.Write("%s/%d/Builtins"%(prefix,kl.Id),os.pathsep.join(kl.Builtins))
         
     def AddPythonInterpreter(self,interpreter_path,name):
-        interpreter = PythonInterpreter("",interpreter_path)
+        interpreter = PythonInterpreter(name,interpreter_path)
         if not interpreter.IsValidInterpreter:
             raise InterpreterAddError("%s is not a valid interpreter path" % interpreter_path)
         interpreter.Name = name
