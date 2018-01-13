@@ -734,7 +734,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
 			foundView.SetSelection(startPos, startPos + len(lineText.rstrip("\n")))
 			if foundView.GetLangLexer() == parserconfig.LANG_PYTHON_LEXER:
 				import OutlineService
-				self.GetService(OutlineService.OutlineService).LoadOutline(foundView, position=startPos)
+				self.GetService(OutlineService.OutlineService).LoadOutline(foundView, lineNum=lineNum)
                 
     def AddInterpreters(self):
         cb = self.ToolbarCombox

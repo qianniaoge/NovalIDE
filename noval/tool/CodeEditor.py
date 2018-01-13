@@ -690,7 +690,8 @@ class CodeCtrl(STCTextEditor.TextCtrl):
 
 
     def OnPopSyncOutline(self, event):
-        wx.GetApp().GetService(OutlineService.OutlineService).LoadOutline(wx.GetApp().GetDocumentManager().GetCurrentView(), position=self._rightClickPosition)
+        lineNum = wx.GetApp().GetDocumentManager().GetCurrentView().LineFromPosition(self._rightClickPosition)
+        wx.GetApp().GetService(OutlineService.OutlineService).LoadOutline(wx.GetApp().GetDocumentManager().GetCurrentView(),lineNum=lineNum)
         
     def OnGotoDefinition(self, event):
         line = self.GetCurrentLine()

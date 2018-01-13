@@ -19,6 +19,7 @@ import ProjectEditor
 import MessageService
 import FindService
 import OutlineService
+import noval.util.strutils as strutils
 _ = wx.GetTranslation
 
 
@@ -43,6 +44,7 @@ class FindInDirService(FindService.FindService):
     FINDFILE_ID = wx.NewId()        # for bringing up Find in File dialog box
     FINDALL_ID = wx.NewId()         # for bringing up Find All dialog box
     FINDDIR_ID = wx.NewId()         # for bringing up Find Dir dialog box
+    LINE_PREFIX = "Line "
 
 
     def InstallControls(self, frame, menuBar = None, toolBar = None, statusBar = None, document = None):
@@ -242,6 +244,7 @@ class FindInDirService(FindService.FindService):
         frame.Destroy()
         if status == wx.ID_OK:
             messageService = wx.GetApp().GetService(MessageService.MessageService)
+            MessageService.MessageView.bottomTab.SetSelection(1)
             messageService.ShowWindow()
 
             view = messageService.GetView()
@@ -266,7 +269,7 @@ class FindInDirService(FindService.FindService):
                                     if needToDisplayFilename:
                                         view.AddLines(FILENAME_MARKER + dirString + "\n")
                                         needToDisplayFilename = False
-                                    line = repr(lineNum).zfill(4) + ":" + line
+                                    line = self.LINE_PREFIX + str(lineNum) + ":" + line
                                     view.AddLines(line)
                                 line = docFile.readline()
                                 lineNum += 1
@@ -281,11 +284,7 @@ class FindInDirService(FindService.FindService):
                                 break
                             for name in files:
                                 if file_type_list != []:
-                                    parts = name.split('.')
-                                    if 1 == len(parts):
-                                        file_ext = ''
-                                    else:
-                                        file_ext = parts[1].lower()
+                                    file_ext = strutils.GetFileExt(name)
                                     if file_ext not in file_type_list:
                                         continue
                                 filename = os.path.join(root, name)
@@ -304,7 +303,7 @@ class FindInDirService(FindService.FindService):
                                         if needToDisplayFilename:
                                             view.AddLines(FILENAME_MARKER + filename + "\n")
                                             needToDisplayFilename = False
-                                        line = repr(lineNum).zfill(4) + ":" + line
+                                        line = self.LINE_PREFIX + str(lineNum) + ":" + line
                                         view.AddLines(line)
                                     line = docFile.readline()
                                     lineNum += 1
@@ -404,7 +403,7 @@ class FindInDirService(FindService.FindService):
                             needToDisplayFilename = False
     
                         lineNum = openDocView.LineFromPosition(foundStart)
-                        line = repr(lineNum).zfill(4) + ":" + openDocView.GetLine(lineNum)
+                        line = self.LINE_PREFIX + str(lineNum) + ":" + openDocView.GetLine(lineNum)
                         view.AddLines(line)
                         if firstDef == -1:
                             firstDef = view.GetControl().GetCurrentLine() - 1
@@ -586,7 +585,7 @@ class FindInDirService(FindService.FindService):
         if lineEnd == -1:
             return
         else:
-            lineNum = int(lineText[0:lineEnd])
+            lineNum = int(lineText[0:lineEnd].replace(self.LINE_PREFIX ,"").strip())
 
         text = messageService.GetView().GetText()
         if defLineNum == -1:
@@ -620,4 +619,4 @@ class FindInDirService(FindService.FindService):
                 #         Also, if we use the correct positioning order (start, end), somehow, when we open a edit window for the first
                 #         time, we don't see the selection, it is scrolled off screen
                 foundView.SetSelection(startPos - 1 + len(lineText[lineEnd:].rstrip("\n")), startPos)
-                wx.GetApp().GetService(OutlineService.OutlineService).LoadOutline(foundView, position=startPos)
+                wx.GetApp().GetService(OutlineService.OutlineService).LoadOutline(foundView, lineNum=lineNum)

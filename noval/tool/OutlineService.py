@@ -268,27 +268,50 @@ class OutlineTreeCtrl(wx.TreeCtrl):
         if view:
             view.DoSelectCallback(cbdata)
 
-
-    def SelectClosestItem(self, position):
-        tree = self
-        distances = []
-        items = []
-        self.FindDistanceToTreeItems(tree.GetRootItem(), position, distances, items)
-        mindist = 1000000
-        mindex = -1
-        for index in range(0, len(distances)):
-            if distances[index] <= mindist:
-                mindist = distances[index]
-                mindex = index
-        if mindex != -1:
-            item = items[mindex]
-            self.EnsureVisible(item)
+    def FindNodeItem(self,item,node):
+        data = self.GetPyData(item)
+        cbdata = data[self.CALLBACKDATA]
+        if cbdata == node:
+            return item
+            
+        if self.ItemHasChildren(item):
+            child, cookie = self.GetFirstChild(item)
+            while child.IsOk():
+                find_item = self.FindNodeItem(child, node)
+                if find_item is not None:
+                    return find_item
+                child, cookie = self.GetNextChild(item, cookie)
+        return None
+        
+    def SelectClosestItem(self, node):
+        
+        item = self.FindNodeItem(self.GetRootItem(),node)
+        if item != None:
             os_view = wx.GetApp().GetService(OutlineService).GetView()
             if os_view:
                os_view.StopActionOnSelect()
             self.SelectItem(item)
             if os_view:
                os_view.ResumeActionOnSelect()
+##        tree = self
+##        distances = []
+##        items = []
+##        self.FindDistanceToTreeItems(tree.GetRootItem(), position, distances, items)
+##        mindist = 1000000
+##        mindex = -1
+##        for index in range(0, len(distances)):
+##            if distances[index] <= mindist:
+##                mindist = distances[index]
+##                mindex = index
+##        if mindex != -1:
+##            item = items[mindex]
+##            self.EnsureVisible(item)
+##            os_view = wx.GetApp().GetService(OutlineService).GetView()
+##            if os_view:
+##               os_view.StopActionOnSelect()
+##            self.SelectItem(item)
+##            if os_view:
+##               os_view.ResumeActionOnSelect()
 
 
     def FindDistanceToTreeItems(self, item, position, distances, items):
@@ -471,7 +494,7 @@ class OutlineService(Service.Service):
     # Service specific methods
     #----------------------------------------------------------------------------
 
-    def LoadOutline(self, view, position=-1, force=False):
+    def LoadOutline(self, view, lineNum=-1, force=False):
         if not self.GetView():
             return
 
@@ -480,14 +503,16 @@ class OutlineService(Service.Service):
             if view.DoLoadOutlineCallback(force=force):
                 self.GetView().OnSort(wx.ConfigBase_Get().ReadInt("OutlineSort", SORT_BY_NONE))
                 self.LoadExpansionState()
-            if position >= 0:
-                self.SyncToPosition(position)
+            if lineNum >= 0:
+                scope = view.ModuleScope.FindScope(lineNum)
+                if scope.Parent is None:
+                    return
+                self.SyncToPosition(scope.Node)
 
-
-    def SyncToPosition(self, position):
+    def SyncToPosition(self, node):
         if not self.GetView():
             return
-        self.GetView().GetTreeCtrl().SelectClosestItem(position)
+        self.GetView().GetTreeCtrl().SelectClosestItem(node)
 
 
     def OnCloseFrame(self, event):
