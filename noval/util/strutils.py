@@ -9,7 +9,7 @@
 # Copyright:    (c) 2005 ActiveGrid, Inc.
 # License:      wxWindows License
 #----------------------------------------------------------------------------
-
+import os
 
 def caseInsensitiveCompare(s1, s2):
     """ Method used by sort() to sort values in case insensitive order """
@@ -109,3 +109,10 @@ def parseArgs(argStr, stripQuotes=False):
         rtn.append(t)
         argStr = argStr[endIndex:]
     return rtn
+
+def GetFileExt(filename):
+    basename = os.path.basename(filename)
+    parts = basename.split(".")
+    if 1 == len(parts):
+        return ""
+    return parts[-1]

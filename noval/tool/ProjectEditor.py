@@ -30,6 +30,7 @@ import Wizard
 import SVNService
 import project as projectlib
 import ExtensionService
+import ResourceView
 
 from IDE import ACTIVEGRID_BASE_IDE
 if not ACTIVEGRID_BASE_IDE:
@@ -1461,8 +1462,8 @@ class ProjectTreeCtrl(wx.TreeCtrl):
 
 
 class ProjectView(wx.lib.docview.View):
-    LOGICAL_MODE  = "logical"
-    PHYSICAL_MODE = "physical"
+    PROJECT_VIEW  = "ProjectView"
+    RESOURCE_VIEW = "ResourceView"
 
     #----------------------------------------------------------------------------
     # Overridden methods
@@ -1492,7 +1493,7 @@ class ProjectView(wx.lib.docview.View):
 
 
     def GetDocument(self):
-        if not self._projectChoice:
+        if not self._projectChoice or self.GetMode() == ProjectView.RESOURCE_VIEW:
             return None
 
         selItem = self._projectChoice.GetSelection()
@@ -1553,11 +1554,11 @@ class ProjectView(wx.lib.docview.View):
         self._logicalBtn = wx.lib.buttons.GenBitmapToggleButton(panel, -1, getLogicalModeOffBitmap(), size=(h,h))
         self._logicalBtn.SetBitmapSelected(getLogicalModeOnBitmap())
         self._logicalBtn.SetToggle(True)
-        self._logicalBtn.SetToolTipString(_("View Files by Logical Groups"))
+        self._logicalBtn.SetToolTipString(_("Project View"))
         panel.Bind(wx.EVT_BUTTON, self.OnSelectMode, self._logicalBtn)
         self._physicalBtn = wx.lib.buttons.GenBitmapToggleButton(panel, -1, getPhysicalModeOffBitmap(), size=(h,h))
         self._physicalBtn.SetBitmapSelected(getPhysicalModeOnBitmap())
-        self._physicalBtn.SetToolTipString(_("View Files by Physical Disk Layout"))
+        self._physicalBtn.SetToolTipString(_("Resource View"))
         panel.Bind(wx.EVT_BUTTON, self.OnSelectMode, self._physicalBtn)
         
         butSizer.Add(self._projectChoice, 1, wx.EXPAND)
@@ -1565,7 +1566,7 @@ class ProjectView(wx.lib.docview.View):
         butSizer.Add(self._physicalBtn, 0)
         sizer.Add(butSizer, 0, wx.EXPAND)
 
-        self._treeCtrl = ProjectTreeCtrl(panel, -1, style = wx.TR_HIDE_ROOT | wx.TR_HAS_BUTTONS | wx.TR_EDIT_LABELS | wx.TR_DEFAULT_STYLE | wx.TR_MULTIPLE | wx.TR_EXTENDED)
+        self._treeCtrl = ProjectTreeCtrl(panel, -1, style = wx.TR_HIDE_ROOT | wx.TR_HAS_BUTTONS | wx.TR_EDIT_LABELS | wx.TR_DEFAULT_STYLE | wx.TR_EXTENDED)
         self._treeCtrl.AddRoot(_("Projects"))
         if self._embeddedWindow:
             sizer.Add(self._treeCtrl, 1, wx.EXPAND|wx.BOTTOM, HALF_SPACE)  # allow space for embedded window resize-sash
@@ -1596,11 +1597,11 @@ class ProjectView(wx.lib.docview.View):
         wx.EVT_TREE_END_LABEL_EDIT(self._treeCtrl, self._treeCtrl.GetId(), self.OnEndLabelEdit)
         wx.EVT_RIGHT_DOWN(self._treeCtrl, self.OnRightClick)
         wx.EVT_KEY_DOWN(self._treeCtrl, self.OnKeyPressed)
-        wx.EVT_TREE_ITEM_COLLAPSED(self._treeCtrl, self._treeCtrl.GetId(), self.SaveFolderState)
-        wx.EVT_TREE_ITEM_EXPANDED(self._treeCtrl, self._treeCtrl.GetId(), self.SaveFolderState)
+      #  wx.EVT_TREE_ITEM_COLLAPSED(self._treeCtrl, self._treeCtrl.GetId(), self.SaveFolderState)
+       # wx.EVT_TREE_ITEM_EXPANDED(self._treeCtrl, self._treeCtrl.GetId(), self.SaveFolderState)
         wx.EVT_TREE_BEGIN_DRAG(self._treeCtrl, self._treeCtrl.GetId(), self.OnBeginDrag)
         wx.EVT_TREE_END_DRAG(self._treeCtrl, self._treeCtrl.GetId(), self.OnEndDrag)
-        wx.EVT_LEFT_DOWN(self._treeCtrl, self.OnLeftClick)
+       ## wx.EVT_LEFT_DOWN(self._treeCtrl, self.OnLeftClick)
 
         # drag-and-drop support
         dt = ProjectFileDropTarget(self)
@@ -1616,23 +1617,33 @@ class ProjectView(wx.lib.docview.View):
             self._physicalBtn.SetToggle(not down)
         else:  # btn == self._physicalBtn:
             self._logicalBtn.SetToggle(not down)
-        self.LoadProject(self.GetDocument())
+            
+        if self.GetMode() == ProjectView.RESOURCE_VIEW:
+            ResourceView.ResourceView(self).LoadResource()
+        else:
+            self._projectChoice.Clear()
+            self.LoadProject(self.GetDocument())
 
 
     def GetMode(self):
         if not self._physicalBtn.up:
-            return ProjectView.PHYSICAL_MODE
+            return ProjectView.RESOURCE_VIEW
         else:  # elif self._logicalBtn.GetValue():
-            return ProjectView.LOGICAL_MODE
+            return ProjectView.PROJECT_VIEW
 
 
     def OnProjectSelect(self, event=None):
-        self.LoadProject(self.GetDocument())
-        if self.GetDocument():
-            filename = self.GetDocument().GetFilename()
+        if self.GetMode() == ProjectView.RESOURCE_VIEW:
+            i = self._projectChoice.GetSelection()
+            name = self._projectChoice.GetString(i)
+            ResourceView.ResourceView(self).LoadRoot(name)
         else:
-            filename = ''
-        self._projectChoice.SetToolTipString(filename)
+            self.LoadProject(self.GetDocument())
+            if self.GetDocument():
+                filename = self.GetDocument().GetFilename()
+            else:
+                filename = ''
+            self._projectChoice.SetToolTipString(filename)
 
 
     def OnSize(self, event):
@@ -1641,7 +1652,7 @@ class ProjectView(wx.lib.docview.View):
 
 
     def OnBeginDrag(self, event):
-        if self.GetMode() == ProjectView.PHYSICAL_MODE:
+        if self.GetMode() == ProjectView.RESOURCE_VIEW:
             return
             
         item = event.GetItem()
@@ -1760,9 +1771,9 @@ class ProjectView(wx.lib.docview.View):
                     for filePath in newFilePaths:
                         file = project.FindFile(filePath)
                         if file:
-                            if mode == ProjectView.LOGICAL_MODE:
+                            if mode == ProjectView.PROJECT_VIEW:
                                 folderPath = file.logicalFolder
-                            else:  # ProjectView.PHYSICAL_MODE
+                            else:  # ProjectView.RESOURCE_VIEW
                                 folderPath = file.physicalFolder
                             if folderPath:
                                 self._treeCtrl.AddFolder(folderPath)
@@ -1974,7 +1985,7 @@ class ProjectView(wx.lib.docview.View):
             event.Enable(False)  # Implement this one in the service
             return True
         elif id == ProjectService.ADD_FOLDER_ID:
-            event.Enable((self.GetDocument() != None) and (self.GetMode() == ProjectView.LOGICAL_MODE))
+            event.Enable((self.GetDocument() != None) and (self.GetMode() == ProjectView.PROJECT_VIEW))
             return True            
         elif id == wx.lib.pydocview.FilePropertiesService.PROPERTIES_ID:
             status = False
@@ -2012,7 +2023,7 @@ class ProjectView(wx.lib.docview.View):
                     event.Enable(False)
                     return True
 
-            event.Enable(self._HasFilesSelected() or (self.GetDocument() != None and self.GetMode() == ProjectView.LOGICAL_MODE and self._HasFoldersSelected()))
+            event.Enable(self._HasFilesSelected() or (self.GetDocument() != None and self.GetMode() == ProjectView.PROJECT_VIEW and self._HasFoldersSelected()))
             return True
         elif id == wx.ID_PASTE:
             event.Enable(self.CanPaste())
@@ -2081,7 +2092,7 @@ class ProjectView(wx.lib.docview.View):
 
 
     def GetSelectedPhysicalFolder(self):
-        if self.GetMode() == ProjectView.LOGICAL_MODE:
+        if self.GetMode() == ProjectView.PROJECT_VIEW:
             return None
         else:
             for item in self._treeCtrl.GetSelections():
@@ -2118,7 +2129,7 @@ class ProjectView(wx.lib.docview.View):
                 mode = self.GetMode()
                 docFilePath = document.GetFilename()
                 
-                if mode == ProjectView.LOGICAL_MODE:
+                if mode == ProjectView.PROJECT_VIEW:
                     folders = document.GetModel().logicalFolders
                 else:
                     folders = document.GetModel().physicalFolders
@@ -2129,7 +2140,7 @@ class ProjectView(wx.lib.docview.View):
                     folderItems = folderItems + self._treeCtrl.AddFolder(folderPath)
                                             
                 for file in document.GetModel()._files:
-                    if mode == ProjectView.LOGICAL_MODE:
+                    if mode == ProjectView.PROJECT_VIEW:
                         folder = file.logicalFolder
                     else:
                         folder = file.physicalFolder
@@ -2356,7 +2367,7 @@ class ProjectView(wx.lib.docview.View):
         if len(paths):
             
             folderPath = None
-            if self.GetMode() == ProjectView.LOGICAL_MODE:
+            if self.GetMode() == ProjectView.PROJECT_VIEW:
                 selections = self._treeCtrl.GetSelections()
                 if selections:
                     item = selections[0]
@@ -2489,7 +2500,7 @@ class ProjectView(wx.lib.docview.View):
                                         paths.append(filename)
     
                 folderPath = None
-                if self.GetMode() == ProjectView.LOGICAL_MODE:
+                if self.GetMode() == ProjectView.PROJECT_VIEW:
                     selections = self._treeCtrl.GetSelections()
                     if selections:
                         item = selections[0]
@@ -2533,7 +2544,7 @@ class ProjectView(wx.lib.docview.View):
             so the solution was to consume the left click event.  But his broke the single click expand/collapse
             of a folder, so if it is a folder, we do an event.Skip() to allow the expand/collapse,
             otherwise we consume the event.
-        """            
+        """          
         # if folder let it collapse/expand
         if wx.Platform == '__WXMSW__':
             item, flags = self._treeCtrl.HitTest(event.GetPosition())
@@ -2657,7 +2668,7 @@ class ProjectView(wx.lib.docview.View):
             file = self._GetItemFile(item)
             if file.type == 'xform':
                 event.Veto()
-        if (self.GetMode() == ProjectView.PHYSICAL_MODE) and not self._IsItemFile(item):
+        if (self.GetMode() == ProjectView.RESOURCE_VIEW) and not self._IsItemFile(item):
             event.Veto()
 
 
@@ -2734,7 +2745,7 @@ class ProjectView(wx.lib.docview.View):
             fileDataObject = wx.FileDataObject()
             if wx.TheClipboard.GetData(fileDataObject):
                 folderPath = None
-                if self.GetMode() == ProjectView.LOGICAL_MODE:
+                if self.GetMode() == ProjectView.PROJECT_VIEW:
                     items = self._treeCtrl.GetSelections()
                     if items:
                         item = items[0]
@@ -2957,6 +2968,9 @@ class ProjectView(wx.lib.docview.View):
 
 
     def OnOpenSelection(self, event):
+        if self.GetMode() == ProjectView.RESOURCE_VIEW:
+            ResourceView.ResourceView(self).OpenSelection()
+            return
         doc = None
         try:
             items = self._treeCtrl.GetSelections()[:]
@@ -3133,7 +3147,7 @@ class ProjectFileDropTarget(wx.FileDropTarget):
         """ Do actual work of dropping files into project """
         if self._view.GetDocument():
             folderPath = None
-            if self._view.GetMode() == ProjectView.LOGICAL_MODE:
+            if self._view.GetMode() == ProjectView.PROJECT_VIEW:
                 folderItem = self._view._treeCtrl.FindClosestFolder(x,y)
                 if folderItem:
                     folderPath = self._view._GetItemFolderPath(folderItem)

@@ -51,3 +51,4 @@ Version 1.0.2 -------------2018-01-08
 10.display interpreter sys path list ,builtin modules and environment
 11.make install packages run in windows system
 12.show smart analyse progress dialog
+13.implement file resource view

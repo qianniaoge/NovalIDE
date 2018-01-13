@@ -22,6 +22,7 @@ import shutil
 import TabbedFrame
 import Interpreter
 import noval.parser.intellisence as intellisence
+import noval.parser.config as parserconfig
 
 # Required for Unicode support with python
 # site.py sets this, but Windows builds don't have site.py because of py2exe problems
@@ -331,7 +332,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
 
         pythonTemplate = wx.lib.docview.DocTemplate(docManager,
                 _("Python"),
-                "*.py",
+                "*.py;*.pyw",
                 _("Python"),
                 _(".py"),
                 _("Python Document"),
@@ -708,6 +709,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 break
                 
     def GotoView(self,file_path,lineNum):
+		file_path = os.path.abspath(file_path)
 		foundView = None
 		openDocs = self.GetDocumentManager().GetDocuments()
 		for openDoc in openDocs:
@@ -717,18 +719,23 @@ class IDEApplication(wx.lib.pydocview.DocApp):
 
 		if not foundView:
 			doc = self.GetDocumentManager().CreateDocument(file_path, wx.lib.docview.DOC_SILENT)
+			if doc is None:
+			    return
 			foundView = doc.GetFirstView()
 
 		if foundView:
 			foundView.GetFrame().SetFocus()
 			foundView.Activate()
+			if not hasattr(foundView,"GotoLine"):
+			    return
 			foundView.GotoLine(lineNum)
 			startPos = foundView.PositionFromLine(lineNum)
 			lineText = foundView.GetCtrl().GetLine(lineNum - 1)
 			foundView.SetSelection(startPos, startPos + len(lineText.rstrip("\n")))
-			import OutlineService
-			self.GetService(OutlineService.OutlineService).LoadOutline(foundView, position=startPos)
-			
+			if foundView.GetLangLexer() == parserconfig.LANG_PYTHON_LEXER:
+				import OutlineService
+				self.GetService(OutlineService.OutlineService).LoadOutline(foundView, position=startPos)
+                
     def AddInterpreters(self):
         cb = self.ToolbarCombox
         cb.Clear()

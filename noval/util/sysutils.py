@@ -14,6 +14,7 @@ import sys
 import os
 import time
 import pyperclip
+import wx
 
 # this will be set to true in IDE.py when we are running release builds.
 isRelease = False
@@ -118,3 +119,18 @@ systemStartTime = getCurrentTimeAsFloat()
 
 def CopyToClipboard(str):
     pyperclip.copy(str)
+
+def GetSupportableExtList():
+    exts = []
+    for template in wx.GetApp().GetDocumentManager().GetTemplates():
+        filter = template.GetFileFilter()
+        parts = filter.split(";")
+        for part in parts:
+            ext = part.replace("*.","").strip()
+            exts.append(ext)
+    return exts
+
+def IsExtSupportable(ext):
+    if ext == "":
+        return True
+    return ext.lower() in GetSupportableExtList()

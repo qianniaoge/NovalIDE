@@ -456,3 +456,9 @@ def open_path_in_terminator(file_path):
         subprocess.Popen('start cmd.exe',shell=True,cwd=file_path.encode(sys_encoding))
     else:
         subprocess.Popen('gnome-terminal',shell=True,cwd=file_path.encode(sys_encoding))
+        
+def start_file(file_path):
+    if sysutils.isWindows():
+        os.startfile(file_path)
+    else:
+        subprocess.call(["xdg-open", file_path])
