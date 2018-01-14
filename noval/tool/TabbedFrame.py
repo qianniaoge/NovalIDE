@@ -43,7 +43,7 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame):
         def OnSaveFile(event):
             self.GetDocumentManager().OnFileSave(event)
         def OnSaveFileAs(event):
-            self.GetDocumentManager().OnFileSaveAs(event)
+            self.GetDocumentManager().SaveAsDocument(doc)
         def OnCloseAllWithoutDoc(event):
             for i in range(self._notebook.GetPageCount()-1, -1, -1): # Go from len-1 to 0
                 if i != index:

@@ -782,6 +782,9 @@ class IDEDocManager(wx.lib.docview.DocManager):
         doc = self.GetCurrentDocument()
         if not doc:
             return
+        self.SaveAsDocument(doc)
+            
+    def SaveAsDocument(self,doc):
         old_file_path = doc.GetFilename()
         if not doc.SaveAs():
             return
