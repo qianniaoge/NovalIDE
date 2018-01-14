@@ -364,8 +364,8 @@ class Service(wx.lib.pydocview.DocService):
             self.SetView(None)
         
         return True
-        
-    def GetActiveView(self):
+    @staticmethod
+    def GetActiveView():
         active_book = wx.GetApp().MainFrame.GetActiveChild()
         if not active_book:
             return None

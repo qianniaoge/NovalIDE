@@ -934,7 +934,9 @@ class TextView(wx.lib.docview.View):
     def EnsureVisibleEnforcePolicy(self, line):
         self.GetCtrl().EnsureVisibleEnforcePolicy(line-1)  # line numbering for editor is 0 based, we are 1 based.
 
-
+    def GetLineCount(self):
+        return self.GetCtrl().GetLineCount()
+        
     def LineFromPosition(self, pos):
         return self.GetCtrl().LineFromPosition(pos)+1  # line numbering for editor is 0 based, we are 1 based.
 

@@ -19,6 +19,7 @@ import ProjectEditor
 import MessageService
 import FindService
 import OutlineService
+import Service
 import noval.util.strutils as strutils
 _ = wx.GetTranslation
 
@@ -92,8 +93,8 @@ class FindInDirService(FindService.FindService):
     def ProcessUpdateUIEvent(self, event):
         id = event.GetId()
         if id == FindInDirService.FINDFILE_ID:
-            view = wx.GetApp().GetDocumentManager().GetCurrentView()
-            if view and view.GetDocument() and not isinstance(view.GetDocument(), ProjectEditor.ProjectDocument):  # don't search project model
+            view = Service.Service.GetActiveView()
+            if view:  # don't search project model
                 event.Enable(True)
             else:
                 event.Enable(False)
@@ -239,7 +240,7 @@ class FindInDirService(FindService.FindService):
         regExpr = regExprCtrl.IsChecked()
         self.SaveFindConfig(findString, wholeWord, matchCase, regExpr)
         
-        file_type = filetype_Ctrl.GetValue()
+        file_type = filetype_Ctrl.GetValue().strip()
         file_type_list = self.GetFileTypeList(file_type)
         frame.Destroy()
         if status == wx.ID_OK:
@@ -248,6 +249,7 @@ class FindInDirService(FindService.FindService):
             messageService.ShowWindow()
 
             view = messageService.GetView()
+            found_line = 0
             if view:
                 wx.GetApp().GetTopWindow().SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
                 
@@ -271,6 +273,7 @@ class FindInDirService(FindService.FindService):
                                         needToDisplayFilename = False
                                     line = self.LINE_PREFIX + str(lineNum) + ":" + line
                                     view.AddLines(line)
+                                    found_line += 1
                                 line = docFile.readline()
                                 lineNum += 1
                             if not needToDisplayFilename:
@@ -305,12 +308,13 @@ class FindInDirService(FindService.FindService):
                                             needToDisplayFilename = False
                                         line = self.LINE_PREFIX + str(lineNum) + ":" + line
                                         view.AddLines(line)
+                                        found_line += 1
                                     line = docFile.readline()
                                     lineNum += 1
                                 if not needToDisplayFilename:
                                     view.AddLines("\n")
     
-                    view.AddLines(_("Search completed."))
+                    view.AddLines(_("Search completed,Find total %d results.") % found_line)
                 
                 finally:
                     wx.GetApp().GetTopWindow().SetCursor(wx.StockCursor(wx.CURSOR_DEFAULT))
@@ -334,26 +338,23 @@ class FindInDirService(FindService.FindService):
     def DoFindIn(self, findString, matchCase, wholeWord, regExpr, currFileOnly=False, jumpToFound=False):
         messageService = wx.GetApp().GetService(MessageService.MessageService)
         if not messageService:
-            return
-
+            return  
         messageService.ShowWindow()
-
         view = messageService.GetView()
         if not view:
             return
-
         wx.GetApp().GetTopWindow().SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
         
         try:
             #Switch to messages tab.
-            view.GetControl().GetParent().SetSelection(0) 
+            view.GetControl().GetParent().SetSelection(1) 
             view.ClearLines()
             view.SetCallback(self.OnJumpToFoundLine)
     
             projectService = wx.GetApp().GetService(ProjectEditor.ProjectService)
     
-            if wx.GetApp().GetDocumentManager().GetCurrentView():
-                currDoc = wx.GetApp().GetDocumentManager().GetCurrentView().GetDocument()
+            if Service.Service.GetActiveView():
+                currDoc = Service.Service.GetActiveView().GetDocument()
             else:
                 currDoc = None
             if currFileOnly:
@@ -371,7 +372,7 @@ class FindInDirService(FindService.FindService):
                     view.AddLines(PROJECT_MARKER + projName + "\n\n")
     
             firstDef = -1
-    
+            found_line = 0
             # do search in open files first, open files may have been modified and different from disk because it hasn't been saved
             openDocs = wx.GetApp().GetDocumentManager().GetDocuments()
             openDocsInProject = filter(lambda openDoc: openDoc.GetFilename() in projectFilenames, openDocs)
@@ -388,30 +389,31 @@ class FindInDirService(FindService.FindService):
                 # even if they do have a non-text searchable object, how do we display it in the message window?
                 if not hasattr(openDocView, "GetValue"):
                     continue
-                text = openDocView.GetValue()
-    
-                lineNum = 1
+                line_count = openDocView.GetLineCount()
+     ##           lineNum = 1
                 needToDisplayFilename = True
-                start = 0
-                end = 0
-                count = 0
-                while count != -1:
-                    count, foundStart, foundEnd, newText = self.DoFind(findString, None, text, start, end, True, matchCase, wholeWord, regExpr)
+             #   start = 0
+              #  end = 0
+               # count = 0
+                for lineNum in range(line_count):
+                    line_text = openDocView.GetLine(lineNum+1)
+                    count, foundStart, foundEnd, newText = self.DoFind(findString, None, line_text, 0, 0, True, matchCase, wholeWord, regExpr)
                     if count != -1:
                         if needToDisplayFilename:
                             view.AddLines(FILENAME_MARKER + openDoc.GetFilename() + "\n")
                             needToDisplayFilename = False
     
-                        lineNum = openDocView.LineFromPosition(foundStart)
-                        line = self.LINE_PREFIX + str(lineNum) + ":" + openDocView.GetLine(lineNum)
+                ##        lineNum = openDocView.LineFromPosition(foundStart)
+                        line = self.LINE_PREFIX + str(lineNum+1) + ":" + line_text
                         view.AddLines(line)
                         if firstDef == -1:
                             firstDef = view.GetControl().GetCurrentLine() - 1
     
-                        start = text.find("\n", foundStart)
-                        if start == -1:
-                            break
-                        end = start
+##                        start = text.find("\n", foundStart)
+                        found_line += 1
+  ##                      if start == -1:
+    ##                        break
+      ##                  end = start
                 if not needToDisplayFilename:
                     view.AddLines("\n")
                 wx.GetApp().Yield(True)
@@ -445,7 +447,7 @@ class FindInDirService(FindService.FindService):
                     view.AddLines("\n")
                 wx.GetApp().Yield(True)
     
-            view.AddLines(_("Search for '%s' completed.") % findString)
+            view.AddLines(_("Search for '%s' completed, Find total %d results.") % (findString,found_line))
     
             if jumpToFound:
                 self.OnJumpToFoundLine(event=None, defLineNum=firstDef)
