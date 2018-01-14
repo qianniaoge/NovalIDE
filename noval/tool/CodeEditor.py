@@ -795,35 +795,37 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         if self.CallTipActive():
             self.CallTipCancel()
         key = event.GetKeyCode()
-        if False:  # key == wx.WXK_SPACE and event.ControlDown():
-            pos = self.GetCurrentPos()
-            # Tips
-            if event.ShiftDown():
-                self.CallTipSetBackground("yellow")
-                self.CallTipShow(pos, 'param1, param2')
-            # Code completion
-            else:
-                #lst = []
-                #for x in range(50000):
-                #    lst.append('%05d' % x)
-                #st = string.join(lst)
-                #print len(st)
-                #self.AutoCompShow(0, st)
-
-                kw = keyword.kwlist[:]
-                kw.append("zzzzzz")
-                kw.append("aaaaa")
-                kw.append("__init__")
-                kw.append("zzaaaaa")
-                kw.append("zzbaaaa")
-                kw.append("this_is_a_longer_value")
-                kw.append("this_is_a_much_much_much_much_much_much_much_longer_value")
-
-                kw.sort()  # Python sorts are case sensitive
-                self.AutoCompSetIgnoreCase(False)  # so this needs to match
-
-                self.AutoCompShow(0, string.join(kw))
-        elif key == wx.WXK_RETURN:
+        pos = self.GetCurrentPos()
+        # Tips
+        if event.ShiftDown():
+            self.CallTipSetBackground("yellow")
+            self.CallTipShow(pos, 'param1, param2')
+            STCTextEditor.TextCtrl.OnKeyPressed(self, event)
+        elif key == ord("."):
+            ###STCTextEditor.TextCtrl.OnKeyPressed(self, event)
+            self.AddText('.')
+            start_pos = self.WordStartPosition(pos,True)
+            end_pos = self.WordEndPosition(pos,True)
+            at = self.GetCharAt(start_pos)
+            rem_chars = self.DEFAULT_WORD_CHARS + "."
+            while chr(at) in rem_chars:
+                 if chr(at) == '.':
+                     start_pos -=1
+                     at = self.GetCharAt(start_pos)
+                     while chr(at) == ' ':
+                         start_pos -=1
+                         at = self.GetCharAt(start_pos)
+                 else:
+                     start_pos -=1
+                     at = self.GetCharAt(start_pos)        
+            text = self.GetTextRange(start_pos+1,end_pos)
+            member_list = intellisence.IntellisenceManager().GetMemberList(text)
+            if member_list == []:
+                return
+            member_list.sort()
+            self.AutoCompSetIgnoreCase(True)
+            self.AutoCompShow(0, string.join(member_list))
+        elif key == wx.WXK_RETURN and not self.AutoCompActive():
             self.DoIndent()
         else:
             STCTextEditor.TextCtrl.OnKeyPressed(self, event)

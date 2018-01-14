@@ -56,6 +56,7 @@ import noval.parser.config as parserconfig
 import WxThreadSafe
 import DebugOutputCtrl
 import InterpreterConfigDialog
+import noval.parser.intellisence as intellisence
 
 if wx.Platform == '__WXMSW__':
     try:
@@ -2388,13 +2389,24 @@ class DebuggerService(Service.Service):
     #----------------------------------------------------------------------------
     def OnCombo(self, event):
         cb = wx.GetApp().ToolbarCombox
-        if event.GetSelection() == cb.GetCount() - 1:
+        selection = event.GetSelection()
+        if selection == cb.GetCount() - 1:
             dlg = InterpreterConfigDialog.InterpreterConfigDialog(wx.GetApp().GetTopWindow(),-1,_("Configure Interpreter"))
             dlg.CenterOnParent()
             status = dlg.ShowModal()
             dlg.Destroy()
             wx.GetApp().AddInterpreters()
             Interpreter.InterpreterManager().SavePythonInterpretersConfig()
+        else:
+           interpreter = cb.GetClientData(selection)
+           self.SelectInterpreter(interpreter)
+           
+    def SelectInterpreter(self,interpreter):
+        if interpreter != Interpreter.InterpreterManager.GetCurrentInterpreter():
+            Interpreter.InterpreterManager.SetCurrentInterpreter(interpreter)
+            if intellisence.IntellisenceManager().IsRunning:
+                return
+            intellisence.IntellisenceManager().load_intellisence_data(interpreter)
         
     def ProcessEventBeforeWindows(self, event):
         return False

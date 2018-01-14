@@ -175,10 +175,12 @@ class InterpreterManager(Singleton):
     
     interpreters = []
     DefaultInterpreter = None
+    CurrentInterpreter = None
     KEY_PREFIX = "interpreters"
     
     def LoadDefaultInterpreter(self):
         if self.LoadPythonInterpretersFromConfig():
+            self.SetCurrentInterpreter(self.DefaultInterpreter)
             return
         self.LoadPythonInterpreters()
         if 0 == len(self.interpreters):
@@ -189,7 +191,7 @@ class InterpreterManager(Singleton):
             self.MakeDefaultInterpreter()
         else:
             self.ChooseDefaultInterpreter()
-            
+        self.SetCurrentInterpreter(self.DefaultInterpreter)
         self.SavePythonInterpretersConfig()
         
     def ChooseDefaultInterpreter(self):
@@ -375,6 +377,14 @@ class InterpreterManager(Singleton):
             if kb.Analysing:
                 return True
         return False
+        
+    @classmethod    
+    def SetCurrentInterpreter(cls,interpreter):
+        cls.CurrentInterpreter = interpreter
+        
+    @classmethod    
+    def GetCurrentInterpreter(cls):
+        return cls.CurrentInterpreter
         
 class InterpreterAddError(Exception):
     

@@ -687,24 +687,16 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         return self.toolbar_combox
         
     def GetCurrentInterpreter(self):
-        if 0 == len(Interpreter.InterpreterManager().interpreters):
-            return None
-        item_index = self.toolbar_combox.GetCurrentSelection()
-        if item_index < 0:
-            item_index = 0
-        data = self.toolbar_combox.GetClientData(item_index)
-        if data is None:
-            data = self.toolbar_combox.GetClientData(item_index)
-        return data
+        return Interpreter.InterpreterManager.GetCurrentInterpreter()
         
-    def SetCurrentDefaultInterpreter(self):
-        default_interpreter = Interpreter.InterpreterManager().GetDefaultInterpreter()
-        if default_interpreter is None:
+    def SetCurrentInterpreter(self):
+        current_interpreter = Interpreter.InterpreterManager.GetCurrentInterpreter()
+        if current_interpreter is None:
             self.toolbar_combox.SetSelection(-1)
             return
         for i in range(self.toolbar_combox.GetCount()):
             data = self.toolbar_combox.GetClientData(i)
-            if data == default_interpreter:
+            if data == current_interpreter:
                 self.toolbar_combox.SetSelection(i)
                 break
                 
@@ -742,8 +734,11 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         for interpreter in Interpreter.InterpreterManager().interpreters:
             cb.Append(interpreter.Name,interpreter)
         cb.Append(_("Configuration"),)
-        self.SetCurrentDefaultInterpreter()
-
+        self.SetCurrentInterpreter()
+        
+    def OnExit(self):
+        intellisence.IntellisenceManager().Stop()
+        wx.lib.pydocview.DocApp.OnExit(self)
 class IDEDocManager(wx.lib.docview.DocManager):
     
     # Overriding default document creation.

@@ -1421,7 +1421,7 @@ class TextCtrl(wx.stc.StyledTextCtrl):
         self.CmdKeyAssign(wx.stc.STC_KEY_PRIOR, wx.stc.STC_SCMOD_CTRL, wx.stc.STC_CMD_ZOOMIN)
         self.CmdKeyAssign(wx.stc.STC_KEY_NEXT, wx.stc.STC_SCMOD_CTRL, wx.stc.STC_CMD_ZOOMOUT)
         self.Bind(wx.stc.EVT_STC_ZOOM, self.OnUpdateLineNumberMarginWidth)  # auto update line num width on zoom
-        wx.EVT_KEY_DOWN(self, self.OnKeyPressed)
+ ##       wx.EVT_KEY_DOWN(self, self.OnKeyPressed)
         wx.EVT_KILL_FOCUS(self, self.OnKillFocus)
         wx.EVT_SET_FOCUS(self, self.OnFocus)
         self.SetMargins(0,0)
