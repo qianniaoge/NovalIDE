@@ -1553,12 +1553,12 @@ class ProjectView(wx.lib.docview.View):
 
         self._logicalBtn = wx.lib.buttons.GenBitmapToggleButton(panel, -1, getLogicalModeOffBitmap(), size=(h,h))
         self._logicalBtn.SetBitmapSelected(getLogicalModeOnBitmap())
-        self._logicalBtn.SetToggle(True)
         self._logicalBtn.SetToolTipString(_("Project View"))
         panel.Bind(wx.EVT_BUTTON, self.OnSelectMode, self._logicalBtn)
         self._physicalBtn = wx.lib.buttons.GenBitmapToggleButton(panel, -1, getPhysicalModeOffBitmap(), size=(h,h))
         self._physicalBtn.SetBitmapSelected(getPhysicalModeOnBitmap())
         self._physicalBtn.SetToolTipString(_("Resource View"))
+        self._physicalBtn.SetToggle(True)
         panel.Bind(wx.EVT_BUTTON, self.OnSelectMode, self._physicalBtn)
         
         butSizer.Add(self._projectChoice, 1, wx.EXPAND)
@@ -1606,6 +1606,7 @@ class ProjectView(wx.lib.docview.View):
         # drag-and-drop support
         dt = ProjectFileDropTarget(self)
         self._treeCtrl.SetDropTarget(dt)
+        self.SelectView()
         
         return True
 
@@ -1617,13 +1618,14 @@ class ProjectView(wx.lib.docview.View):
             self._physicalBtn.SetToggle(not down)
         else:  # btn == self._physicalBtn:
             self._logicalBtn.SetToggle(not down)
+        self.SelectView()
             
+    def SelectView(self):    
         if self.GetMode() == ProjectView.RESOURCE_VIEW:
             ResourceView.ResourceView(self).LoadResource()
         else:
             self._projectChoice.Clear()
             self.LoadProject(self.GetDocument())
-
 
     def GetMode(self):
         if not self._physicalBtn.up:
