@@ -117,11 +117,11 @@ def deep_walk(node,parent):
             is_method = False
             for arg in element.args.args:
                 if type(arg) == ast.Name:
-                    arg = dict(name=arg.id)
-                    if arg['name'] == 'self' and parent.Type == config.NODE_CLASSDEF_TYPE:
+                    if arg.id == 'self' and parent.Type == config.NODE_CLASSDEF_TYPE:
                         is_method = True
-                    args.append(arg)
-            func_def = nodeast.FuncDef(def_name,line_no,col,parent,is_method=is_method)
+                    arg_node = nodeast.ArgNode(arg.id,arg.lineno,arg.col_offset,None)
+                    args.append(arg_node)
+            func_def = nodeast.FuncDef(def_name,line_no,col,parent,is_method=is_method,args=args)
             deep_walk(element,func_def)
         elif isinstance(element,ast.ClassDef):
             class_name = element.name
@@ -231,7 +231,8 @@ def load(file_name):
 if __name__ == "__main__":
     
   ###  print get_package_childs(r"C:\Python27\Lib\site-packages\aliyunsdkcore\auth\__init__.py")
-    module = parse(r"D:\env\Noval\noval\parser\nodeast.py")
+    ##module = parse(r"D:\env\Noval\noval\parser\nodeast.py")
+    module = parse(r"D:\env\Noval\noval\parser\fileparser.py")
     print module
    ## dump(r"G:\work\Noval\noval\test\ast_test_file.py","tt","./")
   ##  load("tt.$members")

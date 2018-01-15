@@ -93,6 +93,13 @@ class Node(BuiltinNode):
     @property
     def Col(self):
         return self._col
+        
+class ArgNode(Node):
+    def __init__(self,name,line,col,parent):
+        super(ArgNode,self).__init__(name,line,col,config.NODE_ARG_TYPE,parent)
+    def __str__(self):
+        print 'type is arg, name is',self.Name,'line is',self.Line,'col is',self.Col
+        return self.Name
 
 class FuncDef(Node):
     def __init__(self,name,line,col,parent,args = [],is_decorated = False,is_method = False,is_class_method = False,is_built_in = False):
@@ -119,7 +126,7 @@ class FuncDef(Node):
         return self._args
         
     def __str__(self):
-        print 'type is func, name is',self.Name,'line is',self.Line,'col is',self.Col
+        print 'type is func, name is',self.Name,'args is',self.Args,'line is',self.Line,'col is',self.Col
         for child in self.Childs:
             print 'func child:', child
         return self.Name
