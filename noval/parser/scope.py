@@ -59,11 +59,11 @@ class Scope(object):
                 else:
                     return child_scope.FindScope(line)
                     
-    def FindInChildScopes(self,name):
+    def FindScopeInChildScopes(self,name):
         for child_scope in self.ChildScopes:
             if child_scope.EqualName(name):
-                return child_scope.Node.Line
-        return -1
+                return child_scope
+        return None
         
     def IsRoutetoEnd(self,scope):
         for child_scope in scope.ChildScopes:
@@ -71,24 +71,30 @@ class Scope(object):
                 return False
         return True        
         
-    def FindInScope(self,name):
-        found_line = -1
+    def FindScopeInScope(self,name):
+        found_scope = None
         parent = self
         while parent is not None:
-            found_line = parent.FindInChildScopes(name)
-            if found_line != -1:
+            found_scope = parent.FindScopeInChildScopes(name)
+            if found_scope != None:
                 break
             parent = parent.Parent
-        return found_line
+        return found_scope
         
-    def FindInScopeByNames(self,names):
+    def FindScopeInScopeByNames(self,names):
         if names[0] == 'self':
-            return self.FindInScope(names[1])
+            return self.FindScopeInScope(names[1])
         else:
-            return self.FindInScope(names[0])
+            return self.FindScopeInScope(names[0])
             
     def FindDefinition(self,name):
-        return self.FindInScopeByNames(name.split('.'))            
+        find_scope = self.FindScopeInScopeByNames(name.split('.'))
+        if None == find_scope:
+            return -1
+        return find_scope.Node.Line
+        
+    def FindDefinitionScope(self,name):
+        return self.FindScopeInScopeByNames(name.split('.'))
             
 class ModuleScope(Scope):
         def __init__(self,module,line_count):
@@ -161,6 +167,17 @@ class ClassDefScope(NodeScope):
             for child in self.ChildScopes:
                 print 'class scope child:', child
             return self.Node.Name
+            
+        def FindScopeInChildScopes(self,name):
+            found_chid_scope = Scope.FindScopeInChildScopes(self,name)
+            if None == found_chid_scope:
+                for base in self.Node.Bases:
+                    base_scope = self.Parent.FindDefinitionScope(base)
+                    if base_scope is not None:
+                        base_child_scope = base_scope.FindScopeInChildScopes(name)
+                        if base_child_scope != None:
+                            return base_child_scope     
+            return found_chid_scope
  
 class NameScope(NodeScope):
         def __init__(self,name_property_node,parent):
