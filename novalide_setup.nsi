@@ -121,6 +121,8 @@ Section "MainSection" SEC01
   File /r "dist\noval\*.*"
   SetOutPath "$INSTDIR\tcl"
   File /r "dist\tcl\*.*"
+  SetOutPath "$APPDATA\NovalIDE\intellisence"
+  File /r "dist\builtins\*.*"
 SectionEnd
 
 Section -AdditionalIcons

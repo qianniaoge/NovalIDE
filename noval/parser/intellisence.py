@@ -9,10 +9,16 @@ import time
 import fileparser
 import config
 
+def CmpMember(x,y):
+    if x.lower() > y.lower():
+        return 1
+    return -1
+
 class IntellisenceDataLoader(object):
     def __init__(self,data_location):
         self._data_location = data_location
         self.module_dicts = {}
+        self.import_list = []
       
     def LodBuiltInData(self):
         builtin_data_path = self._data_location
@@ -38,12 +44,24 @@ class IntellisenceDataLoader(object):
         
     def LoadInterperterData(self,interpreter):
         self.module_dicts.clear()
+        self.import_list = []
         root_path = os.path.join(self._data_location,str(interpreter.Id))
         intellisence_data_path = os.path.join(root_path,interpreter.Version)
         if not os.path.exists(intellisence_data_path):
             return
         self.LoadIntellisenceDirData(intellisence_data_path)
         self.LodBuiltInData()
+        self.LoadImportList()
+        
+    def LoadImportList(self):
+        for key in self.module_dicts.keys():
+            if key.find(".") == -1:
+                self.import_list.append(key)
+        self.import_list.sort(CmpMember)
+        
+    @property
+    def ImportList(self):
+        return self.import_list
 
 class IntellisenceManager(object):
     __metaclass__ = Singleton.SingletonNew
@@ -99,6 +117,9 @@ class IntellisenceManager(object):
         
     def load_intellisence_data(self,interpreter):
         self._loader.Load(interpreter)
+        
+    def GetImportList(self):
+        return self._loader.ImportList
 
     def load_member_list(self,member_list_path):
         with open(member_list_path) as f:
@@ -146,9 +167,12 @@ class IntellisenceManager(object):
             if 1 == name_part_count:
                 member_list_path = self._loader.module_dicts[module_name]['member_list']
                 member_list = self.load_member_list(member_list_path)
+                member_list.sort(CmpMember)
                 return member_list
             else:
-                return self.FindModuleMembers(module_name,name_parts[1:])
+                member_list = self.FindModuleMembers(module_name,name_parts[1:])
+                member_list.sort(CmpMember)
+                return member_list
         return []
                 
     def FindModuleMembers(self,module_name,names):

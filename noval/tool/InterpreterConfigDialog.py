@@ -89,6 +89,7 @@ class EnviromentPanel(wx.Panel):
         self.Sizer.Add(self.dvlc, 1, wx.EXPAND)
         
     def SetVariables(self):
+        self.dvlc.DeleteAllItems()
         for env in os.environ:
             self.dvlc.AppendItem([env, os.environ[env]])
         

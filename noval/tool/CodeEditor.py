@@ -586,6 +586,10 @@ class CodeCtrl(STCTextEditor.TextCtrl):
     CURRENT_LINE_MARKER_MASK = 0x4
     BREAKPOINT_MARKER_MASK = 0x2
     GO_TO_DEFINITION = wx.NewId()
+    TYPE_POINT_WORD = "."
+    TYPE_BLANK_WORD = " "
+    TYPE_IMPORT_WORD = "import"
+    TYPE_FROM_WORD = "from"
     DEFAULT_WORD_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
     
             
@@ -620,6 +624,7 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         self.UpdateStyles()
         
         self.SetWordChars(self.DEFAULT_WORD_CHARS)
+        self.AutoCompSetIgnoreCase(True)
         
     def OnRightUp(self, event):
         #Hold onto the current line number, no way to get it later.
@@ -696,21 +701,7 @@ class CodeCtrl(STCTextEditor.TextCtrl):
     def OnGotoDefinition(self, event):
         line = self.GetCurrentLine()
         pos = self.GetCurrentPos()
-        start_pos = self.WordStartPosition(pos,True)
-        end_pos = self.WordEndPosition(pos,True)
-        at = self.GetCharAt(start_pos)
-        rem_chars = self.DEFAULT_WORD_CHARS + "."
-        while chr(at) in rem_chars:
-             if chr(at) == '.':
-                 start_pos -=1
-                 at = self.GetCharAt(start_pos)
-                 while chr(at) == ' ':
-                     start_pos -=1
-                     at = self.GetCharAt(start_pos)
-             else:
-                 start_pos -=1
-                 at = self.GetCharAt(start_pos)        
-        text = self.GetTextRange(start_pos+1,end_pos)
+        text = self.GetTypeWord(pos)
         scope = wx.GetApp().GetDocumentManager().GetCurrentView().ModuleScope.FindScope(line)
         scope_found_line = scope.FindDefinition(text)
         if scope_found_line != -1:
@@ -790,6 +781,76 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         self.StyleSetSpec(wx.stc.STC_STYLE_BRACELIGHT,  "face:%(font)s,fore:#000000,back:#70FFFF,size:%(size)d" % faces)
         self.StyleSetSpec(wx.stc.STC_STYLE_BRACEBAD,    "face:%(font)s,fore:#000000,back:#FF0000,size:%(size)d" % faces)
 
+    def GetTypeWord(self,pos):
+        start_pos = self.WordStartPosition(pos,True)
+        end_pos = self.WordEndPosition(pos,True)
+        at = self.GetCharAt(start_pos)
+        rem_chars = self.DEFAULT_WORD_CHARS + self.TYPE_POINT_WORD
+        while chr(at) in rem_chars:
+             if chr(at) == self.TYPE_POINT_WORD:
+                 start_pos -=1
+                 at = self.GetCharAt(start_pos)
+                 while chr(at) == self.TYPE_BLANK_WORD:
+                     start_pos -=1
+                     at = self.GetCharAt(start_pos)
+             else:
+                 start_pos -=1
+                 at = self.GetCharAt(start_pos)        
+        text = self.GetTextRange(start_pos+1,end_pos)
+        return text
+        
+    def IsImportType(self,start_pos):
+        line_start_pos = self.PositionFromLine(self.LineFromPosition(start_pos))
+        at = self.GetCharAt(start_pos)
+        while chr(at) == self.TYPE_BLANK_WORD:
+            start_pos -= 1
+            at = self.GetCharAt(start_pos)
+        if start_pos <= line_start_pos:
+            return False
+        word = self.GetTypeWord(start_pos)
+        return True if word == self.TYPE_IMPORT_WORD else False
+        
+    def IsFromType(self,start_pos):
+        line_start_pos = self.PositionFromLine(self.LineFromPosition(start_pos))
+        at = self.GetCharAt(start_pos)
+        while chr(at) == self.TYPE_BLANK_WORD:
+            start_pos -= 1
+            at = self.GetCharAt(start_pos)
+        if start_pos <= line_start_pos:
+            return False
+        word = self.GetTypeWord(start_pos)
+        return True if word == self.TYPE_FROM_WORD else False
+
+    def IsFromImportType(self,start_pos):
+        line_start_pos = self.PositionFromLine(self.LineFromPosition(start_pos))
+        at = self.GetCharAt(start_pos)
+        while chr(at) == self.TYPE_BLANK_WORD:
+            start_pos -= 1
+            at = self.GetCharAt(start_pos)
+        if start_pos <= line_start_pos:
+            return False,''
+        word = self.GetTypeWord(start_pos)
+        if word == self.TYPE_IMPORT_WORD:
+            start_pos -= len(self.TYPE_IMPORT_WORD)
+            start_pos -= 1
+            at = self.GetCharAt(start_pos)
+            while chr(at) == self.TYPE_BLANK_WORD:
+                start_pos -= 1
+                at = self.GetCharAt(start_pos)
+            if start_pos <= line_start_pos:
+                return False,''
+            from_word = self.GetTypeWord(start_pos)
+            start_pos -= len(from_word)
+            start_pos -= 1
+            at = self.GetCharAt(start_pos)
+            while chr(at) == self.TYPE_BLANK_WORD:
+                start_pos -= 1
+                at = self.GetCharAt(start_pos)
+            if start_pos <= line_start_pos:
+                return False,''
+            word = self.GetTypeWord(start_pos)
+            return True if word == self.TYPE_FROM_WORD else False,from_word
+        return False,''
 
     def OnKeyPressed(self, event):
         if self.CallTipActive():
@@ -801,32 +862,29 @@ class CodeCtrl(STCTextEditor.TextCtrl):
             self.CallTipSetBackground("yellow")
             self.CallTipShow(pos, 'param1, param2')
             STCTextEditor.TextCtrl.OnKeyPressed(self, event)
-        elif key == ord("."):
+        elif key == ord(self.TYPE_POINT_WORD):
+            self.AddText(self.TYPE_POINT_WORD)
+            text = self.GetTypeWord(pos)
             ###STCTextEditor.TextCtrl.OnKeyPressed(self, event)
-            self.AddText('.')
-            start_pos = self.WordStartPosition(pos,True)
-            end_pos = self.WordEndPosition(pos,True)
-            at = self.GetCharAt(start_pos)
-            rem_chars = self.DEFAULT_WORD_CHARS + "."
-            while chr(at) in rem_chars:
-                 if chr(at) == '.':
-                     start_pos -=1
-                     at = self.GetCharAt(start_pos)
-                     while chr(at) == ' ':
-                         start_pos -=1
-                         at = self.GetCharAt(start_pos)
-                 else:
-                     start_pos -=1
-                     at = self.GetCharAt(start_pos)        
-            text = self.GetTextRange(start_pos+1,end_pos)
             member_list = intellisence.IntellisenceManager().GetMemberList(text)
             if member_list == []:
                 return
-            member_list.sort()
-            self.AutoCompSetIgnoreCase(True)
+         ##   self.AutoCompSetIgnoreCase(True)
             self.AutoCompShow(0, string.join(member_list))
         elif key == wx.WXK_RETURN and not self.AutoCompActive():
             self.DoIndent()
+        elif key == ord(self.TYPE_BLANK_WORD):
+            self.AddText(self.TYPE_BLANK_WORD)
+            is_from_import_type,name = self.IsFromImportType(pos)
+            if is_from_import_type:
+                print 'is from import type',name
+            elif self.IsImportType(pos) or self.IsFromType(pos):
+                import_list = intellisence.IntellisenceManager().GetImportList()
+                if import_list == []:
+                    return
+                self.AutoCompShow(0, string.join(import_list))
+            else:
+                print 'nothing.......'
         else:
             STCTextEditor.TextCtrl.OnKeyPressed(self, event)
 

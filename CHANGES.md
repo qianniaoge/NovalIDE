@@ -54,3 +54,4 @@ Version 1.0.2 -------------2018-01-08
 13.implement file resource view
 14.enable find location in outline view
 15.initial implement code completion
+16.import and from import code completion
