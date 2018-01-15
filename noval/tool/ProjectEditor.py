@@ -1682,6 +1682,8 @@ class ProjectView(wx.lib.docview.View):
 
 
     def WriteProjectConfig(self):
+        if self.GetMode() == ProjectView.RESOURCE_VIEW:
+            return
         frame = self.GetFrame()
         config = wx.ConfigBase_Get()
         if frame and not self._embeddedWindow:

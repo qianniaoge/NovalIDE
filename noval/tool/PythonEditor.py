@@ -35,6 +35,7 @@ import noval.parser.fileparser as parser
 import noval.parser.scope as scope
 import Interpreter
 import InterpreterConfigDialog
+import noval.parser.intellisence as intellisence
 try:
     import checker # for pychecker
     _CHECKER_INSTALLED = True
@@ -788,6 +789,119 @@ class PythonCtrl(CodeEditor.CodeCtrl):
             self._tokenizerChars[ecol - 1] = 3 # Close quote
             for i in range(scol + 1, ecol - 2):
                 self._tokenizerChars[i] = 1 # Part of string, 1 == ignore the char
+                
+    def IsImportType(self,start_pos):
+        line_start_pos = self.PositionFromLine(self.LineFromPosition(start_pos))
+        at = self.GetCharAt(start_pos)
+        while chr(at) == self.TYPE_BLANK_WORD:
+            start_pos -= 1
+            at = self.GetCharAt(start_pos)
+        if start_pos <= line_start_pos:
+            return False
+        word = self.GetTypeWord(start_pos)
+        return True if word == self.TYPE_IMPORT_WORD else False
+        
+    def IsFromType(self,start_pos):
+        line_start_pos = self.PositionFromLine(self.LineFromPosition(start_pos))
+        at = self.GetCharAt(start_pos)
+        while chr(at) == self.TYPE_BLANK_WORD:
+            start_pos -= 1
+            at = self.GetCharAt(start_pos)
+        if start_pos <= line_start_pos:
+            return False
+        word = self.GetTypeWord(start_pos)
+        return True if word == self.TYPE_FROM_WORD else False
+        
+    def IsFromModuleType(self,start_pos):
+        line_start_pos = self.PositionFromLine(self.LineFromPosition(start_pos))
+        at = self.GetCharAt(start_pos)
+        while chr(at) == self.TYPE_BLANK_WORD:
+            start_pos -= 1
+            at = self.GetCharAt(start_pos)
+        if start_pos <= line_start_pos:
+            return False
+        word = self.GetTypeWord(start_pos)
+        start_pos -= len(word)
+        start_pos -= 1
+        at = self.GetCharAt(start_pos)
+        while chr(at) == self.TYPE_BLANK_WORD:
+            start_pos -= 1
+            at = self.GetCharAt(start_pos)
+        if start_pos <= line_start_pos:
+            return False
+        word = self.GetTypeWord(start_pos)
+        return True if word == self.TYPE_FROM_WORD else False
+
+    def IsFromImportType(self,start_pos):
+        line_start_pos = self.PositionFromLine(self.LineFromPosition(start_pos))
+        at = self.GetCharAt(start_pos)
+        while chr(at) == self.TYPE_BLANK_WORD:
+            start_pos -= 1
+            at = self.GetCharAt(start_pos)
+        if start_pos <= line_start_pos:
+            return False,''
+        word = self.GetTypeWord(start_pos)
+        if word == self.TYPE_IMPORT_WORD:
+            start_pos -= len(self.TYPE_IMPORT_WORD)
+            start_pos -= 1
+            at = self.GetCharAt(start_pos)
+            while chr(at) == self.TYPE_BLANK_WORD:
+                start_pos -= 1
+                at = self.GetCharAt(start_pos)
+            if start_pos <= line_start_pos:
+                return False,''
+            from_word = self.GetTypeWord(start_pos)
+            start_pos -= len(from_word)
+            start_pos -= 1
+            at = self.GetCharAt(start_pos)
+            while chr(at) == self.TYPE_BLANK_WORD:
+                start_pos -= 1
+                at = self.GetCharAt(start_pos)
+            if start_pos <= line_start_pos:
+                return False,''
+            word = self.GetTypeWord(start_pos)
+            return True if word == self.TYPE_FROM_WORD else False,from_word
+        return False,''
+                
+    def HandleKeyPressEvent(self,event):
+        if self.CallTipActive():
+            self.CallTipCancel()
+        key = event.GetKeyCode()
+        pos = self.GetCurrentPos()
+        # Tips
+        if event.ShiftDown():
+            self.CallTipSetBackground("yellow")
+            self.CallTipShow(pos, 'param1, param2')
+            STCTextEditor.TextCtrl.OnKeyPressed(self, event)
+        elif key == ord(self.TYPE_POINT_WORD):
+            self.AddText(self.TYPE_POINT_WORD)
+            text = self.GetTypeWord(pos)
+            ###STCTextEditor.TextCtrl.OnKeyPressed(self, event)
+            member_list = intellisence.IntellisenceManager().GetMemberList(text)
+            if member_list == []:
+                return
+         ##   self.AutoCompSetIgnoreCase(True)
+            self.AutoCompShow(0, string.join(member_list))
+        elif key == wx.WXK_RETURN and not self.AutoCompActive():
+            self.DoIndent()
+        elif key == ord(self.TYPE_BLANK_WORD):
+            self.AddText(self.TYPE_BLANK_WORD)
+            is_from_import_type,name = self.IsFromImportType(pos)
+            if is_from_import_type:
+                member_list = intellisence.IntellisenceManager().GetMemberList(name)
+                if member_list == []:
+                    return
+                member_list.insert(0,"*")
+                self.AutoCompShow(0, string.join(member_list))
+            elif self.IsImportType(pos) or self.IsFromType(pos):
+                import_list = intellisence.IntellisenceManager().GetImportList()
+                if import_list == []:
+                    return
+                self.AutoCompShow(0, string.join(import_list))
+            elif self.IsFromModuleType(pos):
+                self.AutoCompShow(0, string.join([self.TYPE_IMPORT_WORD]))
+        else:
+            STCTextEditor.TextCtrl.OnKeyPressed(self, event)
 
 
 class PythonOptionsPanel(wx.Panel):

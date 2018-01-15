@@ -40,6 +40,7 @@ class ResourceView(object):
         if not os.path.isdir(directory):
             raise Exception("%s is not a valid directory" % directory)
         
+        self._view._treeCtrl.DeleteChildren(self._view._treeCtrl.GetRootItem())
         self._view._treeCtrl.DeleteAllItems()
         
         # add directory as root
