@@ -363,6 +363,10 @@ class TextView(wx.lib.docview.View):
             
     def OnActivateView(self, activate, activeView, deactiveView):
         if activate and self.GetCtrl():
+            if isinstance(deactiveView,TextView):
+                text_ctrl = deactiveView.GetCtrl()
+                if text_ctrl and text_ctrl.AutoCompActive():
+                    text_ctrl.AutoCompCancel()
             # In MDI mode just calling set focus doesn't work and in SDI mode using CallAfter causes an endless loop
             if self.GetDocumentManager().GetFlags() & wx.lib.docview.DOC_SDI:
                 self.SetFocus()
