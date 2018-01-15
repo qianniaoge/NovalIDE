@@ -10,6 +10,14 @@ import utils
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
+type_dicts = {
+    ast.Num:config.ASSIGN_TYPE_INT,
+    ast.Str:config.ASSIGN_TYPE_STR,
+    ast.List:config.ASSIGN_TYPE_LIST,
+    ast.Tuple:config.ASSIGN_TYPE_TUPLE,
+    ast.Dict:config.ASSIGN_TYPE_DICT,
+  ##  ast.Float:config.ASSIGN_TYPE_FLOAT
+}
 
 def is_package_dir(dir_name):
     package_file = "__init__.py"
@@ -100,7 +108,7 @@ def deep_walk(node,parent):
             for deco in element.decorator_list:
                 line_no += 1
                 if type(deco) == ast.Name and deco.id == "property":
-                    nodeast.PropertyDef(def_name,line_no,col,config.PROPERTY_TYPE_UNKNOWN,parent)
+                    nodeast.PropertyDef(def_name,line_no,col,config.ASSIGN_TYPE_UNKNOWN,parent)
                     is_property_def = True
                     break
             if is_property_def:
@@ -146,7 +154,8 @@ def deep_walk(node,parent):
                     name = target.id
                   #  data = dict(name=name,line=line_no,col=col,type=config.NODE_OBJECT_PROPERTY)
                    # childs.append(data)
-                    nodeast.PropertyDef(name,line_no,col,config.PROPERTY_TYPE_UNKNOWN,parent)
+                    nodeast.AssignDef(name,line_no,col,type_dicts.get(element.value,\
+                                                    config.ASSIGN_TYPE_UNKNOWN),parent)
                 elif type(target) == ast.Attribute:
                     if type(target.value) == ast.Name and target.value.id == "self" and parent.Type == config.NODE_FUNCDEF_TYPE and \
                             parent.IsMethod:
@@ -156,7 +165,7 @@ def deep_walk(node,parent):
                                 parent.Parent.RemoveChild(name)
                             else:
                                 continue
-                        nodeast.PropertyDef(name,line_no,col,config.PROPERTY_TYPE_UNKNOWN,parent.Parent)
+                        nodeast.PropertyDef(name,line_no,col,config.ASSIGN_TYPE_UNKNOWN,parent.Parent)
         elif isinstance(element,ast.Import):
             for name in element.names:
                 nodeast.ImportNode(name.name,element.lineno,element.col_offset,parent,name.asname)
@@ -222,7 +231,7 @@ def load(file_name):
 if __name__ == "__main__":
     
   ###  print get_package_childs(r"C:\Python27\Lib\site-packages\aliyunsdkcore\auth\__init__.py")
-    module = parse(r"G:\work\Noval\noval\tool\STCTextEditor.py")
-    ##print module
+    module = parse(r"D:\env\Noval\noval\parser\nodeast.py")
+    print module
    ## dump(r"G:\work\Noval\noval\test\ast_test_file.py","tt","./")
   ##  load("tt.$members")

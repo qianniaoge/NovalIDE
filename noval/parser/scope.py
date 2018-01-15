@@ -115,7 +115,8 @@ class ModuleScope(Scope):
                 elif child.Type == config.NODE_CLASSDEF_TYPE:
                     class_def_scope = ClassDefScope(child,parent_scope)
                     self.MakeScopes(child,class_def_scope)
-                elif child.Type == config.NODE_OBJECT_PROPERTY:
+                elif child.Type == config.NODE_OBJECT_PROPERTY or\
+                            child.Type == config.NODE_ASSIGN_TYPE:
                     NameScope(child,parent_scope)
                 elif child.Type == config.NODE_IMPORT_TYPE:
                     ImportScope(child,parent_scope)
@@ -169,15 +170,15 @@ class ClassDefScope(NodeScope):
             return self.Node.Name
             
         def FindScopeInChildScopes(self,name):
-            found_chid_scope = Scope.FindScopeInChildScopes(self,name)
-            if None == found_chid_scope:
+            found_child_scope = Scope.FindScopeInChildScopes(self,name)
+            if None == found_child_scope:
                 for base in self.Node.Bases:
                     base_scope = self.Parent.FindDefinitionScope(base)
                     if base_scope is not None:
                         base_child_scope = base_scope.FindScopeInChildScopes(name)
                         if base_child_scope != None:
                             return base_child_scope     
-            return found_chid_scope
+            return found_child_scope
  
 class NameScope(NodeScope):
         def __init__(self,name_property_node,parent):

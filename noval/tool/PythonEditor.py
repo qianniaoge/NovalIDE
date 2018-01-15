@@ -389,7 +389,8 @@ class PythonView(CodeEditor.CodeView):
                 treeCtrl.SetItemImage(item,item_image_index,wx.TreeItemIcon_Normal)
                 treeCtrl.SetDoSelectCallback(item, self, child)
                 self.TranverseItem(treeCtrl,child,item)
-            elif child.Type == parserconfig.NODE_OBJECT_PROPERTY:
+            elif child.Type == parserconfig.NODE_OBJECT_PROPERTY or \
+                        child.Type == parserconfig.NODE_ASSIGN_TYPE:
                 item_image_index = 3
                 item = treeCtrl.AppendItem(parent, child.Name)
                 treeCtrl.SetItemImage(item,item_image_index,wx.TreeItemIcon_Normal)

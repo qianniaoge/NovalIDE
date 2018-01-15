@@ -81,7 +81,6 @@ class PythonInterpreter(Interpreter):
         version_flag = "python "
         if output.find(version_flag) == -1:
             output = GetCommandOutput("%s -V" % self.Path,False).strip().lower()
-            version_flag = "python "
             if output.find(version_flag) == -1:
                 return
         self._version = output.replace(version_flag,"").strip()

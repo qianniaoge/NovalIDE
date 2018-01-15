@@ -39,7 +39,7 @@ class AbstractAst(object):
         
 class BuiltinNode(AbstractAst):
     
-    def __init__(self,name,type,parent,is_built_in):
+    def __init__(self,name,type,parent,is_built_in=True):
         super(BuiltinNode,self).__init__(parent,type)
         self._is_built_in = is_built_in
         self._name = name
@@ -51,7 +51,7 @@ class BuiltinNode(AbstractAst):
     @property
     def IsBuiltIn(self):
         return self._is_built_in
-        
+            
 class Module(BuiltinNode):
     
     def __init__(self,name,path,is_built_in = False):
@@ -146,19 +146,26 @@ class ClassDef(Node):
     def Bases(self):
         return self._bases
         
-class PropertyDef(Node):
-    
-    def __init__(self,name,line,col,attr_type,parent,is_class_property = False,is_built_in = False):
-        if is_class_property:
-            super(PropertyDef,self).__init__(name,line,col,config.NODE_CLASSDEF_TYPE,parent,is_built_in)
-        else:
-            super(PropertyDef,self).__init__(name,line,col,config.NODE_OBJECT_PROPERTY,parent,is_built_in)
-        self._attr_type = attr_type
-    
+class AssignDef(Node):
+    def __init__(self,name,line,col,value_type,parent,node_type = config.NODE_ASSIGN_TYPE,is_built_in = False):
+        super(AssignDef,self).__init__(name,line,col,node_type,parent,is_built_in)
+        self._value_type = value_type
     @property
-    def DefType(self):
-        return self._attr_type
+    def ValueType(self):
+        return self._value_type
         
+    def __str__(self):
+        print 'type is assign, name is',self.Name,'line is',self.Line,'col is',self.Col
+        return self.Name
+        
+class PropertyDef(AssignDef):
+    
+    def __init__(self,name,line,col,value_type,parent,is_class_property = False,is_built_in = False):
+        if is_class_property:
+            super(PropertyDef,self).__init__(name,line,col,value_type,parent,config.NODE_CLASSDEF_TYPE,is_built_in)
+        else:
+            super(PropertyDef,self).__init__(name,line,col,value_type,parent,config.NODE_OBJECT_PROPERTY,is_built_in)
+
     def __str__(self):
         print 'type is property, name is',self.Name,'line is',self.Line,'col is',self.Col
         return self.Name

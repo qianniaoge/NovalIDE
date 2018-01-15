@@ -8,6 +8,7 @@ import threading
 import time
 import fileparser
 import config
+import BuiltinModule
 
 def CmpMember(x,y):
     if x.lower() > y.lower():
@@ -19,6 +20,7 @@ class IntellisenceDataLoader(object):
         self._data_location = data_location
         self.module_dicts = {}
         self.import_list = []
+        self._builtin_module = None
       
     def LodBuiltInData(self):
         builtin_data_path = self._data_location
@@ -52,6 +54,7 @@ class IntellisenceDataLoader(object):
         self.LoadIntellisenceDirData(intellisence_data_path)
         self.LodBuiltInData()
         self.LoadImportList()
+        self.LoadBuiltinModule()
         
     def LoadImportList(self):
         for key in self.module_dicts.keys():
@@ -62,6 +65,15 @@ class IntellisenceDataLoader(object):
     @property
     def ImportList(self):
         return self.import_list
+        
+    def LoadBuiltinModule(self):
+        builtin_members_file = os.path.join(self._data_location,"__builtin__.$members")
+        self._builtin_module = BuiltinModule.BuiltinModule("__builtin__",builtin_members_file)
+        self._builtin_module.load(builtin_members_file)
+        
+    @property
+    def BuiltinModule(self):
+        return self._builtin_module
 
 class IntellisenceManager(object):
     __metaclass__ = Singleton.SingletonNew
@@ -206,6 +218,12 @@ class IntellisenceManager(object):
                         module_path = data['path']
                         return self.FindMember(data['childs'],names[1:])
         return None
+        
+    def GetBuiltinModule(self):
+        return self._loader.BuiltinModule
+        
+    def GetTypeObject(self,obj_type):
+        type_obj = self._loader.BuiltinModule.GetTypeNode(obj_type)
 
             
         
