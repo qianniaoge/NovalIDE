@@ -12,8 +12,9 @@ import multiprocessing
 import fileparser
 import utils
 
+DATABASE_FILE = "version"
+
 def generate_builtin_data(dest_path):
-    
     def work_builtin_type(builtin_type,recursive=True):
         childs = []
         for name in dir(builtin_type):
@@ -51,7 +52,23 @@ def generate_builtin_data(dest_path):
             # Pickle dictionary using protocol 0.
             pickle.dump(module_dict, j)
             
-def generate_intelligent_data(root_path):
+def LoadDatabaseVersion(database_location):
+    with open(os.path.join(database_location,DATABASE_FILE)) as f:
+        return f.read()
+        
+def SaveDatabaseVersion(database_location,new_database_version):
+    with open(os.path.join(database_location,DATABASE_FILE),"w") as f:
+        f.write(new_database_version)
+        
+def NeedRenewDatabase(database_location,new_database_version):
+    if not os.path.exists(os.path.join(database_location,DATABASE_FILE)):
+        return True
+    old_database_version = LoadDatabaseVersion(database_location)
+    if 0 == utils.CompareDatabaseVersion(new_database_version,old_database_version):
+        return False
+    return True
+           
+def generate_intelligent_data(root_path,new_database_version):
     if isinstance(sys.version_info,tuple):
         version = str(sys.version_info[0]) + "." +  str(sys.version_info[1]) 
         if sys.version_info[2] > 0:
@@ -61,12 +78,15 @@ def generate_intelligent_data(root_path):
         version = str(sys.version_info.major) + "." +  str(sys.version_info.minor) + "."  + str(sys.version_info.micro)
     dest_path = os.path.join(root_path,version)
     utils.MakeDirs(dest_path)
+    need_renew_database = NeedRenewDatabase(dest_path,new_database_version)
     sys_path_list = sys.path
     for i,path in enumerate(sys_path_list):
         sys_path_list[i] = os.path.abspath(path)
     for path in sys_path_list:
         print ('start parse path data',path)
-        scan_sys_path(path,dest_path)
+        scan_sys_path(path,dest_path,need_renew_database)
+    if need_renew_database:
+        SaveDatabaseVersion(dest_path,new_database_version)
 
 def quick_generate_intelligent_data(root_path):
     version = str(sys.version_info.major) + "." +  str(sys.version_info.minor) + "."  + str(sys.version_info.micro)
@@ -87,22 +107,26 @@ def quick_generate_intelligent_data(root_path):
     #    for future in finished:
      #       future.result()
      
-def generate_intelligent_data_by_pool(root_path):
+def generate_intelligent_data_by_pool(root_path,new_database_version):
     version = str(sys.version_info.major) + "." +  str(sys.version_info.minor) + "."  + str(sys.version_info.micro)
     dest_path = os.path.join(root_path,version)
     utils.MakeDirs(dest_path)
+    need_renew_database = NeedRenewDatabase(dest_path,new_database_version)
     sys_path_list = sys.path
+    max_pool_count = 5
     for i,path in enumerate(sys_path_list):
         sys_path_list[i] = os.path.abspath(path)
-    pool = multiprocessing.Pool(processes=len(sys_path_list))
+    pool = multiprocessing.Pool(processes=min(max_pool_count,len(sys_path_list)))
     future_list = []
     for path in sys_path_list:
         print ('start parse path data',path)
-        pool.apply_async(scan_sys_path,(path,dest_path))
+        pool.apply_async(scan_sys_path,(path,dest_path,need_renew_database))
     pool.close()
     pool.join()
+    if need_renew_database:
+        SaveDatabaseVersion(dest_path,new_database_version)
      
-def scan_sys_path(src_path,dest_path):
+def scan_sys_path(src_path,dest_path,need_renew_database):
     ignore_path_list = []
     for root,path,files in os.walk(src_path):
         if root != src_path and is_test_dir(root):
@@ -129,7 +153,7 @@ def scan_sys_path(src_path,dest_path):
             if top_module_name == "":
                 continue
             module_members_file = os.path.join(dest_path,top_module_name+ ".$members")
-            if os.path.exists(module_members_file):
+            if os.path.exists(module_members_file) and not need_renew_database:
              ###   print fullpath,'has been already analyzed'
                 continue
             #print get_data_name(fullpath)
@@ -147,10 +171,11 @@ def is_test_dir(dir_path):
 if __name__ == "__main__":
     start_time = time.time()
     root_path = sys.argv[1]
+    new_database_version = sys.argv[2]
   ###  generate_builtin_data('./')
-    generate_intelligent_data(root_path)
+    ##generate_intelligent_data(root_path,new_database_version)
     ###quick_generate_intelligent_data("interlicense")
-    ###generate_intelligent_data_by_pool(root_path)
+    generate_intelligent_data_by_pool(root_path,new_database_version)
     end_time = time.time()
     elapse = end_time - start_time
     print ('elapse time:',elapse,'s')

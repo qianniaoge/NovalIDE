@@ -171,9 +171,11 @@ class PropertyDef(AssignDef):
     
     def __init__(self,name,line,col,value,value_type,parent,is_class_property = False,is_built_in = False):
         if is_class_property:
-            super(PropertyDef,self).__init__(name,line,col,value,value_type,parent,config.NODE_CLASSDEF_TYPE,is_built_in)
+            super(PropertyDef,self).__init__(name,line,col,value,value_type,parent,\
+                                config.NODE_CLASS_PROPERTY,is_built_in)
         else:
-            super(PropertyDef,self).__init__(name,line,col,value,value_type,parent,config.NODE_OBJECT_PROPERTY,is_built_in)
+            super(PropertyDef,self).__init__(name,line,col,value,value_type,parent,\
+                                config.NODE_OBJECT_PROPERTY,is_built_in)
 
     def __str__(self):
         print 'type is property, name is',self.Name,'line is',self.Line,'col is',self.Col

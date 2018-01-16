@@ -10,6 +10,7 @@ import fileparser
 import config
 import BuiltinModule
 from utils import CmpMember
+import glob
 
 class IntellisenceDataLoader(object):
     def __init__(self,data_location):
@@ -26,9 +27,8 @@ class IntellisenceDataLoader(object):
     
     def LoadIntellisenceDirData(self,data_path):
         name_sets = set()
-        for filename in os.listdir(data_path):
-            if os.path.isdir(os.path.join(data_path,filename)):
-                continue
+        for filepath in glob.glob(os.path.join(data_path,"*.$members")):
+            filename = os.path.basename(filepath)
             module_name = '.'.join(filename.split(".")[0:-1])
             name_sets.add(module_name)
         for name in name_sets:
@@ -92,7 +92,9 @@ class IntellisenceManager(object):
     def generate_intellisence_data(self,interpreter,progress_dlg = None,load_data_end=False):
         sys_path_list = interpreter.SyspathList
         script_path = os.path.join(sysutilslib.mainModuleDir, "noval", "parser", "factory.py")
-        cmd_list = [interpreter.Path,script_path,os.path.join(self.data_root_path,str(interpreter.Id))]
+        database_version = config.DATABASE_VERSION
+        cmd_list = [interpreter.Path,script_path,os.path.join(self.data_root_path,str(interpreter.Id)),\
+                    database_version]
         if sysutilslib.isWindows():
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
