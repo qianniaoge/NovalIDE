@@ -52,6 +52,6 @@ def CompareDatabaseVersion(new_version,old_version):
     for i,v in enumerate(new_verions):
         if i >= len(old_versions):
             return 1
-        if int(v) > old_versions[i]:
+        if int(v) > int(old_versions[i]):
             return 1
     return 0
