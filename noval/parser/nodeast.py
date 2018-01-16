@@ -1,6 +1,7 @@
 
 import config
 import os
+from utils import CmpMember
 
 class AbstractAst(object):
     def __init__(self,parent,type):
@@ -51,6 +52,11 @@ class BuiltinNode(AbstractAst):
     @property
     def IsBuiltIn(self):
         return self._is_built_in
+        
+    def GetMemberList(self):
+        member_list = [child.Name for child in self.Childs if child.Type != config.NODE_UNKNOWN_TYPE]
+        member_list.sort(CmpMember)
+        return member_list
             
 class Module(BuiltinNode):
     

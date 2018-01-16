@@ -36,3 +36,17 @@ def get_top_modulename(fullpath):
         is_package = False
     return data_file_name,is_package
     
+
+def CmpMember(x,y):
+    
+    if x.startswith("__") and not y.startswith("__"):
+        return 1
+    elif y.startswith("__") and not x.startswith("__"):
+        return -1
+
+    if x.lower() > y.lower():
+
+        return 1
+
+    return -1
+    

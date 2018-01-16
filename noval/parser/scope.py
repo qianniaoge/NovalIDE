@@ -94,7 +94,14 @@ class Scope(object):
         return find_scope.Node.Line
         
     def FindDefinitionScope(self,name):
-        return self.FindScopeInScopeByNames(name.split('.'))
+        names = name.split('.')
+        if names[0] == 'self':
+            if len(names) == 1:
+                return self.Parent
+            else:
+                return self.FindScopeInScope(names[1])
+        else:
+            return self.FindScopeInScope(names[0])
             
 class ModuleScope(Scope):
         def __init__(self,module,line_count):
@@ -148,6 +155,9 @@ class NodeScope(Scope):
         
         def EqualName(self,name):
             return self.Node.Name == name
+            
+        def GetMemberList(self):
+            return self.Node.GetMemberList()
             
 class FuncDefScope(NodeScope):
         def __init__(self,func_def_node,parent):

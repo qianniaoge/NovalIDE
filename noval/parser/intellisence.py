@@ -9,19 +9,7 @@ import time
 import fileparser
 import config
 import BuiltinModule
-
-def CmpMember(x,y):
-    
-    if x.startswith("__") and not y.startswith("__"):
-        return 1
-    elif y.startswith("__") and not x.startswith("__"):
-        return -1
-
-    if x.lower() > y.lower():
-
-        return 1
-
-    return -1
+from utils import CmpMember
 
 class IntellisenceDataLoader(object):
     def __init__(self,data_location):
@@ -231,10 +219,10 @@ class IntellisenceManager(object):
         return self._loader.BuiltinModule
         
     def GetTypeObjectMembers(self,obj_type):
+        if self._loader.BuiltinModule is None:
+            return []
         type_obj = self._loader.BuiltinModule.GetTypeNode(obj_type)
-        member_list = [child.Name for child in type_obj.Childs]
-        member_list.sort(CmpMember)
-        return member_list
+        return type_obj.GetMemberList()
 
             
         

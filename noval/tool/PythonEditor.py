@@ -871,7 +871,8 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         key = event.GetKeyCode()
         pos = self.GetCurrentPos()
         # Tips
-        if event.ShiftDown():
+       ## if event.ShiftDown():
+        if key == ord("("):
             self.CallTipSetBackground("yellow")
             self.CallTipShow(pos, 'param1, param2')
             STCTextEditor.TextCtrl.OnKeyPressed(self, event)
@@ -879,15 +880,18 @@ class PythonCtrl(CodeEditor.CodeCtrl):
             self.AddText(self.TYPE_POINT_WORD)
             text = self.GetTypeWord(pos)
             line = self.LineFromPosition(pos)
-            scope = wx.GetApp().GetDocumentManager().GetCurrentView().ModuleScope.FindScope(line)
+            scope = wx.GetApp().GetDocumentManager().GetCurrentView().ModuleScope.FindScope(line+1)
             scope_found = scope.FindDefinitionScope(text)
             member_list = []
             if None != scope_found:
                 if isinstance(scope_found.Node,nodeast.ImportNode):
                     member_list = intellisence.IntellisenceManager().GetMemberList(text)
                 else:
-                    member_list = intellisence.IntellisenceManager().\
-                                GetTypeObjectMembers(scope_found.Node.ValueType)
+                    if isinstance(scope_found.Node,nodeast.AssignDef):
+                        member_list = intellisence.IntellisenceManager().\
+                                    GetTypeObjectMembers(scope_found.Node.ValueType)
+                    else:
+                        member_list = scope_found.GetMemberList()
             if member_list == []:
                 return
             self.AutoCompSetIgnoreCase(True)
