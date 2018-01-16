@@ -119,6 +119,16 @@ def GetAssignValueType(node):
         value_type = GetAstType(node.value)
     return value_type,value
     
+def GetBases(node):
+    base_names = []
+    for base in node.bases:
+        if type(base) == ast.Name:
+            base_names.append(base.id)
+        elif type(base) == ast.Attribute:
+            base_name = get_attribute_name(base)
+            base_names.append(base_name)
+    return base_names
+    
 def deep_walk(node,parent):
     for element in node.body:
         if isinstance(element,ast.FunctionDef):
@@ -135,7 +145,6 @@ def deep_walk(node,parent):
                     break
             if is_property_def:
                 continue
-                
             is_method = False
             for arg in element.args.args:
                 if type(arg) == ast.Name:
@@ -147,13 +156,7 @@ def deep_walk(node,parent):
             deep_walk(element,func_def)
         elif isinstance(element,ast.ClassDef):
             class_name = element.name
-            base_names = []
-            for base in element.bases:
-                if type(base) == ast.Name:
-                    base_names.append(base.id)
-                elif type(base) == ast.Attribute:
-                    base_name = get_attribute_name(base)
-                    base_names.append(base_name)
+            base_names = GetBases(element)
             line_no = element.lineno
             col = element.col_offset
             class_def = nodeast.ClassDef(class_name,line_no,col,parent,bases=base_names)
@@ -174,8 +177,6 @@ def deep_walk(node,parent):
                    #     nodeast.PropertyDef(name,line_no,col,config.PROPERTY_TYPE_NONE,parent)
                 elif type(target) == ast.Name:
                     name = target.id
-                  #  data = dict(name=name,line=line_no,col=col,type=config.NODE_OBJECT_PROPERTY)
-                   # childs.append(data)
                     value_type,value = GetAssignValueType(element)
                     nodeast.AssignDef(name,line_no,col,value,value_type,parent)
                 elif type(target) == ast.Attribute:
@@ -203,13 +204,11 @@ def walk(node):
     childs = []
     for element in node.body:
         if isinstance(element,ast.FunctionDef):
-            ##print ast.dump(element)
             def_name = element.name
             line_no = element.lineno
             col = element.col_offset
             args = []
             for arg in element.args.args:
-                ###print arg.id
                 if type(arg) == ast.Name:
                     arg = dict(name=arg.id)
                     args.append(arg)
@@ -221,11 +220,11 @@ def walk(node):
             class_name = element.name
             line_no = element.lineno
             col = element.col_offset
-           ## print 'class:', class_name,line_no,col
+            base_names = GetBases(element)
             cls_childs = walk(element)
-            data = dict(name=class_name,line=line_no,col=col,type=config.NODE_CLASSDEF_TYPE,childs=cls_childs)
+            data = dict(name=class_name,line=line_no,col=col,type=config.NODE_CLASSDEF_TYPE,\
+                            bases=base_names,childs=cls_childs)
             childs.append(data)
-            
         elif isinstance(element,ast.Assign):
             targets = element.targets
             line_no = element.lineno

@@ -876,7 +876,7 @@ class PythonCtrl(CodeEditor.CodeCtrl):
             self.CallTipSetBackground("yellow")
             self.CallTipShow(pos, 'param1, param2')
             STCTextEditor.TextCtrl.OnKeyPressed(self, event)
-        elif key == ord(self.TYPE_POINT_WORD):
+        elif key == ord(self.TYPE_POINT_WORD) and not event.ShiftDown():
             self.AddText(self.TYPE_POINT_WORD)
             text = self.GetTypeWord(pos)
             line = self.LineFromPosition(pos)
