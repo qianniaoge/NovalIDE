@@ -10,14 +10,19 @@ import utils
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
-type_dicts = {
-    ast.Num:config.ASSIGN_TYPE_INT,
-    ast.Str:config.ASSIGN_TYPE_STR,
-    ast.List:config.ASSIGN_TYPE_LIST,
-    ast.Tuple:config.ASSIGN_TYPE_TUPLE,
-    ast.Dict:config.ASSIGN_TYPE_DICT,
-  ##  ast.Float:config.ASSIGN_TYPE_FLOAT
-}
+def GetAstType(ast_type):
+    if isinstance(ast_type,ast.Num):
+        return config.ASSIGN_TYPE_INT
+    elif isinstance(ast_type,ast.Str):
+        return config.ASSIGN_TYPE_STR
+    elif isinstance(ast_type,ast.List):
+        return config.ASSIGN_TYPE_LIST
+    elif isinstance(ast_type,ast.Tuple):
+        return config.ASSIGN_TYPE_TUPLE
+    elif isinstance(ast_type,ast.Dict):
+        return config.ASSIGN_TYPE_DICT
+    else:
+        return config.ASSIGN_TYPE_UNKNOWN
 
 def is_package_dir(dir_name):
     package_file = "__init__.py"
@@ -154,8 +159,7 @@ def deep_walk(node,parent):
                     name = target.id
                   #  data = dict(name=name,line=line_no,col=col,type=config.NODE_OBJECT_PROPERTY)
                    # childs.append(data)
-                    nodeast.AssignDef(name,line_no,col,type_dicts.get(element.value,\
-                                                    config.ASSIGN_TYPE_UNKNOWN),parent)
+                    nodeast.AssignDef(name,line_no,col,GetAstType(element.value),parent)
                 elif type(target) == ast.Attribute:
                     if type(target.value) == ast.Name and target.value.id == "self" and parent.Type == config.NODE_FUNCDEF_TYPE and \
                             parent.IsMethod:
@@ -232,7 +236,13 @@ if __name__ == "__main__":
     
   ###  print get_package_childs(r"C:\Python27\Lib\site-packages\aliyunsdkcore\auth\__init__.py")
     ##module = parse(r"D:\env\Noval\noval\parser\nodeast.py")
-    module = parse(r"D:\env\Noval\noval\parser\fileparser.py")
-    print module
+  ##  module = parse(r"D:\env\Noval\noval\parser\fileparser.py")
+  ##  print module
    ## dump(r"G:\work\Noval\noval\test\ast_test_file.py","tt","./")
-  ##  load("tt.$members")
+    datas = load("builtins/__builtin__.$members")
+    print datas['name'],
+    for child in datas['childs']:
+        if child['name'] == 'list':
+            import json
+            print json.dumps(child,indent=4)
+    

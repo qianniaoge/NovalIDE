@@ -36,6 +36,7 @@ import noval.parser.scope as scope
 import Interpreter
 import InterpreterConfigDialog
 import noval.parser.intellisence as intellisence
+import noval.parser.nodeast as nodeast
 try:
     import checker # for pychecker
     _CHECKER_INSTALLED = True
@@ -877,11 +878,19 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         elif key == ord(self.TYPE_POINT_WORD):
             self.AddText(self.TYPE_POINT_WORD)
             text = self.GetTypeWord(pos)
-            ###STCTextEditor.TextCtrl.OnKeyPressed(self, event)
-            member_list = intellisence.IntellisenceManager().GetMemberList(text)
+            line = self.LineFromPosition(pos)
+            scope = wx.GetApp().GetDocumentManager().GetCurrentView().ModuleScope.FindScope(line)
+            scope_found = scope.FindDefinitionScope(text)
+            member_list = []
+            if None != scope_found:
+                if isinstance(scope_found.Node,nodeast.ImportNode):
+                    member_list = intellisence.IntellisenceManager().GetMemberList(text)
+                else:
+                    member_list = intellisence.IntellisenceManager().\
+                                GetTypeObjectMembers(scope_found.Node.ValueType)
             if member_list == []:
                 return
-         ##   self.AutoCompSetIgnoreCase(True)
+            self.AutoCompSetIgnoreCase(True)
             self.AutoCompShow(0, string.join(member_list))
         elif key == wx.WXK_RETURN and not self.AutoCompActive():
             self.DoIndent()

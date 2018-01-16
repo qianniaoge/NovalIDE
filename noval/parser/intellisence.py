@@ -11,8 +11,16 @@ import config
 import BuiltinModule
 
 def CmpMember(x,y):
-    if x.lower() > y.lower():
+    
+    if x.startswith("__") and not y.startswith("__"):
         return 1
+    elif y.startswith("__") and not x.startswith("__"):
+        return -1
+
+    if x.lower() > y.lower():
+
+        return 1
+
     return -1
 
 class IntellisenceDataLoader(object):
@@ -222,8 +230,11 @@ class IntellisenceManager(object):
     def GetBuiltinModule(self):
         return self._loader.BuiltinModule
         
-    def GetTypeObject(self,obj_type):
+    def GetTypeObjectMembers(self,obj_type):
         type_obj = self._loader.BuiltinModule.GetTypeNode(obj_type)
+        member_list = [child.Name for child in type_obj.Childs]
+        member_list.sort(CmpMember)
+        return member_list
 
             
         
