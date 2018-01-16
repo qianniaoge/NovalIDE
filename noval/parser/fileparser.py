@@ -10,6 +10,9 @@ import utils
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
+CLASS_METHOD_NAME = "classmethod"
+STATIC_METHOD_NAME = "staticmethod"
+
 def GetAstType(ast_type):
     if isinstance(ast_type,ast.Num):
         return config.ASSIGN_TYPE_INT
@@ -137,12 +140,17 @@ def deep_walk(node,parent):
             col = element.col_offset
             args = []
             is_property_def = False
+            is_class_method = False
             for deco in element.decorator_list:
                 line_no += 1
-                if type(deco) == ast.Name and deco.id == "property":
-                    nodeast.PropertyDef(def_name,line_no,col,"",config.ASSIGN_TYPE_UNKNOWN,parent)
-                    is_property_def = True
-                    break
+                if type(deco) == ast.Name:
+                    if deco.id == "property":
+                        nodeast.PropertyDef(def_name,line_no,col,"",config.ASSIGN_TYPE_UNKNOWN,parent)
+                        is_property_def = True
+                        break
+                    elif deco.id == CLASS_METHOD_NAME or deco.id == STATIC_METHOD_NAME:
+                        is_class_method = True
+                        break
             if is_property_def:
                 continue
             is_method = False
@@ -152,7 +160,8 @@ def deep_walk(node,parent):
                         is_method = True
                     arg_node = nodeast.ArgNode(arg.id,arg.lineno,arg.col_offset,None)
                     args.append(arg_node)
-            func_def = nodeast.FuncDef(def_name,line_no,col,parent,is_method=is_method,args=args)
+            func_def = nodeast.FuncDef(def_name,line_no,col,parent,is_method=is_method,\
+                                is_class_method=is_class_method,args=args)
             deep_walk(element,func_def)
         elif isinstance(element,ast.ClassDef):
             class_name = element.name
@@ -208,13 +217,24 @@ def walk(node):
             line_no = element.lineno
             col = element.col_offset
             args = []
+            is_class_method = False
+            for deco in element.decorator_list:
+                line_no += 1
+                if type(deco) == ast.Name:
+                    if deco.id == CLASS_METHOD_NAME or deco.id == STATIC_METHOD_NAME:
+                        is_class_method = True
+                        break
+            is_method = False
             for arg in element.args.args:
                 if type(arg) == ast.Name:
+                    if arg.id == 'self':
+                        is_method = True
                     arg = dict(name=arg.id)
                     args.append(arg)
             ##print element.args.defaults
             ###print 'function:' ,def_name,line_no,col
-            data = dict(name=def_name,line=line_no,col=col,type=config.NODE_FUNCDEF_TYPE,args=args)
+            data = dict(name=def_name,line=line_no,col=col,type=config.NODE_FUNCDEF_TYPE,\
+                        is_method=is_method,is_class_method=is_class_method,args=args)
             childs.append(data)
         elif isinstance(element,ast.ClassDef):
             class_name = element.name
@@ -246,21 +266,17 @@ def walk(node):
 def load(file_name):
     with open(file_name,'rb') as f:
         datas = pickle.load(f)
-        import json
-        ###json.dumps(datas,indent=4)
         return datas
         
 if __name__ == "__main__":
     
   ###  print get_package_childs(r"C:\Python27\Lib\site-packages\aliyunsdkcore\auth\__init__.py")
   ##  module = parse(r"D:\env\Noval\noval\parser\nodeast.py")
-    module = parse(r"G:\work\Noval\noval\parser\scope.py")
-    print module
+    #module = parse(r"G:\work\Noval\noval\parser\scope.py")
+    #print module
    ## dump(r"G:\work\Noval\noval\test\ast_test_file.py","tt","./")
-    datas = load("builtins/__builtin__.$members")
-##    print datas['name'],
-##    for child in datas['childs']:
-##        if child['name'] == 'list':
-##            import json
-##            print json.dumps(child,indent=4)
+    datas = load(r"C:\Users\wk\AppData\Roaming\NovalIDE\intellisence\264\2.7.11\wx.lib.docview.$members")
+    print datas['name']
+    import json
+    print json.dumps(datas['childs'],indent=4)
     
