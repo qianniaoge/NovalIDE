@@ -167,9 +167,18 @@ class IntellisenceManager(object):
                         return self.find_definition(child['path'],data['childs'],names[1:])
         return None,-1
         
+    def GetBuiltinMemberList(self,name):
+        if self._loader.BuiltinModule is None:
+            return False,[]
+        return self._loader.BuiltinModule.GetBuiltInTypeMembers(name)
+        
     def GetMemberList(self,name):
         name_parts = name.split(".")
         name_part_count = len(name_parts)
+        if 1 == name_part_count:
+            is_builtin_type, member_list = self.GetBuiltinMemberList(name)
+            if is_builtin_type:
+                return member_list
         module_name = name_parts[0].strip()
         if self._loader.module_dicts.has_key(module_name):
             if 1 == name_part_count:
@@ -219,7 +228,7 @@ class IntellisenceManager(object):
         return self._loader.BuiltinModule
         
     def GetTypeObjectMembers(self,obj_type):
-        if self._loader.BuiltinModule is None:
+        if self._loader.BuiltinModule is None or obj_type == config.ASSIGN_TYPE_UNKNOWN:
             return []
         type_obj = self._loader.BuiltinModule.GetTypeNode(obj_type)
         return type_obj.GetMemberList()

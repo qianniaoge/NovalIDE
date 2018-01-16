@@ -99,8 +99,25 @@ def get_attribute_name(node):
     while type(value) == ast.Attribute:
         names.append(value.attr)
         value = value.value
-    names.append(value.id)
+    if type(value) == ast.Name:
+        names.append(value.id)
+    else:
+        return None
     return '.'.join(names[::-1])
+    
+def GetAssignValueType(node):
+    value = ""
+    if type(node.value) == ast.Call:
+        if type(node.value.func) == ast.Name:
+            value = node.value.func.id
+        elif type(node.value.func) == ast.Attribute:
+            value = get_attribute_name(node.value.func)
+        value_type = config.ASSIGN_TYPE_OBJECT
+        if value is None:
+            value_type = config.ASSIGN_TYPE_UNKNOWN
+    else:
+        value_type = GetAstType(node.value)
+    return value_type,value
     
 def deep_walk(node,parent):
     for element in node.body:
@@ -113,7 +130,7 @@ def deep_walk(node,parent):
             for deco in element.decorator_list:
                 line_no += 1
                 if type(deco) == ast.Name and deco.id == "property":
-                    nodeast.PropertyDef(def_name,line_no,col,config.ASSIGN_TYPE_UNKNOWN,parent)
+                    nodeast.PropertyDef(def_name,line_no,col,"",config.ASSIGN_TYPE_UNKNOWN,parent)
                     is_property_def = True
                     break
             if is_property_def:
@@ -159,7 +176,8 @@ def deep_walk(node,parent):
                     name = target.id
                   #  data = dict(name=name,line=line_no,col=col,type=config.NODE_OBJECT_PROPERTY)
                    # childs.append(data)
-                    nodeast.AssignDef(name,line_no,col,GetAstType(element.value),parent)
+                    value_type,value = GetAssignValueType(element)
+                    nodeast.AssignDef(name,line_no,col,value,value_type,parent)
                 elif type(target) == ast.Attribute:
                     if type(target.value) == ast.Name and target.value.id == "self" and parent.Type == config.NODE_FUNCDEF_TYPE and \
                             parent.IsMethod:
@@ -169,7 +187,8 @@ def deep_walk(node,parent):
                                 parent.Parent.RemoveChild(name)
                             else:
                                 continue
-                        nodeast.PropertyDef(name,line_no,col,config.ASSIGN_TYPE_UNKNOWN,parent.Parent)
+                        value_type,value = GetAssignValueType(element)
+                        nodeast.PropertyDef(name,line_no,col,value,value_type,parent.Parent)
         elif isinstance(element,ast.Import):
             for name in element.names:
                 nodeast.ImportNode(name.name,element.lineno,element.col_offset,parent,name.asname)
@@ -235,14 +254,14 @@ def load(file_name):
 if __name__ == "__main__":
     
   ###  print get_package_childs(r"C:\Python27\Lib\site-packages\aliyunsdkcore\auth\__init__.py")
-    ##module = parse(r"D:\env\Noval\noval\parser\nodeast.py")
-  ##  module = parse(r"D:\env\Noval\noval\parser\fileparser.py")
-  ##  print module
+  ##  module = parse(r"D:\env\Noval\noval\parser\nodeast.py")
+    module = parse(r"G:\work\Noval\noval\parser\scope.py")
+    print module
    ## dump(r"G:\work\Noval\noval\test\ast_test_file.py","tt","./")
     datas = load("builtins/__builtin__.$members")
-    print datas['name'],
-    for child in datas['childs']:
-        if child['name'] == 'list':
-            import json
-            print json.dumps(child,indent=4)
+##    print datas['name'],
+##    for child in datas['childs']:
+##        if child['name'] == 'list':
+##            import json
+##            print json.dumps(child,indent=4)
     

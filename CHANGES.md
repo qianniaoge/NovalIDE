@@ -56,3 +56,8 @@ Version 1.0.2 -------------2018-01-08
 15.initial implement code completion
 16.import and from import code completion
 17.complete type object completion 
+
+
+Version 1.0.3 -------------2018-01-16
+1.smart show module and class member completion
+2.recognize python base type object and show it's member info

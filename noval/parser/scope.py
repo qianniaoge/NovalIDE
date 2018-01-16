@@ -1,5 +1,6 @@
 import fileparser
 import config
+from utils import CmpMember
 
 class Scope(object):
     def __init__(self,line_start,line_end,parent=None):
@@ -156,8 +157,8 @@ class NodeScope(Scope):
         def EqualName(self,name):
             return self.Node.Name == name
             
-        def GetMemberList(self):
-            return self.Node.GetMemberList()
+        def GetMemberList(self,sort=True):
+            return self.Node.GetMemberList(sort)
             
 class FuncDefScope(NodeScope):
         def __init__(self,func_def_node,parent):
@@ -170,6 +171,7 @@ class FuncDefScope(NodeScope):
             return self.Node.Name
 
 class ClassDefScope(NodeScope):
+        INIT_METHOD_NAME = "__init__"
         def __init__(self,class_def_node,parent):
             super(ClassDefScope,self).__init__(class_def_node,parent)
             
@@ -189,6 +191,22 @@ class ClassDefScope(NodeScope):
                         if base_child_scope != None:
                             return base_child_scope     
             return found_child_scope
+            
+        def UniqueInitMember(self,member_list):
+            while member_list.count(self.INIT_METHOD_NAME) > 1:
+                member_list.remove(self.INIT_METHOD_NAME)
+            
+        def GetMemberList(self,sort=True):
+            member_list = NodeScope.GetMemberList(self,False)
+            for base in self.Node.Bases:
+                base_scope = self.Parent.FindDefinitionScope(base)
+                if base_scope is not None:
+                    member_list.extend(base_scope.GetMemberList(False))
+            self.UniqueInitMember(member_list)
+            if sort:
+                member_list.sort(CmpMember)
+            return member_list
+
  
 class NameScope(NodeScope):
         def __init__(self,name_property_node,parent):
@@ -227,17 +245,6 @@ class FromImportScope(NodeScope):
                 if child_scope.EqualName(name):
                     return True
             return False
-            
-def search_node_scope(name,node):
-    
-    for child in node.Childs:
-        if child.Name == name:
-            return child
-            
-    return None
- 
-def search_global_scope(name,module):
-    pass
     
 if __name__ == "__main__":
     module = fileparser.parse(r"D:\env\Noval\noval\test\ast_test_file.py")

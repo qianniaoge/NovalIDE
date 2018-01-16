@@ -53,9 +53,10 @@ class BuiltinNode(AbstractAst):
     def IsBuiltIn(self):
         return self._is_built_in
         
-    def GetMemberList(self):
+    def GetMemberList(self,sort=True):
         member_list = [child.Name for child in self.Childs if child.Type != config.NODE_UNKNOWN_TYPE]
-        member_list.sort(CmpMember)
+        if sort:
+            member_list.sort(CmpMember)
         return member_list
             
 class Module(BuiltinNode):
@@ -83,14 +84,8 @@ class Node(BuiltinNode):
     
     def __init__(self,name,line,col,type,parent,is_built_in = False):
         super(Node,self).__init__(name,type,parent,is_built_in)
-        self._name = name
         self._line = line
         self._col = col
-        self._type = type
-
-    @property
-    def Name(self):
-        return self._name
         
     @property
     def Line(self):
@@ -145,10 +140,6 @@ class ClassDef(Node):
         self._child_defs = []
         self._bases = bases
         
-    @property
-    def IsBuiltIn(self):
-        return self._is_built_in
-        
     def __str__(self):
         print 'type is class, name is',self.Name,'line is',self.Line,'col is',self.Col
         for child in self.Childs:
@@ -160,12 +151,17 @@ class ClassDef(Node):
         return self._bases
         
 class AssignDef(Node):
-    def __init__(self,name,line,col,value_type,parent,node_type = config.NODE_ASSIGN_TYPE,is_built_in = False):
+    def __init__(self,name,line,col,value,value_type,parent,node_type = config.NODE_ASSIGN_TYPE,is_built_in = False):
         super(AssignDef,self).__init__(name,line,col,node_type,parent,is_built_in)
         self._value_type = value_type
+        self._value = value
     @property
     def ValueType(self):
         return self._value_type
+        
+    @property
+    def Value(self):
+        return self._value
         
     def __str__(self):
         print 'type is assign, name is',self.Name,'line is',self.Line,'col is',self.Col
@@ -173,11 +169,11 @@ class AssignDef(Node):
         
 class PropertyDef(AssignDef):
     
-    def __init__(self,name,line,col,value_type,parent,is_class_property = False,is_built_in = False):
+    def __init__(self,name,line,col,value,value_type,parent,is_class_property = False,is_built_in = False):
         if is_class_property:
-            super(PropertyDef,self).__init__(name,line,col,value_type,parent,config.NODE_CLASSDEF_TYPE,is_built_in)
+            super(PropertyDef,self).__init__(name,line,col,value,value_type,parent,config.NODE_CLASSDEF_TYPE,is_built_in)
         else:
-            super(PropertyDef,self).__init__(name,line,col,value_type,parent,config.NODE_OBJECT_PROPERTY,is_built_in)
+            super(PropertyDef,self).__init__(name,line,col,value,value_type,parent,config.NODE_OBJECT_PROPERTY,is_built_in)
 
     def __str__(self):
         print 'type is property, name is',self.Name,'line is',self.Line,'col is',self.Col

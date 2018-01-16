@@ -12,7 +12,9 @@ class BuiltinModule(nodeast.BuiltinNode):
         "dict":config.ASSIGN_TYPE_DICT,
         "float":config.ASSIGN_TYPE_FLOAT,
         "long":config.ASSIGN_TYPE_LONG,
-        "bool":config.ASSIGN_TYPE_BOOL
+        "bool":config.ASSIGN_TYPE_BOOL,
+        "set": config.ASSIGN_TYPE_SET,
+        "file": config.ASSIGN_FILE_OBJECT
     }
     
     def __init__(self,name,builtin_members_path):
@@ -25,7 +27,7 @@ class BuiltinModule(nodeast.BuiltinNode):
             builtin_node = nodeast.BuiltinNode(data['name'],data['type'],self)
             if self.type_d.has_key(data['name']):
                 obj_type = self.type_d[data['name']]
-                self.type_objects[obj_type] = builtin_node  
+                self.type_objects[obj_type] = builtin_node
             if data.has_key("childs"):
                 for child in data['childs']:
                     child_node = nodeast.BuiltinNode(child['name'],child['type'],builtin_node)
@@ -33,3 +35,12 @@ class BuiltinModule(nodeast.BuiltinNode):
     def GetTypeNode(self,value_type):
         type_obj = self.type_objects[value_type]
         return type_obj
+        
+    def IsBuiltInTypeOrMethod(self,name):
+        return True if self.type_d.has_key(name) else False
+            
+    def GetBuiltInTypeMembers(self,name):
+        if self.IsBuiltInTypeOrMethod(name):
+            obj_type = self.type_d[name]
+            return True,self.type_objects[obj_type].GetMemberList()
+        return False,[]

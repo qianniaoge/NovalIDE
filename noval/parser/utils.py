@@ -39,9 +39,9 @@ def get_top_modulename(fullpath):
 
 def CmpMember(x,y):
     
-    if x.startswith("__") and not y.startswith("__"):
+    if x.startswith("_") and not y.startswith("_"):
         return 1
-    elif y.startswith("__") and not x.startswith("__"):
+    elif y.startswith("_") and not x.startswith("_"):
         return -1
 
     if x.lower() > y.lower():
