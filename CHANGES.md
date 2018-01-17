@@ -62,3 +62,4 @@ Version 1.0.3 -------------2018-01-16
 1.smart show module and class member completion
 2.recognize python base type object and show it's member info
 3.set intellisense database version
+4.set virtual scope with database members file

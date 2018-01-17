@@ -581,6 +581,7 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         self.SetProperty("fold.quotes.python", "1")
         self.SetLexer(wx.stc.STC_LEX_PYTHON)
         self.SetKeyWords(0, string.join(keyword.kwlist))
+        self.Bind(wx.EVT_CHAR, self.OnChar)
         CodeEditor.CodeCtrl.SetMarginFoldStyle(self)
 
     def CreatePopupMenu(self):
@@ -865,18 +866,17 @@ class PythonCtrl(CodeEditor.CodeCtrl):
             return True if word == self.TYPE_FROM_WORD else False,from_word
         return False,''
                 
-    def HandleKeyPressEvent(self,event):
+    def OnChar(self,event):
         if self.CallTipActive():
             self.CallTipCancel()
         key = event.GetKeyCode()
         pos = self.GetCurrentPos()
         # Tips
-       ## if event.ShiftDown():
         if key == ord("("):
+            self.AddText("(")
             self.CallTipSetBackground("yellow")
             self.CallTipShow(pos, 'param1, param2')
-            STCTextEditor.TextCtrl.OnKeyPressed(self, event)
-        elif key == ord(self.TYPE_POINT_WORD) and not event.ShiftDown():
+        elif key == ord(self.TYPE_POINT_WORD):
             self.AddText(self.TYPE_POINT_WORD)
             text = self.GetTypeWord(pos)
             line = self.LineFromPosition(pos)
@@ -922,8 +922,7 @@ class PythonCtrl(CodeEditor.CodeCtrl):
             elif self.IsFromModuleType(pos):
                 self.AutoCompShow(0, string.join([self.TYPE_IMPORT_WORD]))
         else:
-            STCTextEditor.TextCtrl.OnKeyPressed(self, event)
-
+            event.Skip()
 
 class PythonOptionsPanel(wx.Panel):
 

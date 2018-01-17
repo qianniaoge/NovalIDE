@@ -703,15 +703,25 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         pos = self.GetCurrentPos()
         text = self.GetTypeWord(pos)
         scope = wx.GetApp().GetDocumentManager().GetCurrentView().ModuleScope.FindScope(line)
-        scope_found_line = scope.FindDefinition(text)
-        if scope_found_line != -1:
-            return wx.GetApp().GetDocumentManager().GetCurrentView().GotoLine(scope_found_line)
-        found_path,lineNum = intellisence.IntellisenceManager().find_name_definition(text)
-        if found_path is None:
+        scope_found = scope.FindDefinition(text)
+        if scope_found != None:
+            if scope_found.Node.Type == parserconfig.NODE_IMPORT_TYPE and text != scope_found.Node.Name:
+                scope_found = intellisence.IntellisenceManager().find_name_definition(text)
+            else:
+                cur_view = wx.GetApp().GetDocumentManager().GetCurrentView()
+                scope_module_path = scope_found.Root.Module.Path
+                if scope_module_path == cur_view.GetDocument().GetFilename():
+                    cur_view.GotoLine(scope_found.Node.Line)
+                else:
+                    wx.GetApp().GotoView(scope_module_path,scope_found.Node.Line)
+                return
+        if scope_found is None:
             wx.MessageBox(_("Cannot find definition\"" + text + "\""),"Goto Definition",wx.OK|wx.ICON_EXCLAMATION,wx.GetApp().GetTopWindow())
         else:
-            wx.GetApp().GotoView(found_path,lineNum)
-            
+            if scope_found.Parent is None:
+                wx.GetApp().GotoView(scope_found.Module.Path,0)
+            else:
+                wx.GetApp().GotoView(scope_found.Root.Module.Path,scope_found.Node.Line)
           
     def IsCaretLocateInWord(self):
         pos = self.GetCurrentPos()

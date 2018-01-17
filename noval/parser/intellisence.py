@@ -11,6 +11,8 @@ import config
 import BuiltinModule
 from utils import CmpMember
 import glob
+import nodeast
+import scope
 
 class IntellisenceDataLoader(object):
     def __init__(self,data_location):
@@ -73,6 +75,12 @@ class IntellisenceDataLoader(object):
 
 class IntellisenceManager(object):
     __metaclass__ = Singleton.SingletonNew
+    CHILD_KEY = "childs"
+    NAME_KEY = "name"
+    TYPE_KEY = "type"
+    LINE_KEY = "line"
+    COL_KEY = "col"
+    PATH_KEY = "path"
     def __init__(self):
         self.data_root_path = os.path.join(appdirs.getAppDataFolder(),"intellisence")
         self.module_dicts = {}
@@ -143,31 +151,60 @@ class IntellisenceManager(object):
             members_path = self._loader.module_dicts[module_name]['members']
             data = fileparser.load(members_path)
             if data.has_key("is_builtin") and data['is_builtin'] == True:
-                return None,-1
-            module_path = data['path']
+                return None
+            module_path = data[self.PATH_KEY]
             if name_part_count == 1:
-                return module_path,0
-            return self.find_definition(module_path,data['childs'],name_parts[1:])
+                return self.MakeChildScope(data,module_path)
+            return self.find_definition(module_path,data[self.CHILD_KEY],name_parts[1:])
         else:
-            return None,-1
-        
+            return None
+
+    def MakeDefScope(self,child,root_path):
+        if child[self.TYPE_KEY] == config.NODE_MODULE_TYPE:
+            module = nodeast.Module("",child[self.PATH_KEY])
+            module_scope = scope.ModuleScope(module,-1)
+            return module_scope
+        module = nodeast.Module("",root_path)
+        module_scope = scope.ModuleScope(module,-1)
+        self.MakeChildScope(child,module)
+        module_scope.MakeModuleScopes()
+        return module_scope.ChildScopes[0]
+            
+    def MakeChildScope(self,child,parent):
+        name = child[self.NAME_KEY]
+        line_no = child[self.LINE_KEY]
+        col = child[self.COL_KEY]
+        if child[self.TYPE_KEY] == config.NODE_FUNCDEF_TYPE:
+            node = nodeast.FuncDef(name,line_no,col,parent)
+        elif child[self.TYPE_KEY] == config.NODE_CLASSDEF_TYPE:
+            node = nodeast.ClassDef(name,line_no,col,parent)
+            for class_child in child.get(self.CHILD_KEY,[]):
+                self.MakeChildScope(class_child,node)
+        elif child[self.TYPE_KEY] == config.NODE_OBJECT_PROPERTY or \
+                child[self.TYPE_KEY] == config.NODE_CLASS_PROPERTY:
+            node = nodeast.PropertyDef(name,line_no,col,config.ASSIGN_TYPE_UNKNOWN,"",parent)
+        elif child[self.TYPE_KEY] == config.NODE_UNKNOWN_TYPE:
+            node = nodeast.UnknownNode(line_no,col,parent)
+                
     def find_definition(self,root_module_path,childs,names):
         for child in childs:
-            if child['name'] == (names[0].strip()):
+            if child[self.NAME_KEY] == (names[0].strip()):
                 if len(names) == 1:
-                    if child['type'] != config.NODE_MODULE_TYPE:
-                        return root_module_path,child['line']
-                    else:
-                        return child['path'],0
+                    return self.MakeDefScope(child,root_module_path)
+##                    if child['type'] != config.NODE_MODULE_TYPE:
+##                        ##return root_module_path,child['line']
+##                        return self.MakeChildScope(child,root_module_path)
+##                    else:
+##                        return child['path'],0
                 else:
-                    if child['type'] != config.NODE_MODULE_TYPE:
-                        return self.find_definition(root_module_path,child['childs'],names[1:])
+                    if child[self.TYPE_KEY] != config.NODE_MODULE_TYPE:
+                        return self.find_definition(root_module_path,child[self.CHILD_KEY],names[1:])
                     else:
                         members_path = self._loader.module_dicts[child['full_name']]['members']
                         data = fileparser.load(members_path)
-                        module_path = data['path']
-                        return self.find_definition(child['path'],data['childs'],names[1:])
-        return None,-1
+                        module_path = data[self.PATH_KEY]
+                        return self.find_definition(child[self.PATH_KEY],data[self.CHILD_KEY],names[1:])
+        return None
         
     def GetBuiltinMemberList(self,name):
         if self._loader.BuiltinModule is None:
@@ -197,33 +234,33 @@ class IntellisenceManager(object):
     def FindModuleMembers(self,module_name,names):
         members_path = self._loader.module_dicts[module_name]['members']
         data = fileparser.load(members_path)
-        member = self.FindMember(data['childs'],names)
+        member = self.FindMember(data[self.CHILD_KEY],names)
         if member is not None:
-            if member['type'] == config.NODE_MODULE_TYPE:
+            if member[self.TYPE_KEY] == config.NODE_MODULE_TYPE:
                 member_list_path = self._loader.module_dicts[member['full_name']]['member_list']
                 member_list = self.load_member_list(member_list_path)
                 return member_list
             else:
-                if member.has_key('child'):
+                if member.has_key(self.CHILD_KEY):
                     members = []
-                    for child in member['child']:
-                        member.append(child['Name'])
+                    for child in member[self.CHILD_KEY]:
+                        members.append(child[self.NAME_KEY])
                     return members
         return []
         
     def FindMember(self,childs,names):
         for child in childs:
-            if child['name'] == (names[0].strip()):
+            if child[self.NAME_KEY] == (names[0].strip()):
                 if len(names) == 1:
                     return child
                 else:
-                    if child['type'] != config.NODE_MODULE_TYPE:
-                        return self.FindMember(child['childs'],names[1:])
+                    if child[self.TYPE_KEY] != config.NODE_MODULE_TYPE:
+                        return self.FindMember(child[self.CHILD_KEY],names[1:])
                     else:
                         members_path = self._loader.module_dicts[child['full_name']]['members']
                         data = fileparser.load(members_path)
-                        module_path = data['path']
-                        return self.FindMember(data['childs'],names[1:])
+                        module_path = data[self.PATH_KEY]
+                        return self.FindMember(data[self.CHILD_KEY],names[1:])
         return None
         
     def GetBuiltinModule(self):
