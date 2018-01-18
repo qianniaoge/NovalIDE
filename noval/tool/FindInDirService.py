@@ -21,6 +21,8 @@ import FindService
 import OutlineService
 import Service
 import noval.util.strutils as strutils
+import time
+import threading
 _ = wx.GetTranslation
 
 
@@ -36,6 +38,33 @@ FIND_MATCHDIRSUBFOLDERS = "FindMatchDirSubfolders"
 SPACE = 10
 HALF_SPACE = 5
 
+class SearchProgress(threading.Thread):
+    def __init__(self,dlg,data):
+        threading.Thread.__init__(self)
+        self._data = data
+        self.dlg = dlg
+
+    def UpdateProgress(self):
+        temp = 0
+        keep_going = True
+        while keep_going:
+            if self._data['completed']:
+                keep_going = False
+                break
+            if temp >=100:
+                temp = 0
+            wx.MilliSleep(250)
+            #wx.Yield()
+            wx.SafeYield(self.dlg,True)
+            filename = self._data['filename']
+            ###wx.CallAfter(self.dlg.Update,temp,"search for file:\n%s" % filename)
+            keep_going,skip = self.dlg.Update(temp,"search for file:\n%s" % filename)
+            if  not keep_going:
+                self._data['completed'] = True
+            temp += 1
+        wx.CallAfter(self.dlg.Destroy)
+    def run(self):
+        self.UpdateProgress()
 
 class FindInDirService(FindService.FindService):
 
@@ -281,8 +310,13 @@ class FindInDirService(FindService.FindService):
                         except IOError, (code, message):
                             print _("Warning, unable to read file: '%s'.  %s") % (dirString, message)
                     else:
+                        is_progress_show = False
+                        start = time.time()
+                        data = {'completed':False}
                         # do search in files on disk
                         for root, dirs, files in os.walk(dirString):
+                            if data['completed']:
+                                break
                             if not searchSubfolders and root != dirString:
                                 break
                             for name in files:
@@ -291,6 +325,17 @@ class FindInDirService(FindService.FindService):
                                     if file_ext not in file_type_list:
                                         continue
                                 filename = os.path.join(root, name)
+                                now = time.time()
+                                data['filename'] = filename
+                                if now-start > 3 and not is_progress_show:
+                                    dlg = wx.ProgressDialog("File Text In Dir","Please wait a minute for end find text",\
+                                            maximum = 100, parent=wx.GetApp().GetTopWindow(),\
+                                                style = 0|wx.PD_APP_MODAL|wx.PD_CAN_ABORT)
+                                    dlg.Raise()
+                                    is_progress_show = True
+                                    search_progress = SearchProgress(dlg,data)
+                                    search_progress.daemon = True
+                                    search_progress.start()
                                 try:
                                     docFile = file(filename, 'r')
                                 except IOError, (code, message):
@@ -313,7 +358,7 @@ class FindInDirService(FindService.FindService):
                                     lineNum += 1
                                 if not needToDisplayFilename:
                                     view.AddLines("\n")
-    
+                    data['completed'] = True   
                     view.AddLines(_("Search completed,Find total %d results.") % found_line)
                 
                 finally:
