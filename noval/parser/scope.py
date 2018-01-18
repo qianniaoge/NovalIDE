@@ -108,9 +108,9 @@ class Scope(object):
             if len(names) == 1:
                 return self.Parent
             else:
-                return self.FindScopeInScope(names[1])
+                return self.FindDefinition('.'.join(names[1:]))
         else:
-            return self.FindScopeInScope(names[0])
+            return self.FindDefinition(name)
             
 class ModuleScope(Scope):
         def __init__(self,module,line_count):
@@ -201,7 +201,7 @@ class ClassDefScope(NodeScope):
                     base_scope = self.Parent.FindDefinitionScope(base)
                     if base_scope is not None:
                         if base_scope.Node.Type == config.NODE_IMPORT_TYPE:
-                            base_child_scope = intellisence.IntellisenceManager().find_name_definition(base + "."+ name)
+                            base_child_scope = base_scope.GetMember(base + "."+ name)
                             if base_child_scope != None:
                                 return base_child_scope
                         else:
@@ -220,9 +220,9 @@ class ClassDefScope(NodeScope):
                 base_scope = self.Parent.FindDefinitionScope(base)
                 if base_scope is not None:
                     if base_scope.Node.Type == config.NODE_IMPORT_TYPE:
-                        base_scope = intellisence.IntellisenceManager().find_name_definition(base)
-                    if base_scope is not None:
-                        member_list.extend(base_scope.GetMemberList(False))
+                        member_list.extend(base_scope.GetMemberList(base))
+                    else:
+                        member_list.extend(base_scope.GetMemberList(base))
             self.UniqueInitMember(member_list)
             if sort:
                 member_list.sort(CmpMember)
@@ -236,6 +236,20 @@ class NameScope(NodeScope):
         def __str__(self):
             print 'type is name scope, name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
             return self.Node.Name
+
+        def GetMemberList(self,sort=True):
+            if self.Node.ValueType == config.ASSIGN_TYPE_OBJECT:
+                found_scope = self.FindDefinitionScope(self.Node.Value)
+                if found_scope.Node.Type == config.NODE_IMPORT_TYPE:
+                    member_list = found_scope.GetMemberList(self.Node.Value)
+                else:
+                    member_list = found_scope.GetMemberList()
+            else:
+                member_list = intellisence.IntellisenceManager().\
+                             GetTypeObjectMembers(self.Node.ValueType)
+            if sort:
+                member_list.sort(CmpMember)
+            return member_list
             
 class UnknownScope(NodeScope):
         def __init__(self,unknown_type_node,parent,root):
@@ -252,6 +266,31 @@ class ImportScope(NodeScope):
         def __str__(self):
             print 'type is import scope, import name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
             return self.Node.Name
+
+        def EqualName(self,name):
+            if self.Node.AsName is not None:
+                return self.Node.AsName == name
+            else:
+                return NodeScope.EqualName(self,name)
+
+        def MakeFixName(self,name):
+            if self.Node.AsName is not None:
+                fix_name = name.replace(self.Node.AsName,"",1)
+            else:
+                fix_name = name.replace(self.Node.Name,"")
+            if fix_name.startswith("."):
+                fix_name = fix_name[1:]
+            return fix_name
+
+        def GetMemberList(self,name):
+            fix_name = self.MakeFixName(name)
+            return intellisence.IntellisenceManager().GetModuleMembers(self.Node.Name,fix_name)
+
+        def GetMember(self,name):
+            fix_name = self.MakeFixName(name)
+            if fix_name == "":
+                return self
+            return intellisence.IntellisenceManager().GetModuleMember(self.Node.Name,fix_name)
             
 class FromImportScope(NodeScope):
         def __init__(self,from_import_node,parent,root):

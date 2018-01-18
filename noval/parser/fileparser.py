@@ -1,7 +1,6 @@
 #coding:utf-8
 import ast
 import os
-import pickle
 import config
 import nodeast
 import sys
@@ -262,11 +261,6 @@ def walk(node):
                     childs.append(data)
             
     return childs
-
-def load(file_name):
-    with open(file_name,'rb') as f:
-        datas = pickle.load(f)
-        return datas
         
 if __name__ == "__main__":
     
@@ -275,8 +269,10 @@ if __name__ == "__main__":
     #module = parse(r"G:\work\Noval\noval\parser\scope.py")
     #print module
    ## dump(r"G:\work\Noval\noval\test\ast_test_file.py","tt","./")
-    datas = load(r"C:\Users\wk\AppData\Roaming\NovalIDE\intellisence\264\2.7.11\wx.lib.docview.$members")
-    print datas['name']
+    import pickle
+    with open(r"C:\Users\wk\AppData\Roaming\NovalIDE\intellisence\264\2.7.11\wx.lib.docview.$members",'rb') as f:
+        datas = pickle.load(f)
+    print datas['name'],datas['path'],datas['is_builtin']
     import json
     print json.dumps(datas['childs'],indent=4)
     

@@ -17,12 +17,11 @@ class BuiltinModule(nodeast.BuiltinNode):
         "file": config.ASSIGN_FILE_OBJECT
     }
     
-    def __init__(self,name,builtin_members_path):
+    def __init__(self,name):
         super(BuiltinModule,self).__init__(name,config.NODE_MODULE_TYPE,None,True)
         self.type_objects = {}
         
-    def load(self,builtin_members_path):
-        datas = fileparser.load(builtin_members_path)
+    def load(self,datas):
         for data in datas['childs']:
             builtin_node = nodeast.BuiltinNode(data['name'],data['type'],self)
             if self.type_d.has_key(data['name']):

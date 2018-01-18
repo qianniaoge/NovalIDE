@@ -704,21 +704,24 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         text = self.GetTypeWord(pos)
         scope = wx.GetApp().GetDocumentManager().GetCurrentView().ModuleScope.FindScope(line)
         scope_found = scope.FindDefinition(text)
+        open_new_doc = False
         if scope_found != None:
-            if scope_found.Node.Type == parserconfig.NODE_IMPORT_TYPE and text != scope_found.Node.Name:
-                scope_found = intellisence.IntellisenceManager().find_name_definition(text)
+            if scope_found.Node.Type == parserconfig.NODE_IMPORT_TYPE:
+                new_scope_found = scope_found.GetMember(text)
+                if new_scope_found != scope_found:
+                    open_new_doc = True
+                    scope_found = new_scope_found
             else:
                 cur_view = wx.GetApp().GetDocumentManager().GetCurrentView()
                 scope_module_path = scope_found.Root.Module.Path
-                if scope_module_path == cur_view.GetDocument().GetFilename():
-                    cur_view.GotoLine(scope_found.Node.Line)
-                else:
-                    wx.GetApp().GotoView(scope_module_path,scope_found.Node.Line)
-                return
+                if scope_module_path != cur_view.GetDocument().GetFilename():
+                    open_new_doc = True
         if scope_found is None:
             wx.MessageBox(_("Cannot find definition\"" + text + "\""),"Goto Definition",wx.OK|wx.ICON_EXCLAMATION,wx.GetApp().GetTopWindow())
         else:
-            if scope_found.Parent is None:
+            if not open_new_doc:
+                wx.GetApp().GetDocumentManager().GetCurrentView().GotoLine(scope_found.Node.Line)
+            elif scope_found.Parent is None:
                 wx.GetApp().GotoView(scope_found.Module.Path,0)
             else:
                 wx.GetApp().GotoView(scope_found.Root.Module.Path,scope_found.Node.Line)

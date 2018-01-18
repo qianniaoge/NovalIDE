@@ -885,20 +885,9 @@ class PythonCtrl(CodeEditor.CodeCtrl):
             member_list = []
             if None != scope_found:
                 if isinstance(scope_found.Node,nodeast.ImportNode):
-                    member_list = intellisence.IntellisenceManager().GetMemberList(text)
+                    member_list = scope_found.GetMemberList(text)
                 else:
-                    if isinstance(scope_found.Node,nodeast.AssignDef):
-                        if scope_found.Node.ValueType == parserconfig.ASSIGN_TYPE_OBJECT:
-                            value_scope_found = scope.FindDefinitionScope(scope_found.Node.Value)
-                            if value_scope_found is None:
-                                member_list = intellisence.IntellisenceManager().GetMemberList(scope_found.Node.Value)
-                            else:
-                                member_list = value_scope_found.GetMemberList()
-                        else:
-                            member_list = intellisence.IntellisenceManager().\
-                                        GetTypeObjectMembers(scope_found.Node.ValueType)
-                    else:
-                        member_list = scope_found.GetMemberList()
+                    member_list = scope_found.GetMemberList()
             if member_list == []:
                 return
             self.AutoCompSetIgnoreCase(True)
