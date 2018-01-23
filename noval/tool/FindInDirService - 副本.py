@@ -23,7 +23,6 @@ import Service
 import noval.util.strutils as strutils
 import time
 import threading
-from wx.lib.pubsub import pub as Publisher
 _ = wx.GetTranslation
 
 
@@ -39,24 +38,15 @@ FIND_MATCHDIRSUBFOLDERS = "FindMatchDirSubfolders"
 SPACE = 10
 HALF_SPACE = 5
 
-class FindTextOption():
-    def __init__(self,find_what,dir_string,match_case,\
-                    whole_word,reg_expr,searchSubfolders,file_type_list):
-        self.DirString = dir_string
-        self.SearchSubfolders = searchSubfolders
-        self.FindString = find_what
-        self.MatchCase = match_case
-        self.WholeWord = whole_word
-        self.RegExpr = reg_expr
-        self.FileTypes = file_type_list
+from wx.lib.pubsub import pub as Publisher
+
 
 UPDATE_PROGRESS_SIGNAL_NAME = "UpdateProgress"
 
-class SearchProgressDialog(wx.GenericProgressDialog):
+class SearchProgressDialog(wx.ProgressDialog):
     
     def __init__(self,parent):
-        welcome_msg = "Please wait a minute for end find text"
-        wx.GenericProgressDialog.__init__(self,"Find Text In Directory",welcome_msg,\
+        wx.ProgressDialog.__init__(self,"Find Text In Directory","Please wait a minute for end find text",\
                 maximum = 100, parent=parent,\
                     style = 0|wx.PD_APP_MODAL|wx.PD_CAN_ABORT)
 
@@ -64,8 +54,36 @@ class SearchProgressDialog(wx.GenericProgressDialog):
         self.keep_going = True
         
     def UpdateProgress(self,temp,msg):
-        keep_going,_ = self.Update(temp,msg)
+        keep_going,skip = self.Update(temp,msg)
         self.keep_going = keep_going
+
+class SearchProgress(threading.Thread):
+    def __init__(self,dlg,data):
+        threading.Thread.__init__(self)
+        self._data = data
+        self.dlg = dlg
+
+    def UpdateProgress(self):
+        temp = 0
+        while self.dlg.keep_going:
+            if self._data['completed']:
+                self.dlg.keep_going = False
+                break
+            if temp >=100:
+                temp = 0
+            wx.MilliSleep(50)
+            #wx.Yield()
+            wx.SafeYield(self.dlg,True)
+            filename = self._data['filename']
+           ## keep_going,skip = self.dlg.Update(temp,"search file:%s" % filename)
+           ### wx.CallAfter(Publisher.sendMessage,UPDATE_PROGRESS_SIGNAL_NAME, temp=temp,msg="search file:%s" % filename)
+            Publisher.sendMessage(UPDATE_PROGRESS_SIGNAL_NAME, temp=temp,msg="search file:%s" % filename)
+            if not self.dlg.keep_going:
+                self._data['completed'] = True
+            temp += 1
+        wx.CallAfter(self.dlg.Destroy)
+    def run(self):
+        self.UpdateProgress()
 
 class FindInDirService(FindService.FindService):
 
@@ -170,69 +188,14 @@ class FindInDirService(FindService.FindService):
             lineNum += 1
         if not needToDisplayFilename:
             view.AddLines("\n")
-        view.GetControl().ScrollToLine(view.GetControl().GetLineCount())
         return found_line
 
-    def ShowSearchProgressDialog(self):
+    def ShowSearchProgressDialog(self,data):
         dlg = SearchProgressDialog(parent=wx.GetApp().GetTopWindow())
         dlg.Raise()
-        self.progress_dlg = dlg
-
-    def FindTextInFiles(self,find_text_option,view,list_files,cur_pos=0):
-        found_line = 0
-        for list_file in list_files:
-            if not self.progress_dlg.keep_going:
-                break
-            found_line += self.FindTextInFile(list_file,find_text_option.FindString,\
-                               find_text_option.MatchCase, find_text_option.WholeWord,\
-                                    find_text_option.RegExpr,view)
-            wx.MilliSleep(50)
-            wx.SafeYield(self.progress_dlg,True)
-            wx.CallAfter(Publisher.sendMessage,UPDATE_PROGRESS_SIGNAL_NAME, \
-                    temp=cur_pos,msg="search file:%s" % list_file)
-           ## Publisher.sendMessage(UPDATE_PROGRESS_SIGNAL_NAME, temp=temp,msg="search file:%s" % filename)
-            cur_pos += 1
-        return found_line,cur_pos
-
-    def FindIndir(self,find_text_option,view):
-        is_progress_show = False
-        start = time.time()
-        temp = 0
-        total_found_line = 0
-        list_files = []
-        max_file_count = 1000
-        found_file_count = 0
-        cur_pos = 0
-        # do search in files on disk
-        for root, dirs, files in os.walk(find_text_option.DirString):
-            if not self.progress_dlg.keep_going:
-                break
-            if not find_text_option.SearchSubfolders and root != find_text_option.DirString:
-                break
-            for name in files:
-                if find_text_option.FileTypes != []:
-                    file_ext = strutils.GetFileExt(name)
-                    if file_ext not in find_text_option.FileTypes:
-                        continue
-                filename = os.path.join(root, name)
-                list_files.append(filename)
-                found_file_count += 1
-                now = time.time()
-                if len(list_files) >= max_file_count:
-                    self.progress_dlg.SetRange(found_file_count)
-                    found_line,cur_pos = self.FindTextInFiles(find_text_option,view,list_files,cur_pos)
-                    total_found_line += found_line
-                    list_files = []
-               # if now-start > 3 and not is_progress_show:
-                #    is_progress_show = True
-                 #   self.ShowSearchProgressDialog(data)
-        if self.progress_dlg.keep_going:
-            wx.CallAfter(self.progress_dlg.SetRange,found_file_count)
-            found_line,cur_pos = self.FindTextInFiles(find_text_option,view,list_files,cur_pos)
-        total_found_line += found_line
-        time.sleep(1)
-        wx.CallAfter(self.progress_dlg.Destroy)
-        view.AddLines(_("Search completed,Find total %d results.") % total_found_line)
+        search_progress = SearchProgress(dlg,data)
+        search_progress.daemon = True
+        search_progress.start()
         
     def ShowFindInDirDialog(self, findString=None):
         config = wx.ConfigBase_Get()
@@ -359,9 +322,6 @@ class FindInDirService(FindService.FindService):
         
         file_type = filetype_Ctrl.GetValue().strip()
         file_type_list = self.GetFileTypeList(file_type)
-
-        find_text_option = FindTextOption(findString,dirString,matchCase,\
-                    wholeWord,regExpr,searchSubfolders,file_type_list)
         frame.Destroy()
         if status == wx.ID_OK:
             messageService = wx.GetApp().GetService(MessageService.MessageService)
@@ -401,10 +361,30 @@ class FindInDirService(FindService.FindService):
                         except IOError, (code, message):
                             print _("Warning, unable to read file: '%s'.  %s") % (dirString, message)
                     else:
-                        self.progress_dlg = None
-                        self.ShowSearchProgressDialog()
-                        t = threading.Thread(target=self.FindIndir,args = (find_text_option,view))
-                        t.start()
+                        is_progress_show = False
+                        start = time.time()
+                        data = {'completed':False}
+                        # do search in files on disk
+                        for root, dirs, files in os.walk(dirString):
+                            if data['completed']:
+                                break
+                            if not searchSubfolders and root != dirString:
+                                break
+                            for name in files:
+                                if file_type_list != []:
+                                    file_ext = strutils.GetFileExt(name)
+                                    if file_ext not in file_type_list:
+                                        continue
+                                filename = os.path.join(root, name)
+                                now = time.time()
+                                data['filename'] = filename
+                                if now-start > 3 and not is_progress_show:
+                                    is_progress_show = True
+                                    self.ShowSearchProgressDialog(data)
+                                found_line += self.FindTextInFile(filename,findString,matchCase, wholeWord, regExpr,view)
+                    data['completed'] = True   
+                    view.AddLines(_("Search completed,Find total %d results.") % found_line)
+                
                 finally:
                     wx.GetApp().GetTopWindow().SetCursor(wx.StockCursor(wx.CURSOR_DEFAULT))
 

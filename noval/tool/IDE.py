@@ -117,19 +117,11 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             self.SetDebug(False)
         if isInArgs("multiple", args) and wx.Platform != "__WXMAC__":
             self.SetSingleInstance(False)
-
-        if not ACTIVEGRID_BASE_IDE:
-            import CmdlineOptions
-            if isInArgs(CmdlineOptions.DEPLOY_TO_SERVE_PATH_ARG, args):
-                CmdlineOptions.enableDeployToServePath()
             
         if not wx.lib.pydocview.DocApp.OnInit(self):
             return False
 
-        if not ACTIVEGRID_BASE_IDE:
-            self.ShowSplash(getSplashBitmap())
-        else:
-            self.ShowSplash(getIDESplashBitmap())
+        self.ShowSplash(getIDESplashBitmap())
 
         import STCTextEditor
         import FindInDirService
@@ -155,32 +147,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         import Interpreter
 ##        import UpdateLogIniService
                             
-        if not ACTIVEGRID_BASE_IDE:
-            import activegrid.model.basedocmgr as basedocmgr
-            import UpdateService
-            import DataModelEditor
-            import ProcessModelEditor
-            import DeploymentService
-            import WebServerService
-            import WelcomeService
-            import XFormEditor
-            import PropertyService
-            import WSDLEditor
-            import WsdlAgEditor
-            import XPathEditor
-            import XPathExprEditor
-            import ImportServiceWizard
-            import RoleEditor
-            import HelpService
-            import WebBrowserService
-            import SQLEditor
-        _EDIT_LAYOUTS = True
-        if not ACTIVEGRID_BASE_IDE:
-            import BPELEditor
-            if _EDIT_LAYOUTS:
-                import LayoutEditor
-                import SkinEditor
-                        
+        _EDIT_LAYOUTS = True                        
 
         # This creates some pens and brushes that the OGL library uses.
         # It should be called after the app object has been created, but
@@ -197,7 +164,6 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         self.SetDocumentManager(docManager)
 
         # Note:  These templates must be initialized in display order for the "Files of type" dropdown for the "File | Open..." dialog
-        
         defaultTemplate = wx.lib.docview.DocTemplate(docManager,
                 _("Any"),
                 "*.*",
@@ -211,20 +177,6 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 icon = STCTextEditor.getTextIcon())
         docManager.AssociateTemplate(defaultTemplate)
 
-        if not ACTIVEGRID_BASE_IDE:
-            dplTemplate = DeploymentService.DeploymentTemplate(docManager,
-                _("Deployment"),
-                "*.dpl",
-                _("Deployment"),
-                _(".dpl"),
-                _("Deployment Document"),
-                _("Deployment View"),
-                XmlEditor.XmlDocument,
-                XmlEditor.XmlView,
-                wx.lib.docview.TEMPLATE_INVISIBLE,
-                icon = DeploymentService.getDPLIcon())
-            docManager.AssociateTemplate(dplTemplate)
-
         htmlTemplate = wx.lib.docview.DocTemplate(docManager,
                 _("HTML"),
                 "*.html;*.htm",
@@ -236,20 +188,6 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 HtmlEditor.HtmlView,
                 icon = HtmlEditor.getHTMLIcon())
         docManager.AssociateTemplate(htmlTemplate)
-
-        if not ACTIVEGRID_BASE_IDE:
-            identityTemplate = wx.lib.docview.DocTemplate(docManager,
-                    _("Identity"),
-                    "*.xacml",
-                    _("Identity"),
-                    _(".xacml"),
-                    _("Identity Configuration"),
-                    _("Identity View"),
-                    RoleEditor.RoleEditorDocument,
-                    RoleEditor.RoleEditorView,
-                    wx.lib.docview.TEMPLATE_NO_CREATE,
-                    icon = XmlEditor.getXMLIcon())
-            docManager.AssociateTemplate(identityTemplate)
 
         imageTemplate = wx.lib.docview.DocTemplate(docManager,
                 _("Image"),
@@ -263,21 +201,6 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 wx.lib.docview.TEMPLATE_NO_CREATE,
                 icon = ImageEditor.getImageIcon())
         docManager.AssociateTemplate(imageTemplate)
-        
-        if not ACTIVEGRID_BASE_IDE and _EDIT_LAYOUTS:
-            layoutTemplate = wx.lib.docview.DocTemplate(docManager,
-                    _("Layout"),
-                    "*.lyt",
-                    _("Layout"),
-                    _(".lyt"),
-                    _("Renderer Layouts Document"),
-                    _("Layout View"),
-                    # Fix the fonts for CDATA XmlEditor.XmlDocument,
-                    # XmlEditor.XmlView,
-                    LayoutEditor.LayoutEditorDocument,
-                    LayoutEditor.LayoutEditorView,
-                    icon = LayoutEditor.getLytIcon())
-            docManager.AssociateTemplate(layoutTemplate)
 
         perlTemplate = wx.lib.docview.DocTemplate(docManager,
                 _("Perl"),
@@ -302,20 +225,6 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 PHPEditor.PHPView,
                 icon = PHPEditor.getPHPIcon())
         docManager.AssociateTemplate(phpTemplate)
-
-        if not ACTIVEGRID_BASE_IDE:
-            processModelTemplate = ProcessModelEditor.ProcessModelTemplate(docManager,
-                _("Process"),
-                "*.bpel",
-                _("Process"),
-                _(".bpel"),
-                _("Process Document"),
-                _("Process View"),
-                ProcessModelEditor.ProcessModelDocument,
-                ProcessModelEditor.ProcessModelView,
-                wx.lib.docview.TEMPLATE_NO_CREATE,
-                icon = ProcessModelEditor.getProcessModelIcon())
-            docManager.AssociateTemplate(processModelTemplate)
 
         projectTemplate = ProjectEditor.ProjectTemplate(docManager,
                 _("Project"),
@@ -342,61 +251,6 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 icon = PythonEditor.getPythonIcon())
         docManager.AssociateTemplate(pythonTemplate)
 
-        if not ACTIVEGRID_BASE_IDE:
-            dataModelTemplate = DataModelEditor.DataModelTemplate(docManager,
-                _("Schema"),
-                "*.xsd",
-                _("Schema"),
-                _(".xsd"),
-                _("Schema Document"),
-                _("Schema View"),
-                DataModelEditor.DataModelDocument,
-                DataModelEditor.DataModelView,
-                icon = DataModelEditor.getDataModelIcon())
-            docManager.AssociateTemplate(dataModelTemplate)
-            
-        if not ACTIVEGRID_BASE_IDE:
-            wsdlagTemplate = wx.lib.docview.DocTemplate(docManager,
-                    _("Service Reference"),
-                    "*.wsdlag",
-                    _("Project"),
-                    _(".wsdlag"),
-                    _("Service Reference Document"),
-                    _("Service Reference View"),
-                    WsdlAgEditor.WsdlAgDocument,
-                    WsdlAgEditor.WsdlAgView,
-                    wx.lib.docview.TEMPLATE_NO_CREATE,
-                    icon = WSDLEditor.getWSDLIcon())
-            docManager.AssociateTemplate(wsdlagTemplate)
-
-        if not ACTIVEGRID_BASE_IDE and _EDIT_LAYOUTS:
-            layoutTemplate = wx.lib.docview.DocTemplate(docManager,
-                    _("Skin"),
-                    "*.skn",
-                    _("Skin"),
-                    _(".skn"),
-                    _("Application Skin"),
-                    _("Skin View"),
-                    SkinEditor.SkinDocument,
-                    SkinEditor.SkinView,
-                    wx.lib.docview.TEMPLATE_NO_CREATE,
-                    icon = getSkinIcon())
-            docManager.AssociateTemplate(layoutTemplate)
-
-        if not ACTIVEGRID_BASE_IDE:
-            sqlTemplate = wx.lib.docview.DocTemplate(docManager,
-                    _("SQL"),
-                    "*.sql",
-                    _("SQL"),
-                    _(".sql"),
-                    _("SQL Document"),
-                    _("SQL View"),
-                    SQLEditor.SQLDocument,
-                    SQLEditor.SQLView,
-                    wx.lib.docview.TEMPLATE_NO_CREATE,
-                    icon = SQLEditor.getSQLIcon())
-            docManager.AssociateTemplate(sqlTemplate)
-
         textTemplate = wx.lib.docview.DocTemplate(docManager,
                 _("Text"),
                 "*.text;*.txt",
@@ -409,34 +263,6 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 icon = STCTextEditor.getTextIcon())
         docManager.AssociateTemplate(textTemplate)
 
-        if not ACTIVEGRID_BASE_IDE:
-            wsdlTemplate = WSDLEditor.WSDLTemplate(docManager,
-                    _("WSDL"),
-                    "*.wsdl",
-                    _("WSDL"),
-                    _(".wsdl"),
-                    _("WSDL Document"),
-                    _("WSDL View"),
-                    WSDLEditor.WSDLDocument,
-                    WSDLEditor.WSDLView,
-                    wx.lib.docview.TEMPLATE_NO_CREATE,
-                    icon = WSDLEditor.getWSDLIcon())
-            docManager.AssociateTemplate(wsdlTemplate)
-
-        if not ACTIVEGRID_BASE_IDE:
-            xformTemplate = wx.lib.docview.DocTemplate(docManager,
-                    _("XForm"),
-                    "*.xform",
-                    _("XForm"),
-                    _(".xform"),
-                    _("XForm Document"),
-                    _("XForm View"),
-                    XFormEditor.XFormDocument,
-                    XFormEditor.XFormView,
-                    wx.lib.docview.TEMPLATE_NO_CREATE,
-                    icon = XFormEditor.getXFormIcon())
-            docManager.AssociateTemplate(xformTemplate)
-
         xmlTemplate = wx.lib.docview.DocTemplate(docManager,
                 _("XML"),
                 "*.xml",
@@ -448,47 +274,6 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 XmlEditor.XmlView,
                 icon = XmlEditor.getXMLIcon())
         docManager.AssociateTemplate(xmlTemplate)
-
-        
-        # Note:  Child document types aren't displayed in "Files of type" dropdown
-        if not ACTIVEGRID_BASE_IDE:
-            viewTemplate = wx.lib.pydocview.ChildDocTemplate(docManager,
-                _("XForm"),
-                "*.none",
-                _("XForm"),
-                _(".bpel"),
-                _("XFormEditor Document"),
-                _("XFormEditor View"),
-                XFormEditor.XFormDocument,
-                XFormEditor.XFormView,
-                icon = XFormEditor.getXFormIcon())
-            docManager.AssociateTemplate(viewTemplate)
-
-        if not ACTIVEGRID_BASE_IDE:
-            bpelTemplate = wx.lib.pydocview.ChildDocTemplate(docManager,
-                _("BPEL"),
-                "*.none",
-                _("BPEL"),
-                _(".bpel"),
-                _("BPELEditor Document"),
-                _("BPELEditor View"),
-                BPELEditor.BPELDocument,
-                BPELEditor.BPELView,
-                icon = ProcessModelEditor.getProcessModelIcon())
-            docManager.AssociateTemplate(bpelTemplate)
-
-        if not ACTIVEGRID_BASE_IDE:
-            dataModelChildTemplate = wx.lib.pydocview.ChildDocTemplate(docManager,
-                _("Schema"),
-                "*.none",
-                _("Schema"),
-                _(".xsd"),
-                _("Schema Document"),
-                _("Schema View"),
-                DataModelEditor.DataModelChildDocument,
-                DataModelEditor.DataModelView,
-                icon = DataModelEditor.getDataModelIcon())
-            docManager.AssociateTemplate(dataModelChildTemplate)
         
         textService             = self.InstallService(STCTextEditor.TextService())
         pythonService           = self.InstallService(PythonEditor.PythonService("Python Interpreter",embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
@@ -507,16 +292,6 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         messageService          = self.InstallService(MessageService.MessageService("Search Results", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
     ##    outputService          = self.InstallService(OutputService.OutputService("Output", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
         debuggerService         = self.InstallService(DebuggerService.DebuggerService("Debugger", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
-        if not ACTIVEGRID_BASE_IDE:
-            processModelService = self.InstallService(ProcessModelEditor.ProcessModelService())
-            viewEditorService   = self.InstallService(XFormEditor.XFormService())
-            deploymentService   = self.InstallService(DeploymentService.DeploymentService())
-            dataModelService    = self.InstallService(DataModelEditor.DataModelService())
-            dataSourceService   = self.InstallService(DataModelEditor.DataSourceService())
-            wsdlService         = self.InstallService(WSDLEditor.WSDLService())
-            welcomeService      = self.InstallService(WelcomeService.WelcomeService())
-        if not ACTIVEGRID_BASE_IDE and _EDIT_LAYOUTS:
-            layoutService       = self.InstallService(LayoutEditor.LayoutEditorService())
         extensionService        = self.InstallService(ExtensionService.ExtensionService())
         optionsService          = self.InstallService(wx.lib.pydocview.DocOptionsService(supportedModes=wx.lib.docview.DOC_MDI))
         aboutService            = self.InstallService(wx.lib.pydocview.AboutService(AboutDialog.AboutDialog))
@@ -527,19 +302,9 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         if self.GetUseTabbedMDI():
             windowService       = self.InstallService(wx.lib.pydocview.WindowMenuService())
         
-
-        if not ACTIVEGRID_BASE_IDE:
-            projectService.AddRunHandler(processModelService)
-
         # order of these added determines display order of Options Panels
         optionsService.AddOptionsPanel(ProjectEditor.ProjectOptionsPanel)
        ## optionsService.AddOptionsPanel(DebuggerService.DebuggerOptionsPanel)
-        if not ACTIVEGRID_BASE_IDE:
-            optionsService.AddOptionsPanel(WebServerService.WebServerOptionsPanel)
-            optionsService.AddOptionsPanel(DataModelEditor.DataSourceOptionsPanel)
-            optionsService.AddOptionsPanel(DataModelEditor.SchemaOptionsPanel)
-            optionsService.AddOptionsPanel(WebBrowserService.WebBrowserOptionsPanel)
-            optionsService.AddOptionsPanel(ImportServiceWizard.ServiceOptionsPanel)
         optionsService.AddOptionsPanel(PythonEditor.PythonOptionsPanel)
   ##      optionsService.AddOptionsPanel(PHPEditor.PHPOptionsPanel)
     ##    optionsService.AddOptionsPanel(PerlEditor.PerlOptionsPanel)
@@ -560,53 +325,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             outlineService.AddViewTypeForBackgroundHandler(ProcessModelEditor.ProcessModelView)
             outlineService.AddViewTypeForBackgroundHandler(PropertyService.PropertyView) # special case, don't clear outline if in property window
         outlineService.StartBackgroundTimer()
-        
-        if not ACTIVEGRID_BASE_IDE:
-            propertyService.AddViewTypeForBackgroundHandler(DataModelEditor.DataModelView)
-            propertyService.AddViewTypeForBackgroundHandler(ProcessModelEditor.ProcessModelView)
-            propertyService.AddViewTypeForBackgroundHandler(XFormEditor.XFormView)
-            propertyService.AddViewTypeForBackgroundHandler(BPELEditor.BPELView)
-            propertyService.AddViewTypeForBackgroundHandler(WSDLEditor.WSDLView)
-            propertyService.StartBackgroundTimer()
-            
-            propertyService.AddCustomCellRenderers(DataModelEditor.GetCustomGridCellRendererDict())
-            propertyService.AddCustomCellRenderers(BPELEditor.GetCustomGridCellRendererDict())
-            propertyService.AddCustomCellRenderers(XFormEditor.GetCustomGridCellRendererDict())
-            propertyService.AddCustomCellRenderers(XPathEditor.GetCustomGridCellRendererDict())
-            propertyService.AddCustomCellRenderers(XPathExprEditor.GetCustomGridCellRendererDict())
-            propertyService.AddCustomCellRenderers(WSDLEditor.GetCustomGridCellRendererDict())
-            propertyService.AddCustomCellRenderers(WsdlAgEditor.GetCustomGridCellRendererDict())
-
-            propertyService.AddCustomCellEditors(DataModelEditor.GetCustomGridCellEditorDict())
-            propertyService.AddCustomCellEditors(BPELEditor.GetCustomGridCellEditorDict())
-            propertyService.AddCustomCellEditors(XFormEditor.GetCustomGridCellEditorDict())
-            propertyService.AddCustomCellEditors(XPathEditor.GetCustomGridCellEditorDict())
-            propertyService.AddCustomCellEditors(XPathExprEditor.GetCustomGridCellEditorDict())
-            propertyService.AddCustomCellEditors(WSDLEditor.GetCustomGridCellEditorDict())
-            propertyService.AddCustomCellEditors(WsdlAgEditor.GetCustomGridCellEditorDict())
-        
-        if not ACTIVEGRID_BASE_IDE:
-            projectService.AddNameDefault(".bpel", projectService.GetDefaultNameCallback)
-            projectService.AddNameDefault(".xsd", dataModelService.GetDefaultNameCallback)
-            projectService.AddNameDefault(".xform", projectService.GetDefaultNameCallback)
-            projectService.AddNameDefault(".wsdl", projectService.GetDefaultNameCallback)
-            projectService.AddNameDefault(".wsdlag", projectService.GetDefaultNameCallback)
-            projectService.AddNameDefault(".skn", projectService.GetDefaultNameCallback)
-            projectService.AddNameDefault(".xacml", projectService.GetDefaultNameCallback)
-
-            projectService.AddFileTypeDefault(".lyt", basedocmgr.FILE_TYPE_LAYOUT)
-            projectService.AddFileTypeDefault(".bpel", basedocmgr.FILE_TYPE_PROCESS)
-            projectService.AddFileTypeDefault(".xsd", basedocmgr.FILE_TYPE_SCHEMA)
-            projectService.AddFileTypeDefault(".wsdlag", basedocmgr.FILE_TYPE_SERVICE)
-            projectService.AddFileTypeDefault(".skn", basedocmgr.FILE_TYPE_SKIN)
-            projectService.AddFileTypeDefault(".xacml", basedocmgr.FILE_TYPE_IDENTITY)
-            projectService.AddFileTypeDefault(".css", basedocmgr.FILE_TYPE_STATIC)
-            projectService.AddFileTypeDefault(".js", basedocmgr.FILE_TYPE_STATIC)
-            projectService.AddFileTypeDefault(".gif", basedocmgr.FILE_TYPE_STATIC)
-            projectService.AddFileTypeDefault(".jpg", basedocmgr.FILE_TYPE_STATIC)
-            projectService.AddFileTypeDefault(".jpeg", basedocmgr.FILE_TYPE_STATIC)
-            projectService.AddFileTypeDefault(".xform", basedocmgr.FILE_TYPE_XFORM)
-
+       
         projectService.AddLogicalViewFolderDefault(".agp", _("Projects"))
         projectService.AddLogicalViewFolderDefault(".wsdlag", _("Services"))
         projectService.AddLogicalViewFolderDefault(".wsdl", _("Services"))
@@ -661,17 +380,8 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         # wxBug: On Mac, having the updates fire while the tip dialog is at front
         # for some reason messes up menu updates. This seems a low-level wxWidgets bug,
         # so until I track this down, turn off UI updates while the tip dialog is showing.
-        if not ACTIVEGRID_BASE_IDE:
-            wx.UpdateUIEvent.SetUpdateInterval(-1)
-            UpdateService.UpdateVersionNag()
-            appUpdater = UpdateService.AppUpdateService(self)
-            appUpdater.RunUpdateIfNewer()
-            if not welcomeService.RunWelcomeIfFirstTime():
-                if os.path.isfile(tips_path):
-                    self.ShowTip(docManager.FindSuitableParent(), wx.CreateFileTipProvider(tips_path, 0))
-        else:
-            if os.path.isfile(tips_path):
-                self.ShowTip(docManager.FindSuitableParent(), wx.CreateFileTipProvider(tips_path, 0))
+        if os.path.isfile(tips_path):
+            self.ShowTip(docManager.FindSuitableParent(), wx.CreateFileTipProvider(tips_path, 0))
                    
         Interpreter.InterpreterManager().LoadDefaultInterpreter()
         self.AddInterpreters()

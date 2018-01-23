@@ -364,10 +364,7 @@ class RunCommandUI(wx.Panel):
 
     def AppendText(self, event):
         self._textCtrl.SetReadOnly(False)
-        try:
-            self._textCtrl.AddText(event.value)
-        except:
-            self._textCtrl.AddText(event.value.decode("utf-8"))
+        self._textCtrl.AddText(event.value)
         self._textCtrl.ScrollToLine(self._textCtrl.GetLineCount())
       ##  self._textCtrl.SetReadOnly(True)
 

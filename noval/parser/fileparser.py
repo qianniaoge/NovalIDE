@@ -5,6 +5,7 @@ import config
 import nodeast
 import sys
 import utils
+import pickle
 
 reload(sys)
 sys.setdefaultencoding("utf-8")

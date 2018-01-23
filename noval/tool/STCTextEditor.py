@@ -1710,7 +1710,11 @@ class TextCtrl(wx.stc.StyledTextCtrl):
         else:
             self.SetWrapMode(wx.stc.STC_WRAP_NONE)
 
-
+    def AddText(self,text):
+        try:
+            wx.stc.StyledTextCtrl.AddText(self,text)
+        except:
+            wx.stc.StyledTextCtrl.AddText(self,text.decode("utf-8"))
     #----------------------------------------------------------------------------
     # DynamicSashWindow methods
     #----------------------------------------------------------------------------
