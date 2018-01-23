@@ -82,6 +82,12 @@ def coding_spec(str):
         raise LookupError, "Unknown encoding "+name
     return name
 
+class RunParameter():
+    def __init__(self,arg,env,start_up):
+        self.Arg = arg
+        self.Environment = env
+        self.StartUp = start_up
+
 class PythonDocument(CodeEditor.CodeDocument): 
 
     UTF_8_ENCODING = 0
@@ -140,6 +146,14 @@ class PythonView(CodeEditor.CodeView):
     def __init__(self):
         super(PythonView,self).__init__()
         self._module_scope = None
+        self._run_parameter = None
+
+    def SetRunParameter(self,arg,start_up,env):
+        self._run_parameter = RunParameter(arg,env,start_up)
+
+    @property
+    def RunParameter(self):
+        return self._run_parameter
         
     @property
     def ModuleScope(self):

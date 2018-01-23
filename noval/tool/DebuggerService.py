@@ -2247,6 +2247,7 @@ class DebuggerService(Service.Service):
     RUN_ID = wx.NewId()
     DEBUG_ID = wx.NewId()
     CHECK_ID = wx.NewId()
+    SET_PARAMETER_ENVIRONMENT_ID = wx.NewId()
     RUN_LAST_ID = wx.NewId()
     DEBUG_LAST_ID = wx.NewId()
     DEBUG_WEBSERVER_ID = wx.NewId()
@@ -2337,6 +2338,10 @@ class DebuggerService(Service.Service):
             debuggerMenu.Append(DebuggerService.CHECK_ID, _("&Check Syntax...\tCtrl+F3"), _("Check syntax of file"))
             wx.EVT_MENU(frame, DebuggerService.CHECK_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, DebuggerService.CHECK_ID, frame.ProcessUpdateUIEvent)
+
+            debuggerMenu.Append(DebuggerService.SET_PARAMETER_ENVIRONMENT_ID, _("&Set Parameter And Environment"), _("Set Parameter and Environment of Python Script"))
+            wx.EVT_MENU(frame, DebuggerService.SET_PARAMETER_ENVIRONMENT_ID, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, DebuggerService.SET_PARAMETER_ENVIRONMENT_ID, frame.ProcessUpdateUIEvent)
 
             debuggerMenu.Append(DebuggerService.RUN_LAST_ID, _("&Run Using Last Settings\tCtrl+R"), _("Run a file using previous settings"))
             wx.EVT_MENU(frame, DebuggerService.RUN_LAST_ID, frame.ProcessEvent)
@@ -2447,6 +2452,9 @@ class DebuggerService(Service.Service):
         elif an_id == DebuggerService.RUN_WEBSERVER_ID:
             self.OnRunWebServer(event)
             return True
+        elif an_id == DebuggerService.SET_PARAMETER_ENVIRONMENT_ID:
+            self.SetParameterAndEnvironment()
+            return True
         return False
 
     def ProcessUpdateUIEvent(self, event):
@@ -2465,7 +2473,8 @@ class DebuggerService(Service.Service):
         or an_id == DebuggerService.RUN_LAST_ID
         or an_id == DebuggerService.DEBUG_ID
         or an_id == DebuggerService.DEBUG_LAST_ID
-        or an_id == DebuggerService.CHECK_ID):
+        or an_id == DebuggerService.CHECK_ID
+        or an_id == DebuggerService.SET_PARAMETER_ENVIRONMENT_ID):
             event.Enable(self.HasAnyFiles() and \
                     self.GetActiveView().GetLangLexer() == parserconfig.LANG_PYTHON_LEXER)
             return True
@@ -2527,6 +2536,10 @@ class DebuggerService(Service.Service):
         startIn = os.path.dirname(fileToRun)
         initialArgs = None
         environment = None
+        if doc_view.RunParameter is not None:
+            startIn = doc_view.RunParameter.StartUp
+            initialArgs = doc_view.RunParameter.Arg
+            environment = doc_view.RunParameter.Environment
         page.Execute(initialArgs, startIn, environment, onWebServer = False)
         
 ##        while True:
@@ -2755,6 +2768,17 @@ class DebuggerService(Service.Service):
     def OnExit(self):
         BaseDebuggerUI.ShutdownAllDebuggers()
         RunCommandUI.ShutdownAllRunners()
+
+    def SetParameterAndEnvironment(self):
+        projectService = wx.GetApp().GetService(ProjectEditor.ProjectService)
+        doc_view = self.GetActiveView()
+        if not doc_view:
+            return
+        dlg = CommandPropertiesDialog(doc_view.GetFrame(), 'Set Parameter And Environment of Script', projectService, None)
+        dlg.CenterOnParent()
+        if dlg.ShowModal() == wx.ID_OK:
+            projectPath, fileToRun, initialArgs, startIn, isPython, environment = dlg.GetSettings()
+            doc_view.SetRunParameter(initialArgs,startIn,environment)
 
     def OnRunProject(self, event, showDialog=True):
         if _WINDOWS and not _PYWIN32_INSTALLED:
@@ -2988,7 +3012,7 @@ class DebuggerOptionsPanel(wx.Panel):
 
 
 class CommandPropertiesDialog(wx.Dialog):
-    def __init__(self, parent, title, projectService, currentProjectDocument, okButtonName="Run", debugging=False):
+    def __init__(self, parent, title, projectService, currentProjectDocument, okButtonName="OK", debugging=False):
         self._projService = projectService
         self._pmext = None
         self._pyext = '.py'

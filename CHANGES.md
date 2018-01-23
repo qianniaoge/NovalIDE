@@ -65,3 +65,4 @@ Version 1.0.3 -------------2018-01-16
 4.set virtual scope with database members file
 5.show progress dialog whhen find text in files
 6.repair search text progress dialog bug
+7.enable set script parameter and environment
