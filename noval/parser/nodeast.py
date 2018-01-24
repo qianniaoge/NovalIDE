@@ -109,6 +109,7 @@ class FuncDef(Node):
         self._is_method = is_method
         self._is_class_method = is_class_method
         self._args = args
+        self._is_constructor = True if self._is_method and self.Name == "__init__" else False
         
     @property
     def IsDecorated(self):
@@ -131,6 +132,10 @@ class FuncDef(Node):
         for child in self.Childs:
             print 'func child:', child
         return self.Name
+
+    @property
+    def IsConstructor(self):
+        return self._is_constructor
 
 class ClassDef(Node):
     

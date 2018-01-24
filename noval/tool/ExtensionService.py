@@ -19,6 +19,7 @@ import os.path
 import noval.util.xmlutils as xmlutils
 import subprocess
 import sys
+import UnitTestDialog
 _ = wx.GetTranslation
 
 
@@ -133,11 +134,19 @@ class ExtensionService(wx.lib.pydocview.DocService):
             toolsMenu.Append(id,"&Terminator")
             wx.EVT_MENU(frame, id, self.OpenTerminator)  
 
+            id = wx.NewId()
+            toolsMenu.Append(id,"&UnitTest")
+            wx.EVT_MENU(frame, id, self.RunUnitTest)  
+
     def OpenTerminator(self, event):
         if sys.platform == "win32":
             subprocess.Popen('start cmd.exe',shell=True)
         else:
             subprocess.Popen('gnome-terminal',shell=True)
+
+    def RunUnitTest(self,event):
+        dlg = UnitTestDialog.UnitTestDialog(wx.GetApp().GetTopWindow(),-1,"UnitTest")
+        dlg.ShowModal()
         
     def ProcessEvent(self, event):
         id = event.GetId()

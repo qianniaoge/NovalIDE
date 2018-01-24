@@ -31,7 +31,7 @@ class AddInterpreterDialog(wx.Dialog):
         contentSizer.Add(lineSizer, 0, wx.BOTTOM, SPACE)
         
         lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        ok_btn = wx.Button(self, wx.ID_OK, _("&Ok"))
+        ok_btn = wx.Button(self, wx.ID_OK, _("&OK"))
         lineSizer.Add(ok_btn, 0, wx.LEFT, SPACE*22)
         cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
         lineSizer.Add(cancel_btn, 0, wx.LEFT, SPACE)

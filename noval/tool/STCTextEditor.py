@@ -629,6 +629,8 @@ class TextView(wx.lib.docview.View):
         self.GetCtrl().UpdateLineNumberMarginWidth()
         self.GetCtrl().EmptyUndoBuffer()
 
+    def AddText(self,text):
+        self.GetCtrl().AddText(text)
 
     #----------------------------------------------------------------------------
     # STC events

@@ -9,7 +9,6 @@
 # Copyright:    (c) 2004-2005 ActiveGrid, Inc.
 # License:      wxWindows License
 #----------------------------------------------------------------------------
-
 import wx
 import wx.lib.intctrl
 import wx.lib.docview
@@ -2568,13 +2567,29 @@ class DebuggerService(Service.Service):
         if not document.Save() or document.IsNewDocument:
             return
         sys_encoding = locale.getdefaultlocale()[1]
+        fileToRun = document.GetFilename()
+        startIn = os.path.dirname(fileToRun)
+        initialArgs = None
+        environment = os.environ
+        if doc_view.RunParameter is not None:
+            startIn = doc_view.RunParameter.StartUp
+            initialArgs = doc_view.RunParameter.Arg
+            environment = doc_view.RunParameter.Environment
         if sysutilslib.isWindows():
-            cmd_list = ['cmd.exe',"/c",python_executable_path,document.GetFilename().encode(sys_encoding),"&pause"]
-            subprocess.Popen(cmd_list,shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE,cwd=os.path.dirname(document.GetFilename()).encode(sys_encoding))
+            command = "cmd.exe /c %s \"%s\""  % (python_executable_path,fileToRun.encode(sys_encoding))
+            if initialArgs is not None:
+                command += " " + initialArgs
+            command += " &pause"
+            for key in environment.keys():
+                environment[key] = str(environment[key])
+            subprocess.Popen(command,shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE,cwd=startIn.encode(sys_encoding),env=environment)
         else:
-            python_cmd = "%s \"%s\";echo 'Please enter any to continue';read" % (python_executable_path,document.GetFilename().encode(sys_encoding))
+            python_cmd = "%s \"%s\"" % (python_executable_path,fileToRun.encode(sys_encoding))
+            if initialArgs is not None:
+                python_cmd += " " + initialArgs
+            python_cmd += ";echo 'Please enter any to continue';read"
             cmd_list = ['gnome-terminal','-x','bash','-c',python_cmd]
-            subprocess.Popen(cmd_list,shell = False,cwd=os.path.dirname(document.GetFilename()).encode(sys_encoding))
+            subprocess.Popen(cmd_list,shell = False,cwd=startIn.encode(sys_encoding),env=environment)
 
     def OnDebugProject(self, event, showDialog=True):
         if _WINDOWS and not _PYWIN32_INSTALLED:
