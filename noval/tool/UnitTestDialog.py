@@ -113,13 +113,17 @@ class UnitTestDialog(wx.Dialog):
     def OnClose(self,event):
         for template in wx.GetApp().GetDocumentManager().GetTemplates():
             if template.GetDocumentType() == PythonEditor.PythonDocument:
-                doc = template.CreateDocument("", flags = wx.lib.docview.DOC_NEW)
-                doc_view = doc.GetFirstView()
-                doc_view.AddText(UNITTEST_TEMPLATE_HEADER)
-                doc_view.AddText("import %s\n" % self._cur_view.ModuleScope.Module.Name)
-                doc_view.AddText(self.CreateUnitTestTemplate())
-                doc_view.AddText(UNITTEST_TMPLATE_FOOTER)
-                break
+                newDoc = template.CreateDocument("", flags = wx.lib.docview.DOC_NEW)
+                if newDoc:
+                    newDoc.SetDocumentName(template.GetDocumentName())
+                    newDoc.SetDocumentTemplate(template)
+                    newDoc.OnNewDocument()
+                    doc_view = newDoc.GetFirstView()
+                    doc_view.AddText(UNITTEST_TEMPLATE_HEADER)
+                    doc_view.AddText("import %s\n" % self._cur_view.ModuleScope.Module.Name)
+                    doc_view.AddText(self.CreateUnitTestTemplate())
+                    doc_view.AddText(UNITTEST_TMPLATE_FOOTER)
+                    break
         self.Destroy()
 
     def CreateUnitTestFromClass(self,node):

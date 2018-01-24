@@ -67,3 +67,4 @@ Version 1.0.3 -------------2018-01-16
 6.repair search text progress dialog bug
 7.enable set script parameter and environment
 8.support create unit test frame of script
+9.repair py2exe call subprocess.popen error

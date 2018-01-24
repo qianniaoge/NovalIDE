@@ -39,7 +39,7 @@ class Interpreter(object):
         return self._id        
 
 def GetCommandOutput(command,read_error=False):
-    p = subprocess.Popen(command,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    p = subprocess.Popen(command,shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     if read_error:
         return p.stderr.read()
     return p.stdout.read()
