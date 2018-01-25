@@ -602,7 +602,7 @@ class TextView(wx.lib.docview.View):
         self.GetCtrl().AddText(text)
 
     def HasSelection(self):
-        return self.GetCtrl().GetSelectionStart() != self.GetCtrl().GetSelectionEnd()
+        return self.GetCtrl().HasSelection()
 
     def GetTopLines(self,line_num):
         lines = []
@@ -803,8 +803,9 @@ class TextView(wx.lib.docview.View):
         	#If we got a match, the target is set to the found text
         return (self.GetCtrl().GetTargetStart() == start_pos) and (self.GetCtrl().GetTargetEnd() == end_pos);
         
-    def FindTextInLine(self,line,text):
+    def FindTextInLine(self,text,line,col=0):
         line_start = self.GetCtrl().PositionFromLine(line-1)
+        line_start += col
         line_end = self.GetCtrl().PositionFromLine(line)
         index = self.GetCtrl().FindText(line_start,line_end,text,0)
         if -1 != index:
@@ -1125,7 +1126,6 @@ class TextOptionsPanel(wx.Panel):
     def GetIcon(self):
         return getTextIcon()
 
-
 class TextCtrl(wx.stc.StyledTextCtrl):
 
     def __init__(self, parent, id=-1, style=wx.NO_FULL_REPAINT_ON_RESIZE):
@@ -1191,20 +1191,17 @@ class TextCtrl(wx.stc.StyledTextCtrl):
                     if doc:      
                         self.SetDocPointer(doc)
 
-
     def OnFocus(self, event):
         # wxBug: On Mac, the STC control may fire a focus/kill focus event
         # on shutdown even if the control is in an invalid state. So check
         # before handling the event.
         if self.IsBeingDeleted():
-            return
-            
+            return            
         self.SetSelBackground(1, "BLUE")
         self.SetSelForeground(1, "WHITE")
         if hasattr(self, "_dynSash"):
             self._dynSash._view.SetCtrl(self)
         event.Skip()
-
 
     def OnKillFocus(self, event):
         # wxBug: On Mac, the STC control may fire a focus/kill focus event
@@ -1218,7 +1215,6 @@ class TextCtrl(wx.stc.StyledTextCtrl):
         # Don't set foreground color, use syntax highlighted default colors.
         event.Skip()
         
-
     def SetViewDefaults(self, configPrefix="Text", hasWordWrap=True, hasTabs=False, hasFolding=False):
         config = wx.ConfigBase_Get()
         self.SetViewWhiteSpace(config.ReadInt(configPrefix + "EditorViewWhitespace", False))
@@ -1239,7 +1235,6 @@ class TextCtrl(wx.stc.StyledTextCtrl):
             self.SetIndent(4)
             self.SetTabWidth(4)
 
-        
     def GetDefaultFont(self):
         """ Subclasses should override this """
         if wx.Platform == '__WXMSW__':
@@ -1251,7 +1246,6 @@ class TextCtrl(wx.stc.StyledTextCtrl):
     def GetDefaultColor(self):
         """ Subclasses should override this """
         return wx.BLACK
-
 
     def GetFontAndColorFromConfig(self, configPrefix = "Text"):
         font = self.GetDefaultFont()
@@ -1270,11 +1264,9 @@ class TextCtrl(wx.stc.StyledTextCtrl):
             color = wx.Colour(red, green, blue)
         return font, color
 
-
     def GetFont(self):
         return self._font
         
-
     def SetFont(self, font):
         self._font = font
         self.StyleSetFont(wx.stc.STC_STYLE_DEFAULT, self._font)
@@ -1282,15 +1274,12 @@ class TextCtrl(wx.stc.StyledTextCtrl):
     def GetFontColor(self):
         return self._fontColor
 
-
     def SetFontColor(self, fontColor = wx.BLACK):
         self._fontColor = fontColor
         self.StyleSetForeground(wx.stc.STC_STYLE_DEFAULT, "#%02x%02x%02x" % (self._fontColor.Red(), self._fontColor.Green(), self._fontColor.Blue()))
 
     def SetLineNumberStyle(self):
-
         self.UpdateStyles()
-
         faces = { 'font' : self.GetFont().GetFaceName(),
           'size' : self.GetFont().GetPointSize(),
           'size2': self.GetFont().GetPointSize()-2,
@@ -1310,13 +1299,10 @@ class TextCtrl(wx.stc.StyledTextCtrl):
         while lineNum >= 10:
             lineNum = lineNum/10
             baseNumbers = baseNumbers + " "
-
         return self.TextWidth(wx.stc.STC_STYLE_LINENUMBER, baseNumbers) 
-
 
     def OnUpdateLineNumberMarginWidth(self, event):
         self.UpdateLineNumberMarginWidth()
-
             
     def UpdateLineNumberMarginWidth(self):
         if self.GetViewLineNumbers():
@@ -1326,11 +1312,9 @@ class TextCtrl(wx.stc.StyledTextCtrl):
         """ This must be called after the textcontrol is instantiated """
         self.MarkerDefine(TextView.MARKER_NUM, wx.stc.STC_MARK_ROUNDRECT, wx.BLACK, wx.BLUE)
 
-
     def OnClear(self):
         # Used when Delete key is hit.
-        sel = self.GetSelection()
-                
+        sel = self.GetSelection()              
         # Delete the selection or if no selection, the character after the caret.
         if sel[0] == sel[1]:
             self.SetSelection(sel[0], sel[0] + 1)
@@ -1342,10 +1326,8 @@ class TextCtrl(wx.stc.StyledTextCtrl):
             if startLine != endLine and sel[1] - endLineStart == 0:
                 while not self.GetLineVisible(endLine):
                     endLine += 1
-                self.SetSelectionEnd(self.PositionFromLine(endLine))
-            
+                self.SetSelectionEnd(self.PositionFromLine(endLine))          
         self.Clear()
-
 
     def OnPaste(self):
         # replace any folded lines also.
@@ -1357,10 +1339,8 @@ class TextCtrl(wx.stc.StyledTextCtrl):
             while not self.GetLineVisible(endLine):
                 endLine += 1
             self.SetSelectionEnd(self.PositionFromLine(endLine))
-                
         self.Paste()
         
-
     def OnKeyPressed(self, event):
         key = event.GetKeyCode()
         if key == wx.WXK_NUMPAD_ADD:  #wxBug: For whatever reason, the key accelerators for numpad add and subtract with modifiers are not working so have to trap them here
@@ -1380,14 +1360,11 @@ class TextCtrl(wx.stc.StyledTextCtrl):
         else:
             event.Skip()
 
-
     #----------------------------------------------------------------------------
     # View Text methods
     #----------------------------------------------------------------------------
-
     def GetViewRightEdge(self):
         return self.GetEdgeMode() != wx.stc.STC_EDGE_NONE
-
 
     def SetViewRightEdge(self, viewRightEdge):
         if viewRightEdge:
@@ -1395,10 +1372,8 @@ class TextCtrl(wx.stc.StyledTextCtrl):
         else:
             self.SetEdgeMode(wx.stc.STC_EDGE_NONE)
 
-
     def GetViewLineNumbers(self):
         return self.GetMarginWidth(1) > 0
-
 
     def SetViewLineNumbers(self, viewLineNumbers = True):
         if viewLineNumbers:
@@ -1406,10 +1381,8 @@ class TextCtrl(wx.stc.StyledTextCtrl):
         else:
             self.SetMarginWidth(1, 0)
 
-
     def GetViewFolding(self):
         return self.GetMarginWidth(2) > 0
-
 
     def SetViewFolding(self, viewFolding = True):
         if viewFolding:
@@ -1417,14 +1390,11 @@ class TextCtrl(wx.stc.StyledTextCtrl):
         else:
             self.SetMarginWidth(2, 0)
 
-
     def CanWordWrap(self):
         return True
 
-
     def GetWordWrap(self):
         return self.GetWrapMode() == wx.stc.STC_WRAP_WORD
-
 
     def SetWordWrap(self, wordWrap):
         if wordWrap:
@@ -1437,6 +1407,9 @@ class TextCtrl(wx.stc.StyledTextCtrl):
             wx.stc.StyledTextCtrl.AddText(self,text)
         except:
             wx.stc.StyledTextCtrl.AddText(self,text.decode("utf-8"))
+
+    def HasSelection(self):
+        return self.GetSelectionStart() - self.GetSelectionEnd() != 0  
     #----------------------------------------------------------------------------
     # DynamicSashWindow methods
     #----------------------------------------------------------------------------

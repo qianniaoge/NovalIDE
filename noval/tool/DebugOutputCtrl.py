@@ -87,8 +87,7 @@ class DebugOutputCtrl(STCTextEditor.TextCtrl):
         elif (id == wx.ID_CUT
         or id == wx.ID_COPY
         or id == wx.ID_CLEAR):
-            hasSelection = self.GetSelectionStart() != self.GetSelectionEnd()
-            event.Enable(hasSelection)
+            event.Enable(self.HasSelection())
             return True
         elif id == wx.ID_PASTE:
             event.Enable(self.CanPaste())

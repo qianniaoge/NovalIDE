@@ -220,9 +220,13 @@ class CodeView(STCTextEditor.TextView):
             # wxBug: need to select in reverse order (end, start) to place cursor at begining of line,
             #        otherwise, display is scrolled over to the right hard and is hard to view
             if node.Type == parserconfig.NODE_IMPORT_TYPE and node.AsName != None:
-                start,end = self.FindTextInLine(node.Line,node.AsName)
+                col = self.GetCtrl().GetLine(node.Line-1).find(" as ")
+                start,end = self.FindTextInLine(node.AsName,node.Line,col)
+            elif node.Type == parserconfig.NODE_IMPORT_TYPE and node.Parent.Type == parserconfig.NODE_FROMIMPORT_TYPE:
+                col = self.GetCtrl().GetLine(node.Line-1).find(" import ")
+                start,end = self.FindTextInLine(node.Name,node.Line,col)
             else:
-                start,end = self.FindTextInLine(node.Line,node.Name)
+                start,end = self.FindTextInLine(node.Name,node.Line)
             self.SetSelection(start, end)
 
 ##    def checksum(self, bytes):        
@@ -740,17 +744,11 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         word = self.GetTextRange(start_pos,end_pos).strip()
         return False if word == "" else True
 
-    def HasSelection(self):
-        return self.GetSelectionStart() - self.GetSelectionEnd() != 0  
-
-
     def ClearCurrentLineMarkers(self):
         self.MarkerDeleteAll(CodeCtrl.CURRENT_LINE_MARKER_NUM)
         
-
     def ClearCurrentBreakpoinMarkers(self):
         self.MarkerDeleteAll(CodeCtrl.BREAKPOINT_MARKER_NUM)
-
 
     def GetDefaultFont(self):
         if wx.Platform == '__WXMSW__':
@@ -759,35 +757,27 @@ class CodeCtrl(STCTextEditor.TextCtrl):
             font = "Courier"
         return wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = font)
 
-
     def GetMatchingBraces(self):
         """ Overwrite this method for language specific braces """
         return "[]{}()"
 
-
     def CanWordWrap(self):
         return False
         
-
     def SetFont(self, font):
         self._font = font
-
 
     def SetFontColor(self, fontColor):
         self._fontColor = fontColor
 
-
     def UpdateStyles(self):
-
         if not self.GetFont():
             return
-
         faces = { 'font' : self.GetFont().GetFaceName(),
                   'size' : self.GetFont().GetPointSize(),
                   'size2': self.GetFont().GetPointSize() - 2,
                   'color' : "%02x%02x%02x" % (self.GetFontColor().Red(), self.GetFontColor().Green(), self.GetFontColor().Blue())
                   }
-
         # Global default styles for all languages
         ##self.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT,     "face:%(font)s,fore:#FFFFFF,size:%(size)d" % faces)
         self.StyleSetSpec(wx.stc.STC_STYLE_LINENUMBER,  "face:%(font)s,back:#C0C0C0,face:%(font)s,size:%(size2)d" % faces)

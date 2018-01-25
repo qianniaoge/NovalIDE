@@ -410,7 +410,10 @@ class PythonView(CodeEditor.CodeView):
                 treeCtrl.SetDoSelectCallback(from_import_item, self, child)
                 for node_import in child.Childs:
                     item_image_index = 4
-                    import_item = treeCtrl.AppendItem(from_import_item,node_import.Name)
+                    name = node_import.Name
+                    if node_import.AsName is not None:
+                        name = node_import.AsName
+                    import_item = treeCtrl.AppendItem(from_import_item,name)
                     treeCtrl.SetItemImage(import_item,item_image_index,wx.TreeItemIcon_Normal)
                     treeCtrl.SetDoSelectCallback(import_item, self, node_import)
 

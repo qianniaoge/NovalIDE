@@ -103,8 +103,7 @@ class MessageView(Service.ServiceView):
             event.Enable(False)
             return True
         elif id == wx.ID_COPY:
-            hasSelection = (stcControl.GetSelectionStart() != stcControl.GetSelectionEnd()) 
-            event.Enable(hasSelection)
+            event.Enable(stcControl.HasSelection())
             return True
         elif id == wx.ID_CLEAR:
             event.Enable(True)  # wxBug: should be stcControl.CanCut()) but disabling clear item means del key doesn't work in control as expected

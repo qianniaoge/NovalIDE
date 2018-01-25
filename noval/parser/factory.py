@@ -108,7 +108,13 @@ def quick_generate_intelligent_data(root_path):
      #       future.result()
      
 def generate_intelligent_data_by_pool(root_path,new_database_version):
-    version = str(sys.version_info.major) + "." +  str(sys.version_info.minor) + "."  + str(sys.version_info.micro)
+    if isinstance(sys.version_info,tuple):
+        version = str(sys.version_info[0]) + "." +  str(sys.version_info[1]) 
+        if sys.version_info[2] > 0:
+            version += "."
+            version += str(sys.version_info[2])
+    else:
+        version = str(sys.version_info.major) + "." +  str(sys.version_info.minor) + "."  + str(sys.version_info.micro)
     dest_path = os.path.join(root_path,version)
     utils.MakeDirs(dest_path)
     need_renew_database = NeedRenewDatabase(dest_path,new_database_version)
