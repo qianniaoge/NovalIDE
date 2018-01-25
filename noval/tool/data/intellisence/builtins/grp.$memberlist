@@ -1,0 +1,7 @@
+__doc__
+__name__
+__package__
+getgrall
+getgrgid
+getgrnam
+struct_group

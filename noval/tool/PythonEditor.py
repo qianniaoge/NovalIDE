@@ -112,7 +112,7 @@ class PythonDocument(CodeEditor.CodeDocument):
         if lower_encoding == "utf-8" or lower_encoding == "utf-8-sig":
             return self.UTF_8_ENCODING
         elif lower_encoding == "gbk" or lower_encoding == "gb2312" \
-             or lower_encoding == "gb18030":
+             or lower_encoding == "gb18030" or lower_encoding == "cp936":
             return self.GBK_ENCODING
         return self.ANSI_ENCODING
 

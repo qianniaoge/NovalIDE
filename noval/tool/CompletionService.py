@@ -53,16 +53,12 @@ class CompletionService(wx.lib.pydocview.DocService):
     def ProcessEvent(self, event):
         id = event.GetId()
         if id == CompletionService.GO_TO_DEFINITION:
-            wx.GetApp().GetDocumentManager().GetCurrentView().MarkerToggle()
             return True
         elif id == CompletionService.COMPLETE_WORD_LIST:
-            wx.GetApp().GetDocumentManager().GetCurrentView().MarkerDeleteAll()
             return True
         elif id == CompletionService.AUTO_COMPLETE_WORD:
-            wx.GetApp().GetDocumentManager().GetCurrentView().MarkerNext()
             return True
         elif id == CompletionService.LIST_CURRENT_MEMBERS:
-            wx.GetApp().GetDocumentManager().GetCurrentView().MarkerPrevious()
             return True
         else:
             return False
@@ -71,20 +67,12 @@ class CompletionService(wx.lib.pydocview.DocService):
     def ProcessUpdateUIEvent(self, event):
         id = event.GetId()
         if id == CompletionService.GO_TO_DEFINITION:
-            view = wx.GetApp().GetDocumentManager().GetCurrentView()
-            event.Enable(hasattr(view, "MarkerToggle"))
             return True
         elif id == CompletionService.COMPLETE_WORD_LIST:
-            view = wx.GetApp().GetDocumentManager().GetCurrentView()
-            event.Enable(hasattr(view, "MarkerDeleteAll") and view.GetMarkerCount())
             return True
         elif id == CompletionService.AUTO_COMPLETE_WORD:
-            view = wx.GetApp().GetDocumentManager().GetCurrentView()
-            event.Enable(hasattr(view, "MarkerNext") and view.GetMarkerCount())
             return True
         elif id == CompletionService.LIST_CURRENT_MEMBERS:
-            view = wx.GetApp().GetDocumentManager().GetCurrentView()
-            event.Enable(hasattr(view, "MarkerPrevious") and view.GetMarkerCount())
             return True
         else:
             return False

@@ -23,6 +23,7 @@ class MarkerService(wx.lib.pydocview.DocService):
     MARKERDELALL_ID = wx.NewId()
     MARKERNEXT_ID = wx.NewId()
     MARKERPREV_ID = wx.NewId()
+    BOOKMARKER_ID = wx.NewId()
 
 
     def __init__(self):
@@ -36,18 +37,22 @@ class MarkerService(wx.lib.pydocview.DocService):
 
         editMenu = menuBar.GetMenu(menuBar.FindMenu(_("&Edit")))
         editMenu.AppendSeparator()
-        editMenu.Append(MarkerService.MARKERTOGGLE_ID, _("Toggle &Bookmark\tCtrl+M"), _("Toggles a bookmark at text line"))
+        bookMenu = wx.Menu()
+        bookMenu.Append(MarkerService.MARKERTOGGLE_ID, _("Toggle &Bookmark\tCtrl+M"), _("Toggles a bookmark at text line"))
         wx.EVT_MENU(frame, MarkerService.MARKERTOGGLE_ID, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, MarkerService.MARKERTOGGLE_ID, frame.ProcessUpdateUIEvent)
-        editMenu.Append(MarkerService.MARKERDELALL_ID, _("Clear Bookmarks"), _("Removes all jump bookmarks from selected file"))
+        bookMenu.Append(MarkerService.MARKERDELALL_ID, _("Clear Bookmarks"), _("Removes all jump bookmarks from selected file"))
         wx.EVT_MENU(frame, MarkerService.MARKERDELALL_ID, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, MarkerService.MARKERDELALL_ID, frame.ProcessUpdateUIEvent)
-        editMenu.Append(MarkerService.MARKERNEXT_ID, _("Bookmark Next\tF4"), _("Moves to next bookmark in selected file"))
+        bookMenu.Append(MarkerService.MARKERNEXT_ID, _("Bookmark Next\tF4"), _("Moves to next bookmark in selected file"))
         wx.EVT_MENU(frame, MarkerService.MARKERNEXT_ID, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, MarkerService.MARKERNEXT_ID, frame.ProcessUpdateUIEvent)
-        editMenu.Append(MarkerService.MARKERPREV_ID, _("Bookmark Previous\tShift+F4"), _("Moves to previous bookmark in selected file"))
+        bookMenu.Append(MarkerService.MARKERPREV_ID, _("Bookmark Previous\tShift+F4"), _("Moves to previous bookmark in selected file"))
         wx.EVT_MENU(frame, MarkerService.MARKERPREV_ID, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, MarkerService.MARKERPREV_ID, frame.ProcessUpdateUIEvent)
+
+        editMenu.AppendMenu(MarkerService.BOOKMARKER_ID, _("&BookMark"), bookMenu)
+        wx.EVT_UPDATE_UI(frame, MarkerService.BOOKMARKER_ID, frame.ProcessUpdateUIEvent)
 
 
     def ProcessEvent(self, event):
@@ -85,6 +90,9 @@ class MarkerService(wx.lib.pydocview.DocService):
         elif id == MarkerService.MARKERPREV_ID:
             view = wx.GetApp().GetDocumentManager().GetCurrentView()
             event.Enable(hasattr(view, "MarkerPrevious") and view.GetMarkerCount())
+            return True
+        elif (id == MarkerService.BOOKMARKER_ID):
+            event.Enable(False)
             return True
         else:
             return False

@@ -124,6 +124,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         self.ShowSplash(getIDESplashBitmap())
 
         import STCTextEditor
+        import TextService
         import FindInDirService
         import MarkerService
         import project as projectlib
@@ -145,6 +146,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         import SVNService
         import ExtensionService
         import Interpreter
+        import CompletionService
 ##        import UpdateLogIniService
                             
         _EDIT_LAYOUTS = True                        
@@ -275,10 +277,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 icon = XmlEditor.getXMLIcon())
         docManager.AssociateTemplate(xmlTemplate)
         
-        textService             = self.InstallService(STCTextEditor.TextService())
         pythonService           = self.InstallService(PythonEditor.PythonService("Python Interpreter",embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
-        perlService             = self.InstallService(PerlEditor.PerlService())
-        phpService              = self.InstallService(PHPEditor.PHPService())
         if not ACTIVEGRID_BASE_IDE:
             propertyService     = self.InstallService(PropertyService.PropertyService("Properties", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_RIGHT))
         projectService          = self.InstallService(ProjectEditor.ProjectService("Projects", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_TOPLEFT))
@@ -289,6 +288,10 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         outlineService          = self.InstallService(OutlineService.OutlineService("Outline", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOMLEFT))
         filePropertiesService   = self.InstallService(wx.lib.pydocview.FilePropertiesService())
         markerService           = self.InstallService(MarkerService.MarkerService())
+        textService             = self.InstallService(TextService.TextService())
+        perlService             = self.InstallService(PerlEditor.PerlService())
+        phpService              = self.InstallService(PHPEditor.PHPService())
+        comletionService        = self.InstallService(CompletionService.CompletionService())
         messageService          = self.InstallService(MessageService.MessageService("Search Results", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
     ##    outputService          = self.InstallService(OutputService.OutputService("Output", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
         debuggerService         = self.InstallService(DebuggerService.DebuggerService("Debugger", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))

@@ -1,10 +1,11 @@
 import STCTextEditor
 import wx
+import TextService
 _ = wx.GetTranslation
 
 class DebugOutputCtrl(STCTextEditor.TextCtrl):
     
-    ItemIDs = [wx.ID_UNDO, wx.ID_REDO,wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE, wx.ID_CLEAR, wx.ID_SELECTALL,STCTextEditor.WORD_WRAP_ID]
+    ItemIDs = [wx.ID_UNDO, wx.ID_REDO,wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE, wx.ID_CLEAR, wx.ID_SELECTALL,TextService.WORD_WRAP_ID]
     
     def __init__(self, parent, id=-1, style = wx.NO_FULL_REPAINT_ON_RESIZE, clearTab=True):
         STCTextEditor.TextCtrl.__init__(self, parent, id, style)
@@ -27,7 +28,7 @@ class DebugOutputCtrl(STCTextEditor.TextCtrl):
         menu.AppendSeparator()
         menu.Append(wx.ID_SELECTALL, "Select All\tCtrl+A")
                     
-        menu.AppendCheckItem(STCTextEditor.WORD_WRAP_ID, _("Word Wrap"))
+        menu.AppendCheckItem(TextService.WORD_WRAP_ID, _("Word Wrap"))
         wx.EVT_MENU(self, wx.ID_UNDO, self.DSProcessEvent) 
         wx.EVT_UPDATE_UI(self, wx.ID_UNDO, self.DSProcessUpdateUIEvent)
         wx.EVT_MENU(self, wx.ID_REDO, self.DSProcessEvent) 
@@ -42,8 +43,8 @@ class DebugOutputCtrl(STCTextEditor.TextCtrl):
         wx.EVT_UPDATE_UI(self, wx.ID_CLEAR, self.DSProcessUpdateUIEvent)
         wx.EVT_MENU(self, wx.ID_SELECTALL, self.DSProcessEvent) 
         wx.EVT_UPDATE_UI(self, wx.ID_SELECTALL, self.DSProcessUpdateUIEvent)
-        wx.EVT_MENU(self, STCTextEditor.WORD_WRAP_ID, self.DSProcessEvent) 
-        wx.EVT_UPDATE_UI(self, STCTextEditor.WORD_WRAP_ID, self.DSProcessUpdateUIEvent)
+        wx.EVT_MENU(self, TextService.WORD_WRAP_ID, self.DSProcessEvent) 
+        wx.EVT_UPDATE_UI(self, TextService.WORD_WRAP_ID, self.DSProcessUpdateUIEvent)
         return menu
         
     def DSProcessEvent(self, event):
@@ -69,7 +70,7 @@ class DebugOutputCtrl(STCTextEditor.TextCtrl):
         elif id == wx.ID_SELECTALL:
             self.SelectAll()
             return True
-        elif id == STCTextEditor.WORD_WRAP_ID:
+        elif id == TextService.WORD_WRAP_ID:
             self.SetWordWrap(not self.GetWordWrap())
             return True
         else:
@@ -96,7 +97,7 @@ class DebugOutputCtrl(STCTextEditor.TextCtrl):
             hasText = self.GetTextLength() > 0
             event.Enable(hasText)
             return True
-        elif id == STCTextEditor.WORD_WRAP_ID:
+        elif id == TextService.WORD_WRAP_ID:
             event.Enable(self.CanWordWrap())
             event.Check(self.CanWordWrap() and self.GetWordWrap())
             return True

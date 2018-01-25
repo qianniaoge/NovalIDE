@@ -33,6 +33,7 @@ elif sys.platform.find('linux') != -1:
                 'noval': [
                         'tool/bmp_source/*',
                         'tool/data/*',
+                        'tool/data/intellisence/builtins/*',
                         ],
             },
             data_files = [('',['version.txt']),],

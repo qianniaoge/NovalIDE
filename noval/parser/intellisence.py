@@ -153,15 +153,16 @@ class ModuleLoader(object):
         return None
         
 class IntellisenceDataLoader(object):
-    def __init__(self,data_location,manager):
+    def __init__(self,data_location,_builtin_data_location,manager):
         self._data_location = data_location
+        self.__builtin_data_location = _builtin_data_location
         self.module_dicts = {}
         self.import_list = []
         self._builtin_module = None
         self._manager = manager
       
     def LodBuiltInData(self):
-        builtin_data_path = self._data_location
+        builtin_data_path = self.__builtin_data_location
         if not os.path.exists(builtin_data_path):
             return
         self.LoadIntellisenceDirData(builtin_data_path)
@@ -217,8 +218,12 @@ class IntellisenceManager(object):
     __metaclass__ = Singleton.SingletonNew
     def __init__(self):
         self.data_root_path = os.path.join(appdirs.getAppDataFolder(),"intellisence")
+        if sysutilslib.isWindows():
+            self._builtin_data_path = self.data_root_path
+        else:
+            self._builtin_data_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "data","intellisence","builtins")
         self.module_dicts = {}
-        self._loader = IntellisenceDataLoader(self.data_root_path,self)
+        self._loader = IntellisenceDataLoader(self.data_root_path,self._builtin_data_path,self)
         self._is_running = False
         self._process_obj = None
         

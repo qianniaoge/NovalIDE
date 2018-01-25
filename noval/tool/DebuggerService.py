@@ -2486,7 +2486,7 @@ class DebuggerService(Service.Service):
     def CheckScript(self,event):
         if not Executor.GetPythonExecutablePath():
             return
-        interpreter = Interpreter.InterpreterManager().GetDefaultInterpreter()
+        interpreter = wx.GetApp().GetCurrentInterpreter()
         doc_view = self.GetActiveView()
         if not doc_view:
             return

@@ -26,6 +26,7 @@ import noval.parser.intellisence as intellisence
 import noval.parser.config as parserconfig
 import FindService
 import DebugOutputCtrl
+import TextService
 _ = wx.GetTranslation
 if wx.Platform == '__WXMSW__':
     _WINDOWS = True
@@ -443,11 +444,11 @@ class CodeView(STCTextEditor.TextView):
                 dbg_service.SetCurrentBreakpointMarkers(self)
 
 
-class CodeService(STCTextEditor.TextService):
+class CodeService(TextService.TextService):
 
 
     def __init__(self):
-        STCTextEditor.TextService.__init__(self)
+        TextService.TextService.__init__(self)
 
 
     def InstallControls(self, frame, menuBar = None, toolBar = None, statusBar = None, document = None):
@@ -577,7 +578,7 @@ class CodeService(STCTextEditor.TextService):
             event.Enable(False)
             return True
         else:
-            return STCTextEditor.TextService.ProcessUpdateUIEvent(self, event)
+            return TextService.TextService.ProcessUpdateUIEvent(self, event)
 
 
 class CodeCtrl(STCTextEditor.TextCtrl):

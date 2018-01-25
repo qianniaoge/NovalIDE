@@ -68,3 +68,7 @@ Version 1.0.3 -------------2018-01-16
 7.enable set script parameter and environment
 8.support create unit test frame of script
 9.repair py2exe call subprocess.popen error
+10.repair cannot inspect cp936 encoding error
+11.add insert and advance edit function
+12.separate common intellisense data path and builtin intellisense data,which on linux system ,they are not equal
+13.add builtin intellisense data to linux build package
