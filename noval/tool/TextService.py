@@ -1,5 +1,11 @@
 import wx
 import wx.lib.pydocview
+import Service
+import noval.parser.config as parserconfig
+import datetime
+import getpass
+import os
+import noval.util.strutils as strutils
 _ = wx.GetTranslation
 
 #----------------------------------------------------------------------------
@@ -27,6 +33,43 @@ INSERT_DATETIME_ID = wx.NewId()
 INSERT_COMMENT_TEMPLATE_ID = wx.NewId()
 INSERT_FILE_CONTENT_ID = wx.NewId()
 INSERT_DECLARE_ENCODING_ID = wx.NewId()
+
+PYTHON_COMMENT_TEMPLATE = '''#-------------------------------------------------------------------------------
+# Name:        {File}
+# Purpose:
+#
+# Author:      {Author}
+#
+# Created:     {Date}
+# Copyright:   (c) {Author} {Year}
+# Licence:     <your licence>
+#-------------------------------------------------------------------------------
+'''
+
+SPACE = 10
+HALF_SPACE = 5
+class EncodingDeclareDialog(wx.Dialog):
+    def __init__(self,parent,dlg_id,title):
+        wx.Dialog.__init__(self,parent,dlg_id,title,size=(-1,150))
+        contentSizer = wx.BoxSizer(wx.VERTICAL)
+        
+        self.name_ctrl = wx.TextCtrl(self, -1, "# -*- coding: utf-8 -*-",size=(200,-1))
+        self.name_ctrl.Enable(False)
+        contentSizer.Add(self.name_ctrl, 0, wx.BOTTOM|wx.LEFT|wx.EXPAND , SPACE)
+        self.check_box = wx.CheckBox(self, -1,_("Edit"))
+        self.Bind(wx.EVT_CHECKBOX,self.onChecked) 
+        contentSizer.Add(self.check_box, 0, wx.BOTTOM|wx.LEFT, SPACE)
+        
+        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        ok_btn = wx.Button(self, wx.ID_OK, _("&Insert"))
+        lineSizer.Add(ok_btn, 0, wx.LEFT, SPACE*15)
+        cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
+        lineSizer.Add(cancel_btn, 0, wx.LEFT, SPACE)
+        contentSizer.Add(lineSizer, 0, wx.BOTTOM|wx.RIGHT, SPACE)
+        self.SetSizer(contentSizer)
+
+    def onChecked(self,event):
+        self.name_ctrl.Enable(event.GetEventObject().GetValue())
 
 class TextStatusBar(wx.StatusBar):
 
@@ -198,7 +241,58 @@ class TextService(wx.lib.pydocview.DocService):
         toolBar.AddTool(ZOOM_OUT_ID, getZoomOutBitmap(), shortHelpString = _("Zoom Out"), longHelpString = _("Zooms the document to a smaller size"))
         toolBar.Realize()
 
+    def ProcessEvent(self, event):
+        id = event.GetId()
+        text_view = Service.Service.GetActiveView()
+        if id == CONVERT_TO_UPPERCASE_ID:
+            text_view.GetCtrl().UpperCase()
+            return True
+        elif id == CONVERT_TO_LOWER_ID:
+            text_view.GetCtrl().LowerCase()
+            return True
+        elif id == INSERT_DATETIME_ID:
+            text_view.AddText(str(datetime.datetime.now().date()))
+            return True
+        elif id == INSERT_COMMENT_TEMPLATE_ID:
+            file_name = os.path.basename(text_view.GetDocument().GetFilename())
+            now_time = datetime.datetime.now()
+            comment_template = PYTHON_COMMENT_TEMPLATE.format(File=file_name,Author=getpass.getuser(),Date=now_time.date(),Year=now_time.date().year)
+            text_view.GetCtrl().GotoPos(0)
+            text_view.AddText(comment_template)
+            return True
+        elif id == INSERT_FILE_CONTENT_ID:
+            dlg = wx.FileDialog(wx.GetApp().GetTopWindow(),_("Select File Path"),
+                                wildcard="All|*.*",style=wx.OPEN|wx.FILE_MUST_EXIST|wx.CHANGE_DIR)
+            if dlg.ShowModal() == wx.ID_OK:
+                path = dlg.GetPath()
+                with open(path) as f:
+                    text_view.AddText(f.read())
+            return True
+        elif id == INSERT_DECLARE_ENCODING_ID:
+            lines = text_view.GetTopLines(3)
+            coding_name,line_num = strutils.get_python_coding_declare(lines)
+            if  coding_name is not None:
+                ret = wx.MessageBox(_("The Python Document have already declare coding,Do you want to overwrite it?"),_("Declare Encoding"),wx.YES_NO|wx.ICON_QUESTION,\
+                    text_view.GetFrame())
+                if ret == wx.YES:
+                    text_view.GetCtrl().SetSelection(text_view.GetCtrl().PositionFromLine(line_num),text_view.GetCtrl().PositionFromLine(line_num+1))
+                    text_view.GetCtrl().DeleteBack()
+                else:
+                    return True
+            dlg = EncodingDeclareDialog(wx.GetApp().GetTopWindow(),-1,"Declare Encoding")
+            dlg.CenterOnParent()
+            if dlg.ShowModal() == wx.ID_OK:
+                text_view.GetCtrl().GotoPos(0)
+                text_view.AddText(dlg.name_ctrl.GetValue() + "\n")
+            return True
+        else:
+            return False
+
     def ProcessUpdateUIEvent(self, event):
+        text_view = Service.Service.GetActiveView()
+      #  if text_view is None:
+       #     event.Enable(False)
+        #    return True
         id = event.GetId()
         if (id == TEXT_ID
         or id == VIEW_WHITESPACE_ID
@@ -215,6 +309,14 @@ class TextService(wx.lib.pydocview.DocService):
         or id == INSERT_TEXT_ID
         or id == ADVANCE_EDIT_ID):
             event.Enable(False)
+            return True
+        elif id == CONVERT_TO_UPPERCASE_ID \
+                or id == CONVERT_TO_LOWER_ID:
+            event.Enable(text_view is not None and text_view.HasSelection())
+            return True
+        elif id == INSERT_COMMENT_TEMPLATE_ID \
+                or id == INSERT_DECLARE_ENCODING_ID:
+            event.Enable(text_view is not None and text_view.GetLangLexer() == parserconfig.LANG_PYTHON_LEXER )
             return True
         else:
             return False

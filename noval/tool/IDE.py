@@ -378,13 +378,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         if not projectService.OpenSavedProjects() and not docManager.GetDocuments() and self.IsSDI():  # Have to open something if it's SDI and there are no projects...
             projectTemplate.CreateDocument('', wx.lib.docview.DOC_NEW).OnNewDocument()
             
-        tips_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "data", "tips.txt")
-            
-        # wxBug: On Mac, having the updates fire while the tip dialog is at front
-        # for some reason messes up menu updates. This seems a low-level wxWidgets bug,
-        # so until I track this down, turn off UI updates while the tip dialog is showing.
-        if os.path.isfile(tips_path):
-            self.ShowTip(docManager.FindSuitableParent(), wx.CreateFileTipProvider(tips_path, 0))
+        self.ShowTipfOfDay()
                    
         Interpreter.InterpreterManager().LoadDefaultInterpreter()
         self.AddInterpreters()
@@ -392,6 +386,19 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         wx.UpdateUIEvent.SetUpdateInterval(1000)  # Overhead of updating menus was too much.  Change to update every n milliseconds.
 
         return True
+
+    def ShowTipfOfDay(self,must_display=False):
+        docManager = self.GetDocumentManager()
+        tips_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "data", "tips.txt")
+        # wxBug: On Mac, having the updates fire while the tip dialog is at front
+        # for some reason messes up menu updates. This seems a low-level wxWidgets bug,
+        # so until I track this down, turn off UI updates while the tip dialog is showing.
+        if os.path.isfile(tips_path):
+            if must_display:
+                wx.ShowTip(docManager.FindSuitableParent(), wx.CreateFileTipProvider(tips_path, 0),False)
+            else:
+                self.ShowTip(docManager.FindSuitableParent(), wx.CreateFileTipProvider(tips_path, 0))
+    
     @property
     def MainFrame(self):
         return self.frame
@@ -452,6 +459,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
     def OnExit(self):
         intellisence.IntellisenceManager().Stop()
         wx.lib.pydocview.DocApp.OnExit(self)
+
 class IDEDocManager(wx.lib.docview.DocManager):
     
     # Overriding default document creation.

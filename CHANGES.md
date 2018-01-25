@@ -72,3 +72,4 @@ Version 1.0.3 -------------2018-01-16
 11.add insert and advance edit function
 12.separate common intellisense data path and builtin intellisense data,which on linux system ,they are not equal
 13.add builtin intellisense data to linux build package
+14.enable insert date,comment template and python coding declare to text

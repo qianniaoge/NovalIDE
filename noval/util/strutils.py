@@ -10,6 +10,7 @@
 # License:      wxWindows License
 #----------------------------------------------------------------------------
 import os
+import re
 
 def caseInsensitiveCompare(s1, s2):
     """ Method used by sort() to sort values in case insensitive order """
@@ -116,3 +117,21 @@ def GetFileExt(filename):
     if 1 == len(parts):
         return ""
     return parts[-1]
+
+def get_python_coding_declare(lines):
+    # Only consider the first two lines
+    CODING_REG_STR = re.compile(r'^[ \t\f]*#.*coding[:=][ \t]*([-\w.]+)')
+    BLANK_REG_STR = re.compile(r'^[ \t\f]*(?:[#\r\n]|$)')
+    lst = lines[:2]
+    hit_line = 0
+    for line in lst:
+        match = CODING_REG_STR.match(line)
+        if match is not None:
+            break
+        if not BLANK_REG_STR.match(line):
+            return None,-1
+        hit_line += 1
+    else:
+        return None,-1
+    name = match.group(1)
+    return name,hit_line

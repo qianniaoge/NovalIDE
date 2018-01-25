@@ -20,6 +20,7 @@ import noval.util.xmlutils as xmlutils
 import subprocess
 import sys
 import UnitTestDialog
+import noval.util.sysutils as sysutilslib
 _ = wx.GetTranslation
 
 
@@ -136,7 +137,31 @@ class ExtensionService(wx.lib.pydocview.DocService):
 
             id = wx.NewId()
             toolsMenu.Append(id,"&UnitTest")
-            wx.EVT_MENU(frame, id, self.RunUnitTest)  
+            wx.EVT_MENU(frame, id, self.RunUnitTest)
+        
+        helpMenuIndex = menuBar.FindMenu(_("&Help"))
+        helpMenu = menuBar.GetMenu(helpMenuIndex)
+        start_index = 0
+        if sysutilslib.isWindows():
+            id = wx.NewId()
+            helpMenu.Insert(0,id,"&Python Help Document")
+            wx.EVT_MENU(frame, id, self.OpenPythonHelpDocument)
+            start_index += 1
+
+        id = wx.NewId()
+        helpMenu.Insert(start_index,id,"&Tips of Day")
+        wx.EVT_MENU(frame, id, self.ShowTipsOfDay)
+
+    def ShowTipsOfDay(self,event):
+        wx.GetApp().ShowTipfOfDay(True)
+
+    def OpenPythonHelpDocument(self,event):
+        interpreter = wx.GetApp().GetCurrentInterpreter()
+        if interpreter is None:
+            return
+        if interpreter.HelpPath == "":
+            return
+        os.startfile(interpreter.HelpPath)
 
     def OpenTerminator(self, event):
         if sys.platform == "win32":

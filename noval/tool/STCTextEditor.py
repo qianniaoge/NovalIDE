@@ -97,8 +97,8 @@ class TextDocument(wx.lib.docview.Document):
                 os.remove(backupFilename)
         except:
             # for debugging purposes
-            import traceback
-            traceback.print_exc()
+          ##  import traceback
+            ##traceback.print_exc()
 
             if fileObject:
                 fileObject.close()  # file is still open, close it, need to do this before removal 
@@ -460,8 +460,7 @@ class TextView(wx.lib.docview.View):
         elif (id == wx.ID_CUT
         or id == wx.ID_COPY
         or id == wx.ID_CLEAR):
-            hasSelection = self.GetCtrl().GetSelectionStart() != self.GetCtrl().GetSelectionEnd()
-            event.Enable(hasSelection)
+            event.Enable(self.HasSelection())
             return True
         elif id == wx.ID_PASTE:
             event.Enable(self.GetCtrl().CanPaste())
@@ -602,6 +601,14 @@ class TextView(wx.lib.docview.View):
     def AddText(self,text):
         self.GetCtrl().AddText(text)
 
+    def HasSelection(self):
+        return self.GetCtrl().GetSelectionStart() != self.GetCtrl().GetSelectionEnd()
+
+    def GetTopLines(self,line_num):
+        lines = []
+        for i in range(line_num):
+            lines.append(self.GetCtrl().GetLine(i))
+        return lines
     #----------------------------------------------------------------------------
     # STC events
     #----------------------------------------------------------------------------

@@ -70,6 +70,7 @@ class PythonInterpreter(Interpreter):
         self._is_analysing = False
         self._sys_path_list = []
         self._builtins = []
+        self._help_path = ""
         if not is_valid_interpreter:
             self.GetVersion()
         if not is_valid_interpreter and self._is_valid_interpreter:
@@ -114,6 +115,14 @@ class PythonInterpreter(Interpreter):
     @property
     def Version(self):
         return self._version
+
+    @property
+    def HelpPath(self):
+        return self._help_path
+
+    @HelpPath.setter
+    def HelpPath(self,help_path):
+        self._help_path = help_path
          
     @property
     def ConsolePath(self):
@@ -229,6 +238,10 @@ class InterpreterManager(Singleton):
                             install_path = _winreg.QueryValue(child_key,"InstallPath")
                             interpreter = PythonInterpreter(name,os.path.join(install_path,PythonInterpreter.CONSOLE_EXECUTABLE_NAME))
                             self.interpreters.append(interpreter)
+
+                            help_key = _winreg.OpenKey(child_key,"Help")
+                            help_path = _winreg.QueryValue(help_key,"Main Python Documentation")
+                            interpreter.HelpPath = help_path
                         except:
                             continue
                 except:
@@ -253,6 +266,7 @@ class InterpreterManager(Singleton):
                 if interpreter.Default:
                     self.SetDefaultInterpreter(interpreter)
                 interpreter.SetInterpreterInfo(l['version'],l['builtins'],l['path_list'])
+                interpreter.HelpPath = l.get('help_path','')
                 self.interpreters.append(interpreter)
         else:
             prefix = self.KEY_PREFIX
@@ -282,7 +296,7 @@ class InterpreterManager(Singleton):
         lst = []
         for interpreter in self.interpreters:
             d = dict(id=interpreter.Id,name=interpreter.Name,version=interpreter.Version,path=interpreter.Path,\
-                     default=interpreter.Default,path_list=interpreter.SyspathList,builtins=interpreter.Builtins)
+                     default=interpreter.Default,path_list=interpreter.SyspathList,builtins=interpreter.Builtins,help_path=interpreter.HelpPath)
             lst.append(d)
         return lst
         

@@ -28,7 +28,6 @@ import OutlineService
 import FindInDirService
 from UICommon import CaseInsensitiveCompare
 import codecs
-import re
 import noval.parser.config as parserconfig
 import Service
 import noval.parser.fileparser as parser
@@ -37,6 +36,7 @@ import Interpreter
 import InterpreterConfigDialog
 import noval.parser.intellisence as intellisence
 import noval.parser.nodeast as nodeast
+import noval.util.strutils as strutils
 try:
     import checker # for pychecker
     _CHECKER_INSTALLED = True
@@ -50,37 +50,7 @@ if wx.Platform == '__WXMSW__':
 else:
     _WINDOWS = False
 
-
 VIEW_PYTHON_INTERPRETER_ID = wx.NewId()
-
-
-CODING_REG_STR = re.compile(r'^[ \t\f]*#.*coding[:=][ \t]*([-\w.]+)')
-BLANK_REG_STR = re.compile(r'^[ \t\f]*(?:[#\r\n]|$)')
-
-def coding_spec(str):
-    """Return the encoding declaration according to PEP 263.
-
-    Raise LookupError if the encoding is declared but unknown.
-    """
-    # Only consider the first two lines
-    lst = str.split("\n", 2)[:2]
-    for line in lst:
-        match = CODING_REG_STR.match(line)
-        if match is not None:
-            break
-        if not BLANK_REG_STR.match(line):
-            return None
-    else:
-        return None
-    name = match.group(1)
-    # Check whether the encoding is known
-    
-    try:
-        codecs.lookup(name)
-    except LookupError:
-        # The standard encoding error does not indicate the encoding
-        raise LookupError, "Unknown encoding "+name
-    return name
 
 class RunParameter():
     def __init__(self,arg,env,start_up):
@@ -94,11 +64,26 @@ class PythonDocument(CodeEditor.CodeDocument):
     GBK_ENCODING = 1
     ANSI_ENCODING = 2
 
+    def get_coding_spec(self,lines):
+        """Return the encoding declaration according to PEP 263.
+        Raise LookupError if the encoding is declared but unknown.
+        """
+        name,_ = strutils.get_python_coding_declare(lines)
+        if name is None:
+            return None
+        # Check whether the encoding is known
+        try:
+            codecs.lookup(name)
+        except LookupError:
+            # The standard encoding error does not indicate the encoding
+            raise LookupError, "Unknown encoding " + name
+        return name
+
     def DoSaveBefore(self):
         CodeEditor.CodeDocument.DoSaveBefore(self)
         view = self.GetFirstView()
-        file_data = view.GetValue()
-        declare_encoding = coding_spec(file_data)
+        lines = view.GetTopLines(3)
+        declare_encoding = self.get_coding_spec(lines)
         if None == declare_encoding:
             declare_encoding = CodeEditor.CodeDocument.DEFAULT_FILE_ENCODING
         if self.IsDocEncodingChanged(declare_encoding):
