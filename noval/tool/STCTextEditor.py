@@ -1289,7 +1289,7 @@ class TextCtrl(wx.stc.StyledTextCtrl):
         self.StyleSetForeground(wx.stc.STC_STYLE_DEFAULT, "#%02x%02x%02x" % (self._fontColor.Red(), self._fontColor.Green(), self._fontColor.Blue()))
 
     def SetLineNumberStyle(self):
-        self.UpdateStyles()
+        ###self.UpdateStyles()
         faces = { 'font' : self.GetFont().GetFaceName(),
           'size' : self.GetFont().GetPointSize(),
           'size2': self.GetFont().GetPointSize()-2,

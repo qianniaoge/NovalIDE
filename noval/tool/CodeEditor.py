@@ -30,7 +30,7 @@ import TextService
 import noval.util.sysutils as sysutilslib
 _ = wx.GetTranslation
 
-
+ENABLE_FOLD_ID = wx.NewId()
 EXPAND_TEXT_ID = wx.NewId()
 COLLAPSE_TEXT_ID = wx.NewId()
 EXPAND_TOP_ID = wx.NewId()
@@ -121,6 +121,9 @@ class CodeView(STCTextEditor.TextView):
         elif id == UNCOMMENT_LINES_ID:
             self.OnUncommentLines()
             return True
+        elif id == ENABLE_FOLD_ID:
+            self.GetCtrl().SetViewFolding(not self.GetCtrl().GetViewFolding())
+            return True
         else:
             return STCTextEditor.TextView.ProcessEvent(self, event)
 
@@ -173,11 +176,15 @@ class CodeView(STCTextEditor.TextView):
             event.Enable(True)
             return True
         elif id == FOLDING_ID:
-            event.Enable(self.GetCtrl().GetViewFolding())
+            event.Enable(True)
             return True
         elif id == USE_TABS_ID:
             event.Enable(True)
             event.Check(self.GetCtrl().GetUseTabs())
+            return True
+        elif id == ENABLE_FOLD_ID:
+            event.Enable(True)
+            event.Check(self.GetCtrl().GetViewFolding())
             return True
         else:
             return STCTextEditor.TextView.ProcessUpdateUIEvent(self, event)
@@ -464,6 +471,9 @@ class CodeService(TextService.TextService):
 
         if not menuBar.FindItemById(EXPAND_TEXT_ID):  # check if below menu items have been already been installed
             foldingMenu = wx.Menu()
+            foldingMenu.AppendCheckItem(ENABLE_FOLD_ID, _("&Use Fold Style"), _("Show or hide fold index"))
+            wx.EVT_MENU(frame, ENABLE_FOLD_ID, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, ENABLE_FOLD_ID, frame.ProcessUpdateUIEvent)
             if sysutilslib.isWindows():
                 foldingMenu.Append(EXPAND_TEXT_ID, _("&Expand\tNumpad-Plus"), _("Expands a collapsed block of text"))
             else:
@@ -575,7 +585,8 @@ class CodeService(TextService.TextService):
         or id == DEDENT_LINES_ID
         or id == COMMENT_LINES_ID
         or id == UNCOMMENT_LINES_ID
-        or id == FOLDING_ID):
+        or id == FOLDING_ID
+        or id == ENABLE_FOLD_ID):
             event.Enable(False)
             return True
         else:
@@ -710,12 +721,6 @@ class CodeCtrl(STCTextEditor.TextCtrl):
 
     def CanWordWrap(self):
         return False
-        
-    def SetFont(self, font):
-        self._font = font
-
-    def SetFontColor(self, fontColor):
-        self._fontColor = fontColor
 
     def UpdateStyles(self):
         if not self.GetFont():
@@ -726,7 +731,7 @@ class CodeCtrl(STCTextEditor.TextCtrl):
                   'color' : "%02x%02x%02x" % (self.GetFontColor().Red(), self.GetFontColor().Green(), self.GetFontColor().Blue())
                   }
         # Global default styles for all languages
-        self.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT,     "face:%(font)s,fore:#FFFFFF,size:%(size)d" % faces)
+        ###self.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT,     "face:%(font)s,fore:#FFFFFF,size:%(size)d" % faces)
       ##  self.StyleSetSpec(wx.stc.STC_STYLE_LINENUMBER,  "face:%(font)s,back:#C0C0C0,face:%(font)s,size:%(size2)d" % faces)
         self.StyleSetSpec(wx.stc.STC_STYLE_CONTROLCHAR, "face:%(font)s" % faces)
         self.StyleSetSpec(wx.stc.STC_STYLE_BRACELIGHT,  "face:%(font)s,fore:#000000,back:#70FFFF,size:%(size)d" % faces)
