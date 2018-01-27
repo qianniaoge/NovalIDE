@@ -19,7 +19,6 @@ import ProjectEditor
 import MessageService
 import FindService
 import OutlineService
-import Service
 import noval.util.strutils as strutils
 import time
 import threading
@@ -123,7 +122,7 @@ class FindInDirService(FindService.FindService):
     def ProcessUpdateUIEvent(self, event):
         id = event.GetId()
         if id == FindInDirService.FINDFILE_ID:
-            view = Service.Service.GetActiveView()
+            view = self.GetActiveView()
             if view:  # don't search project model
                 event.Enable(True)
             else:
@@ -442,8 +441,8 @@ class FindInDirService(FindService.FindService):
     
             projectService = wx.GetApp().GetService(ProjectEditor.ProjectService)
     
-            if Service.Service.GetActiveView():
-                currDoc = Service.Service.GetActiveView().GetDocument()
+            if self.GetActiveView():
+                currDoc = self.GetActiveView().GetDocument()
             else:
                 currDoc = None
             if currFileOnly:

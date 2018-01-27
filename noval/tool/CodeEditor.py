@@ -27,11 +27,8 @@ import noval.parser.config as parserconfig
 import FindService
 import DebugOutputCtrl
 import TextService
+import noval.util.sysutils as sysutilslib
 _ = wx.GetTranslation
-if wx.Platform == '__WXMSW__':
-    _WINDOWS = True
-else:
-    _WINDOWS = False
 
 
 EXPAND_TEXT_ID = wx.NewId()
@@ -463,11 +460,11 @@ class CodeService(TextService.TextService):
             return
 
         viewMenu = menuBar.GetMenu(menuBar.FindMenu(_("&View")))
-        isWindows = (wx.Platform == '__WXMSW__')
+      ###  isWindows = (wx.Platform == '__WXMSW__')
 
         if not menuBar.FindItemById(EXPAND_TEXT_ID):  # check if below menu items have been already been installed
             foldingMenu = wx.Menu()
-            if isWindows:
+            if sysutilslib.isWindows():
                 foldingMenu.Append(EXPAND_TEXT_ID, _("&Expand\tNumpad-Plus"), _("Expands a collapsed block of text"))
             else:
                 foldingMenu.Append(EXPAND_TEXT_ID, _("&Expand"), _("Expands a collapsed block of text"))
@@ -475,35 +472,35 @@ class CodeService(TextService.TextService):
             wx.EVT_MENU(frame, EXPAND_TEXT_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, EXPAND_TEXT_ID, frame.ProcessUpdateUIEvent)
             
-            if isWindows:
+            if sysutilslib.isWindows():
                 foldingMenu.Append(COLLAPSE_TEXT_ID, _("&Collapse\tNumpad+Minus"), _("Collapse a block of text"))
             else:
                 foldingMenu.Append(COLLAPSE_TEXT_ID, _("&Collapse"), _("Collapse a block of text"))
             wx.EVT_MENU(frame, COLLAPSE_TEXT_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, COLLAPSE_TEXT_ID, frame.ProcessUpdateUIEvent)
             
-            if isWindows:
+            if sysutilslib.isWindows():
                 foldingMenu.Append(EXPAND_TOP_ID, _("Expand &Top Level\tCtrl+Numpad+Plus"), _("Expands the top fold levels in the document"))
             else:
                 foldingMenu.Append(EXPAND_TOP_ID, _("Expand &Top Level"), _("Expands the top fold levels in the document"))
             wx.EVT_MENU(frame, EXPAND_TOP_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, EXPAND_TOP_ID, frame.ProcessUpdateUIEvent)
             
-            if isWindows:
+            if sysutilslib.isWindows():
                 foldingMenu.Append(COLLAPSE_TOP_ID, _("Collapse Top &Level\tCtrl+Numpad+Minus"), _("Collapses the top fold levels in the document"))
             else:
                 foldingMenu.Append(COLLAPSE_TOP_ID, _("Collapse Top &Level"), _("Collapses the top fold levels in the document"))
             wx.EVT_MENU(frame, COLLAPSE_TOP_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, COLLAPSE_TOP_ID, frame.ProcessUpdateUIEvent)
             
-            if isWindows:
+            if sysutilslib.isWindows():
                 foldingMenu.Append(EXPAND_ALL_ID, _("Expand &All\tShift+Numpad+Plus"), _("Expands all of the fold levels in the document"))
             else:
                 foldingMenu.Append(EXPAND_ALL_ID, _("Expand &All"), _("Expands all of the fold levels in the document"))
             wx.EVT_MENU(frame, EXPAND_ALL_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, EXPAND_ALL_ID, frame.ProcessUpdateUIEvent)
             
-            if isWindows:
+            if sysutilslib.isWindows():
                 foldingMenu.Append(COLLAPSE_ALL_ID, _("Colla&pse All\tShift+Numpad+Minus"), _("Collapses all of the fold levels in the document"))
             else:
                 foldingMenu.Append(COLLAPSE_ALL_ID, _("Colla&pse All"), _("Collapses all of the fold levels in the document"))
@@ -590,12 +587,11 @@ class CodeCtrl(STCTextEditor.TextCtrl):
     BREAKPOINT_MARKER_NUM = 1
     CURRENT_LINE_MARKER_MASK = 0x4
     BREAKPOINT_MARKER_MASK = 0x2
-    GO_TO_DEFINITION = wx.NewId()
     TYPE_POINT_WORD = "."
     TYPE_BLANK_WORD = " "
     TYPE_IMPORT_WORD = "import"
     TYPE_FROM_WORD = "from"
-    DEFAULT_WORD_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
+    DEFAULT_WORD_CHARS = string.letters + string.digits + '_'
     
             
     def __init__(self, parent, id=-1, style = wx.NO_FULL_REPAINT_ON_RESIZE, clearTab=True):
@@ -617,7 +613,7 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         # Define the breakpoint marker
         self.MarkerDefine(CodeCtrl.BREAKPOINT_MARKER_NUM, wx.stc.STC_MARK_CIRCLE, wx.BLACK, (255,0,0))
         
-        if _WINDOWS and clearTab:  # should test to see if menu item exists, if it does, add this workaround
+        if sysutilslib.isWindows() and clearTab:  # should test to see if menu item exists, if it does, add this workaround
             self.CmdKeyClear(wx.stc.STC_KEY_TAB, 0)  # menu item "Indent Lines" from CodeService.InstallControls() generates another INDENT_LINES_ID event, so we'll explicitly disable the tab processing in the editor
 
         wx.stc.EVT_STC_MARGINCLICK(self, self.GetId(), self.OnMarginClick)
@@ -643,27 +639,21 @@ class CodeCtrl(STCTextEditor.TextCtrl):
     def CreatePopupMenu(self):
         TOGGLEBREAKPOINT_ID = wx.NewId()
         TOGGLEMARKER_ID = wx.NewId()
-        SYNCTREE_ID = wx.NewId()
         
         menu = wx.Menu()
         
-        self.Bind(wx.EVT_MENU, self.OnPopSyncOutline, id=SYNCTREE_ID)
-        item = wx.MenuItem(menu, SYNCTREE_ID, _("Find in Outline View"))
-        menu.AppendItem(item)
+##        self.Bind(wx.EVT_MENU, self.OnPopSyncOutline, id=SYNCTREE_ID)
+##        item = wx.MenuItem(menu, SYNCTREE_ID, _("Find in Outline View"))
+##        menu.AppendItem(item)
+##        
+##        self.Bind(wx.EVT_MENU, self.OnGotoDefinition, id=CompletionService.CompletionService.GO_TO_DEFINITION)
+##        item = wx.MenuItem(menu, CompletionService.CompletionService.GO_TO_DEFINITION, \
+##                            CompletionService.CompletionService.GOTODEF_MENU_ITEM_TEXT)
+##        wx.EVT_UPDATE_UI(self,CompletionService.CompletionService.GO_TO_DEFINITION, self.DSProcessUpdateUIEvent)
+##        menu.AppendItem(item)
         
-        self.Bind(wx.EVT_MENU, self.OnGotoDefinition, id=self.GO_TO_DEFINITION)
-        item = wx.MenuItem(menu, self.GO_TO_DEFINITION, _("Goto Definition"))
-        wx.EVT_UPDATE_UI(self,self.GO_TO_DEFINITION, self.DSProcessUpdateUIEvent)
-        menu.AppendItem(item)
-        
-        menu.AppendSeparator()
-        self.Bind(wx.EVT_MENU, self.OnPopToggleBP, id=TOGGLEBREAKPOINT_ID)
-        item = wx.MenuItem(menu, TOGGLEBREAKPOINT_ID, _("Toggle Breakpoint"))
-        menu.AppendItem(item)
-        self.Bind(wx.EVT_MENU, self.OnPopToggleMarker, id=TOGGLEMARKER_ID)
-        item = wx.MenuItem(menu, TOGGLEMARKER_ID, _("Toggle Bookmark"))
-        menu.AppendItem(item)
-        menu.AppendSeparator()
+   ##     menu.AppendSeparator()
+
                 
         itemIDs = [wx.ID_UNDO, wx.ID_REDO, None,
                    wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE, wx.ID_CLEAR, None, wx.ID_SELECTALL]
@@ -678,15 +668,23 @@ class CodeCtrl(STCTextEditor.TextCtrl):
                     menu.Append(itemID, item.GetLabel())
                     wx.EVT_MENU(self, itemID, self.DSProcessEvent)  # wxHack: for customized right mouse menu doesn't work with new DynamicSashWindow
                     wx.EVT_UPDATE_UI(self, itemID, self.DSProcessUpdateUIEvent)  # wxHack: for customized right mouse menu doesn't work with new DynamicSashWindow
+        
+        self.Bind(wx.EVT_MENU, self.OnPopToggleBP, id=TOGGLEBREAKPOINT_ID)
+        item = wx.MenuItem(menu, TOGGLEBREAKPOINT_ID, _("Toggle Breakpoint"))
+        menu.AppendItem(item)
+        self.Bind(wx.EVT_MENU, self.OnPopToggleMarker, id=TOGGLEMARKER_ID)
+        item = wx.MenuItem(menu, TOGGLEMARKER_ID, _("Toggle Bookmark"))
+        menu.AppendItem(item)
+        menu.AppendSeparator()
         return menu
                 
     def DSProcessUpdateUIEvent(self, event):
         id = event.GetId()
-        if id ==  self.GO_TO_DEFINITION:
-            event.Enable(self.IsCaretLocateInWord())
-            return True
-        else:
-            return STCTextEditor.TextCtrl.DSProcessUpdateUIEvent(self,event)
+      ##  if id ==  CompletionService.CompletionService.GO_TO_DEFINITION:
+            ##event.Enable(self.IsCaretLocateInWord())
+        ##    return True
+        ##else:
+        return STCTextEditor.TextCtrl.DSProcessUpdateUIEvent(self,event)
                 
     def OnPopToggleBP(self, event):
         """ Toggle break point on right click line, not current line """
@@ -704,45 +702,10 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         wx.GetApp().GetService(OutlineService.OutlineService).LoadOutline(wx.GetApp().GetDocumentManager().GetCurrentView(),lineNum=lineNum)
         
     def OnGotoDefinition(self, event):
-        line = self.GetCurrentLine()
-        pos = self.GetCurrentPos()
-        text = self.GetTypeWord(pos)
-        scope = wx.GetApp().GetDocumentManager().GetCurrentView().ModuleScope.FindScope(line)
-        scope_found = scope.FindDefinition(text)
-        open_new_doc = False
-        if scope_found != None:
-            if scope_found.Node.Type == parserconfig.NODE_IMPORT_TYPE:
-                new_scope_found = scope_found.GetMember(text)
-                if new_scope_found != scope_found:
-                    open_new_doc = True
-                    scope_found = new_scope_found
-            else:
-                cur_view = wx.GetApp().GetDocumentManager().GetCurrentView()
-                scope_module_path = scope_found.Root.Module.Path
-                if scope_module_path != cur_view.GetDocument().GetFilename():
-                    open_new_doc = True
-        if scope_found is None:
-            wx.MessageBox(_("Cannot find definition\"" + text + "\""),"Goto Definition",wx.OK|wx.ICON_EXCLAMATION,wx.GetApp().GetTopWindow())
-        else:
-            if not open_new_doc:
-                wx.GetApp().GetDocumentManager().GetCurrentView().GotoLine(scope_found.Node.Line)
-            elif scope_found.Parent is None:
-                wx.GetApp().GotoView(scope_found.Module.Path,0)
-            else:
-                wx.GetApp().GotoView(scope_found.Root.Module.Path,scope_found.Node.Line)
-          
-    def IsCaretLocateInWord(self):
-        pos = self.GetCurrentPos()
-        line = self.LineFromPosition(pos)
-        line_text = self.GetLine(line).strip()
-        if line_text == "":
-            return False
-        if line_text[0] == '#':
-            return False
-        start_pos = self.WordStartPosition(pos,True)
-        end_pos = self.WordEndPosition(pos,True)
-        word = self.GetTextRange(start_pos,end_pos).strip()
-        return False if word == "" else True
+        self.GotoDefinition()
+
+    def GotoDefinition(self):
+        pass
 
     def ClearCurrentLineMarkers(self):
         self.MarkerDeleteAll(CodeCtrl.CURRENT_LINE_MARKER_NUM)

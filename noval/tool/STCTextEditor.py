@@ -26,6 +26,7 @@ import WxThreadSafe
 import noval.parser.config as parserconfig
 import MarkerService
 import TextService
+import CompletionService
 _ = wx.GetTranslation
 
 #----------------------------------------------------------------------------
@@ -541,6 +542,12 @@ class TextView(wx.lib.docview.View):
         elif id == TextService.TEXT_STATUS_BAR_ID:
             self.OnUpdateStatusBar(event)
             return True
+        elif id == CompletionService.CompletionService.GO_TO_DEFINITION:
+            event.Enable(self.GetCtrl().IsCaretLocateInWord())
+            return True
+        elif id == CompletionService.CompletionService.LIST_CURRENT_MEMBERS:
+            event.Enable(self.GetCtrl().IsListMemberFlag(self.GetCtrl().GetCurrentPos()-1))
+            return True
         else:
             return wx.lib.docview.View.ProcessUpdateUIEvent(self, event)
 
@@ -954,6 +961,9 @@ class TextView(wx.lib.docview.View):
             else:
                 document.DeleteAllViews()
 
+    def IsUnitTestEnable(self):
+        return False
+
 class TextOptionsPanel(wx.Panel):
 
 
@@ -1177,6 +1187,7 @@ class TextCtrl(wx.stc.StyledTextCtrl):
         self.SetLineNumberStyle()
         self.MarkerDefineDefault()
         self.SetCaretLineColor((210,210,210),)
+        self.SetEdgeMode(wx.stc.STC_EDGE_LINE)
 
         # for multisash initialization   
         if isinstance(parent, wx.lib.multisash.MultiClient):     
@@ -1483,6 +1494,12 @@ class TextCtrl(wx.stc.StyledTextCtrl):
     def SetCaretLineColor(self,color):
         self.SetCaretLineVisible(True)
         self.SetCaretLineBack(color)
+
+    def IsCaretLocateInWord(self):
+        return False
+
+    def IsListMemberFlag(self,pos):
+        return False
          
 class TextPrintout(wx.lib.docview.DocPrintout):
     """ for Print Preview and Print """

@@ -21,6 +21,7 @@ import subprocess
 import sys
 import UnitTestDialog
 import noval.util.sysutils as sysutilslib
+import Service
 _ = wx.GetTranslation
 
 
@@ -49,7 +50,7 @@ class Extension:
         self.opOnSelectedFile = True
 
 
-class ExtensionService(wx.lib.pydocview.DocService):
+class ExtensionService(Service.BaseService):
 
     EXTENSIONS_KEY = "/AG_Extensions"
 
@@ -112,16 +113,6 @@ class ExtensionService(wx.lib.pydocview.DocService):
         else:
             toolsMenu = wx.Menu()
 
-        if self._extensions:
-            if toolsMenu.GetMenuItems():
-                toolsMenu.AppendSeparator()
-            for ext in self._extensions:
-                # Append a tool menu item for each extension
-                ext.id = wx.NewId()
-                toolsMenu.Append(ext.id, ext.menuItemName)
-                wx.EVT_MENU(frame, ext.id, frame.ProcessEvent)
-                wx.EVT_UPDATE_UI(frame, ext.id, frame.ProcessUpdateUIEvent)
-
         if toolsMenuIndex == -1:
             index = menuBar.FindMenu(_("&Run"))
             if index == -1:
@@ -152,6 +143,16 @@ class ExtensionService(wx.lib.pydocview.DocService):
         helpMenu.Insert(start_index,id,"&Tips of Day")
         wx.EVT_MENU(frame, id, self.ShowTipsOfDay)
 
+        if self._extensions:
+            if toolsMenu.GetMenuItems():
+                toolsMenu.AppendSeparator()
+            for ext in self._extensions:
+                # Append a tool menu item for each extension
+                ext.id = wx.NewId()
+                toolsMenu.Append(ext.id, ext.menuItemName)
+                wx.EVT_MENU(frame, ext.id, frame.ProcessEvent)
+                wx.EVT_UPDATE_UI(frame, ext.id, frame.ProcessUpdateUIEvent)
+
     def ShowTipsOfDay(self,event):
         wx.GetApp().ShowTipfOfDay(True)
 
@@ -164,13 +165,16 @@ class ExtensionService(wx.lib.pydocview.DocService):
         os.startfile(interpreter.HelpPath)
 
     def OpenTerminator(self, event):
-        if sys.platform == "win32":
+        if sysutilslib.isWindows():
             subprocess.Popen('start cmd.exe',shell=True)
         else:
             subprocess.Popen('gnome-terminal',shell=True)
 
     def RunUnitTest(self,event):
-        dlg = UnitTestDialog.UnitTestDialog(wx.GetApp().GetTopWindow(),-1,"UnitTest")
+        cur_view = self.GetActiveView()
+        if cur_view is None or not cur_view.IsUnitTestEnable():
+            return
+        dlg = UnitTestDialog.UnitTestDialog(wx.GetApp().GetTopWindow(),-1,"UnitTest",cur_view)
         dlg.ShowModal()
         
     def ProcessEvent(self, event):
@@ -299,7 +303,7 @@ class ExtensionOptionsPanel(wx.Panel):
         self._commandTextCtrl = wx.TextCtrl(self._extDetailPanel, -1, size = (-1, -1))
         findFileButton = wx.Button(self._extDetailPanel, -1, _("Browse..."))
         def OnBrowseButton(event):
-            fileDlg = wx.FileDialog(self, _("Choose an Executable:"), style=wx.OPEN|wx.FILE_MUST_EXIST|wx.HIDE_READONLY|wx.CHANGE_DIR)
+            fileDlg = wx.FileDialog(self, _("Choose an Executable:"), style=wx.OPEN|wx.FILE_MUST_EXIST|wx.CHANGE_DIR)
             path = self._commandTextCtrl.GetValue()
             if path:
                 fileDlg.SetPath(path)

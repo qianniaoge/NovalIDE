@@ -236,30 +236,37 @@ class ServiceView(wx.EvtHandler):
             if self._embeddedWindow:
                 mdiParentFrame = wx.GetApp().GetTopWindow()
                 mdiParentFrame.ShowEmbeddedWindow(self.GetFrame(), show)
+				
+class BaseService(wx.lib.pydocview.DocService):
 
+    def __init__(self):
+        wx.lib.pydocview.DocService.__init__(self)
 
-class Service(wx.lib.pydocview.DocService):
+    @staticmethod
+    def GetActiveView():
+        active_book = wx.GetApp().MainFrame.GetActiveChild()
+        if not active_book:
+            return None
+        doc_view = active_book.GetView()
+        return doc_view if isinstance(doc_view,STCTextEditor.TextView) else None
 
+class Service(BaseService):
 
     #----------------------------------------------------------------------------
     # Constants
     #----------------------------------------------------------------------------
     SHOW_WINDOW = wx.NewId()  # keep this line for each subclass, need unique ID for each Service
 
-
     def __init__(self, serviceName, embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_LEFT):
         self._serviceName = serviceName
         self._embeddedWindowLocation = embeddedWindowLocation
         self._view = None
 
-
     def GetEmbeddedWindowLocation(self):
         return self._embeddedWindowLocation
 
-
     def SetEmbeddedWindowLocation(self, embeddedWindowLocation):
         self._embeddedWindowLocation = embeddedWindowLocation
-
 
     def InstallControls(self, frame, menuBar = None, toolBar = None, statusBar = None, document = None):
         viewMenu = menuBar.GetMenu(menuBar.FindMenu(_("&View")))
@@ -268,25 +275,19 @@ class Service(wx.lib.pydocview.DocService):
         viewMenu.InsertCheckItem(menuItemPos, self.SHOW_WINDOW, self.GetMenuString(), self.GetMenuDescr())
         wx.EVT_MENU(frame, self.SHOW_WINDOW, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, self.SHOW_WINDOW, frame.ProcessUpdateUIEvent)
-
         return True
-
 
     def GetServiceName(self):
         """ String used to save out Service View configuration information """
         return self._serviceName
 
-
     def GetMenuString(self):
         """ Need to override this method to provide menu item for showing Service View """
         return _(self.GetServiceName())
 
-
     def GetMenuDescr(self):
         """ Need to override this method to provide menu item for showing Service View """
         return _("Show or hides the %s window") % self.GetMenuString()
-
-
     #----------------------------------------------------------------------------
     # Event Processing Methods
     #----------------------------------------------------------------------------
@@ -299,7 +300,6 @@ class Service(wx.lib.pydocview.DocService):
         else:
             return False
 
-
     def ProcessUpdateUIEvent(self, event):
         id = event.GetId()
         if id == self.SHOW_WINDOW:
@@ -309,24 +309,19 @@ class Service(wx.lib.pydocview.DocService):
         else:
             return False
 
-
     #----------------------------------------------------------------------------
     # View Methods
     #----------------------------------------------------------------------------
-
     def _CreateView(self):
         """ This method needs to be overridden with corresponding ServiceView """
         return ServiceView(self)
-
 
     def GetView(self):
         # Window Menu Service Method
         return self._view
 
-
     def SetView(self, view):
         self._view = view
-
 
     def ShowWindow(self, show = True):
         if show:
@@ -342,16 +337,13 @@ class Service(wx.lib.pydocview.DocService):
                 if self._view.IsShown():
                     self._view.Hide()
 
-
     def HideWindow(self):
         self.ShowWindow(False)
-
 
     def ToggleWindow(self, event):
         show = event.IsChecked()
         wx.ConfigBase_Get().WriteInt(self.GetServiceName()+"Shown", show)
         self.ShowWindow(show)
-
 
     def OnCloseFrame(self, event):
         if not self._view:
@@ -362,12 +354,5 @@ class Service(wx.lib.pydocview.DocService):
         # This is called when any SDI frame is closed, so need to check if message window is closing or some other window
         elif self._view == event.GetEventObject().GetView():
             self.SetView(None)
-        
         return True
-    @staticmethod
-    def GetActiveView():
-        active_book = wx.GetApp().MainFrame.GetActiveChild()
-        if not active_book:
-            return None
-        doc_view = active_book.GetView()
-        return doc_view if isinstance(doc_view,STCTextEditor.TextView) else None
+

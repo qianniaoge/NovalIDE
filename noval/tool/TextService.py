@@ -128,10 +128,7 @@ class TextStatusBar(wx.StatusBar):
                 return i
         return -1
 
-class TextService(wx.lib.pydocview.DocService):
-
-    def __init__(self):
-        wx.lib.pydocview.DocService.__init__(self)
+class TextService(Service.BaseService):
 
     def InstallControls(self, frame, menuBar = None, toolBar = None, statusBar = None, document = None):
         if document and document.GetDocumentTemplate().GetDocumentType() != TextDocument:
@@ -147,19 +144,19 @@ class TextService(wx.lib.pydocview.DocService):
 
         viewMenu.AppendSeparator()
         textMenu = wx.Menu()
-        textMenu.AppendCheckItem(VIEW_WHITESPACE_ID, _("&Whitespace"), _("Shows or hides whitespace"))
+        textMenu.AppendCheckItem(VIEW_WHITESPACE_ID, _("&View Whitespace"), _("Shows or hides whitespace"))
         wx.EVT_MENU(frame, VIEW_WHITESPACE_ID, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, VIEW_WHITESPACE_ID, frame.ProcessUpdateUIEvent)
-        textMenu.AppendCheckItem(VIEW_EOL_ID, _("&End of Line Markers"), _("Shows or hides indicators at the end of each line"))
+        textMenu.AppendCheckItem(VIEW_EOL_ID, _("&View End of Line Markers"), _("Shows or hides indicators at the end of each line"))
         wx.EVT_MENU(frame, VIEW_EOL_ID, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, VIEW_EOL_ID, frame.ProcessUpdateUIEvent)
-        textMenu.AppendCheckItem(VIEW_INDENTATION_GUIDES_ID, _("&Indentation Guides"), _("Shows or hides indentations"))
+        textMenu.AppendCheckItem(VIEW_INDENTATION_GUIDES_ID, _("&View Indentation Guides"), _("Shows or hides indentations"))
         wx.EVT_MENU(frame, VIEW_INDENTATION_GUIDES_ID, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, VIEW_INDENTATION_GUIDES_ID, frame.ProcessUpdateUIEvent)
-        textMenu.AppendCheckItem(VIEW_RIGHT_EDGE_ID, _("&Right Edge"), _("Shows or hides the right edge marker"))
+        textMenu.AppendCheckItem(VIEW_RIGHT_EDGE_ID, _("&View Right Edge"), _("Shows or hides the right edge marker"))
         wx.EVT_MENU(frame, VIEW_RIGHT_EDGE_ID, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, VIEW_RIGHT_EDGE_ID, frame.ProcessUpdateUIEvent)
-        textMenu.AppendCheckItem(VIEW_LINE_NUMBERS_ID, _("&Line Numbers"), _("Shows or hides the line numbers"))
+        textMenu.AppendCheckItem(VIEW_LINE_NUMBERS_ID, _("&View Line Numbers"), _("Shows or hides the line numbers"))
         wx.EVT_MENU(frame, VIEW_LINE_NUMBERS_ID, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, VIEW_LINE_NUMBERS_ID, frame.ProcessUpdateUIEvent)
         
@@ -243,7 +240,7 @@ class TextService(wx.lib.pydocview.DocService):
 
     def ProcessEvent(self, event):
         id = event.GetId()
-        text_view = Service.Service.GetActiveView()
+        text_view = self.GetActiveView()
         if id == CONVERT_TO_UPPERCASE_ID:
             text_view.GetCtrl().UpperCase()
             return True
@@ -289,7 +286,7 @@ class TextService(wx.lib.pydocview.DocService):
             return False
 
     def ProcessUpdateUIEvent(self, event):
-        text_view = Service.Service.GetActiveView()
+        text_view = self.GetActiveView()
       #  if text_view is None:
        #     event.Enable(False)
         #    return True

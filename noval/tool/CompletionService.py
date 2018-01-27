@@ -15,16 +15,16 @@ import wx.stc
 import wx.lib.docview
 import wx.lib.pydocview
 import STCTextEditor
+import Service
 _ = wx.GetTranslation
 
 
-class CompletionService(wx.lib.pydocview.DocService):
+class CompletionService(Service.BaseService):
     GO_TO_DEFINITION = wx.NewId()
     COMPLETE_WORD_LIST = wx.NewId()
     AUTO_COMPLETE_WORD = wx.NewId()
     LIST_CURRENT_MEMBERS = wx.NewId()
-    GOTODEF_MENU_ITEM_TEXT = "Goto Definition"
-
+    GOTODEF_MENU_ITEM_TEXT = "Goto Definition\tF12"
 
     def __init__(self):
         pass
@@ -37,7 +37,7 @@ class CompletionService(wx.lib.pydocview.DocService):
 
         editMenu = menuBar.GetMenu(menuBar.FindMenu(_("&Edit")))
         editMenu.AppendSeparator()
-        editMenu.Append(CompletionService.GO_TO_DEFINITION, _("Goto Definition\tF12"), _("Goto Definition of text"))
+        editMenu.Append(CompletionService.GO_TO_DEFINITION, self.GOTODEF_MENU_ITEM_TEXT, _("Goto Definition of text"))
         wx.EVT_MENU(frame, CompletionService.GO_TO_DEFINITION, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, CompletionService.GO_TO_DEFINITION, frame.ProcessUpdateUIEvent)
         editMenu.Append(CompletionService.COMPLETE_WORD_LIST, _("Completion Word List\tCtrl+Shit+K"), _("List Completion Word List"))
@@ -51,28 +51,26 @@ class CompletionService(wx.lib.pydocview.DocService):
         wx.EVT_UPDATE_UI(frame, CompletionService.LIST_CURRENT_MEMBERS, frame.ProcessUpdateUIEvent)
 
     def ProcessEvent(self, event):
+        text_view = self.GetActiveView()
         id = event.GetId()
         if id == CompletionService.GO_TO_DEFINITION:
+            text_view.GetCtrl().GotoDefinition()
             return True
         elif id == CompletionService.COMPLETE_WORD_LIST:
             return True
         elif id == CompletionService.AUTO_COMPLETE_WORD:
             return True
         elif id == CompletionService.LIST_CURRENT_MEMBERS:
+            text_view.GetCtrl().ListMembers(text_view.GetCtrl().GetCurrentPos()-1)
             return True
         else:
             return False
 
-
     def ProcessUpdateUIEvent(self, event):
         id = event.GetId()
-        if id == CompletionService.GO_TO_DEFINITION:
-            return True
-        elif id == CompletionService.COMPLETE_WORD_LIST:
-            return True
-        elif id == CompletionService.AUTO_COMPLETE_WORD:
-            return True
-        elif id == CompletionService.LIST_CURRENT_MEMBERS:
+        if id == CompletionService.GO_TO_DEFINITION or id == CompletionService.COMPLETE_WORD_LIST\
+                or id == CompletionService.AUTO_COMPLETE_WORD or id == CompletionService.LIST_CURRENT_MEMBERS:
+            event.Enable(False)
             return True
         else:
             return False

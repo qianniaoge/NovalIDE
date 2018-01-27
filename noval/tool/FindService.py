@@ -14,6 +14,7 @@ import wx
 import wx.lib.docview
 import wx.lib.pydocview
 import re
+import Service
 _ = wx.GetTranslation
 
 
@@ -38,7 +39,7 @@ HALF_SPACE = 5
 # Classes
 #----------------------------------------------------------------------------
 
-class FindService(wx.lib.pydocview.DocService):
+class FindService(Service.BaseService):
 
     #----------------------------------------------------------------------------
     # Constants

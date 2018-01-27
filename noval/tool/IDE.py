@@ -506,6 +506,19 @@ class IDEDocManager(wx.lib.docview.DocManager):
             return
         if doc.IsWatched:
             doc.FileWatcher.RemoveFile(old_file_path)
+
+    def OnPrintSetup(self, event):
+        data = wx.PageSetupDialogData()
+        data.SetMarginTopLeft( (15, 15) )
+        data.SetMarginBottomRight( (15, 15) )
+        #data.SetDefaultMinMargins(True)
+        data.SetPaperId(wx.PAPER_LETTER)
+        dlg = wx.PageSetupDialog(wx.GetApp().GetTopWindow(), data)
+        if dlg.ShowModal() == wx.ID_OK:
+            data = dlg.GetPageSetupData()
+            tl = data.GetMarginTopLeft()
+            br = data.GetMarginBottomRight()
+        dlg.Destroy()
        
 class IDEMDIParentFrame(wx.lib.pydocview.DocMDIParentFrame):
     

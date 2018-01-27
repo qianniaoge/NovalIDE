@@ -73,3 +73,5 @@ Version 1.0.3 -------------2018-01-16
 12.separate common intellisense data path and builtin intellisense data,which on linux system ,they are not equal
 13.add builtin intellisense data to linux build package
 14.enable insert date,comment template and python coding declare to text
+15.enable gotodef and listmembers shortcut in menu item
+16.default use right edge mode in text document

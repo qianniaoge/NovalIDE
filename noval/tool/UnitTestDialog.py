@@ -1,6 +1,5 @@
 import wx
 import os
-import Service
 import noval.parser.config as parserconfig
 import wx.lib.agw.customtreectrl as CT
 import noval.parser.nodeast as nodeast
@@ -34,7 +33,7 @@ UNITTEST_FUNC_HEADER ='''
 '''
         
 class UnitTestDialog(wx.Dialog):
-    def __init__(self,parent,dlg_id,title,size=(500,500)):
+    def __init__(self,parent,dlg_id,title,view,size=(500,500)):
         wx.Dialog.__init__(self,parent,dlg_id,title,size=size)
         self.checked_items = []
 
@@ -51,7 +50,7 @@ class UnitTestDialog(wx.Dialog):
         lineSizer.Add(cancel_btn, 0, wx.LEFT, SPACE)
         contentSizer.Add(lineSizer, 0, wx.BOTTOM,SPACE)
         self.SetSizer(contentSizer)
-        self._cur_view = None
+        self._cur_view = view
         self.CreateUnitTestFrame()
         self.Bind(CT.EVT_TREE_ITEM_CHECKED, self.checked_item)
         self._treeCtrl.CheckItem(self.root, True)
@@ -86,9 +85,6 @@ class UnitTestDialog(wx.Dialog):
         return item_list
 
     def CreateUnitTestFrame(self):
-        self._cur_view = Service.Service.GetActiveView()
-        if self._cur_view is None or self._cur_view.GetLangLexer() != parserconfig.LANG_PYTHON_LEXER:
-            return
         module_scop = self._cur_view.ModuleScope
         self.root = self._treeCtrl.AddRoot(module_scop.Module.Name,ct_type=1)
         self.TranverseItem(module_scop.Module,self.root)

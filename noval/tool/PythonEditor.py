@@ -37,6 +37,8 @@ import InterpreterConfigDialog
 import noval.parser.intellisence as intellisence
 import noval.parser.nodeast as nodeast
 import noval.util.strutils as strutils
+import CompletionService
+import DebuggerService
 try:
     import checker # for pychecker
     _CHECKER_INSTALLED = True
@@ -44,11 +46,6 @@ except ImportError:
     _CHECKER_INSTALLED = False
 import os.path # for pychecker
 _ = wx.GetTranslation
-
-if wx.Platform == '__WXMSW__':
-    _WINDOWS = True
-else:
-    _WINDOWS = False
 
 VIEW_PYTHON_INTERPRETER_ID = wx.NewId()
 
@@ -204,12 +201,10 @@ class PythonView(CodeEditor.CodeView):
             kw = filterkw
 
         kw.sort(CaseInsensitiveCompare)
-
         if hint:
             replaceLen = len(hint)
         else:
             replaceLen = 0
-            
         return " ".join(kw), replaceLen
 
 
@@ -309,16 +304,12 @@ class PythonView(CodeEditor.CodeView):
                 if self._checkSum == newCheckSum:
                     return False
         self._checkSum = newCheckSum
-
         treeCtrl.DeleteAllItems()
-
         document = self.GetDocument()
         if not document:
             return True
-            
         if self.ModuleScope == None:
             return
-
         filename = document.GetFilename()
         if filename:
             rootItem = treeCtrl.AddRoot(self.ModuleScope.Module.Name)
@@ -326,63 +317,20 @@ class PythonView(CodeEditor.CodeView):
             treeCtrl.SetDoSelectCallback(rootItem, self, self.ModuleScope.Module)
         else:
             return True
-
         text = self.GetValue()
         if not text:
             return True
-        self.TranverseItem(treeCtrl,self.ModuleScope.Module,rootItem)   
-
-##            indentStack.append((indent, item))
-                
-
-##        CLASS_PATTERN = 'class[ \t]+\w+.*?:'
-##        DEF_PATTERN = 'def[ \t]+\w+\(.*?\)'
-##        classPat = re.compile(CLASS_PATTERN, re.M|re.S)
-##        defPat= re.compile(DEF_PATTERN, re.M|re.S)
-##        pattern = re.compile('^[ \t]*((' + CLASS_PATTERN + ')|('+ DEF_PATTERN +'.*?:)).*?$', re.M|re.S)
-##
-##        iter = pattern.finditer(text)
-##        indentStack = [(0, rootItem)]
-##        for pattern in iter:
-##            line = pattern.string[pattern.start(0):pattern.end(0)]
-##            classLine = classPat.search(line)
-##            if classLine:
-##                indent = classLine.start(0)
-##                itemStr = classLine.string[classLine.start(0):classLine.end(0)-1]  # don't take the closing ':'
-##                itemStr = itemStr.replace("\n", "").replace("\r", "").replace(",\\", ",").replace("  ", "")  # remove line continuations and spaces from outline view
-##            else:
-##                defLine = defPat.search(line)
-##                if defLine:
-##                    indent = defLine.start(0)
-##                    itemStr = defLine.string[defLine.start(0):defLine.end(0)]
-##                    itemStr = itemStr.replace("\n", "").replace("\r", "").replace(",\\", ",").replace("  ", "")  # remove line continuations and spaces from outline view
-##
-##            if indent == 0:
-##                parentItem = rootItem
-##            else:
-##                lastItem = indentStack.pop()
-##                while lastItem[0] >= indent:
-##                    lastItem = indentStack.pop()
-##                indentStack.append(lastItem)
-##                parentItem = lastItem[1]
-##
-##            item = treeCtrl.AppendItem(parentItem, itemStr)
-##            treeCtrl.SetDoSelectCallback(item, self, (pattern.end(0), pattern.start(0) + indent))  # select in reverse order because we want the cursor to be at the start of the line so it wouldn't scroll to the right
-##            indentStack.append((indent, item))
-
+        self.TranverseItem(treeCtrl,self.ModuleScope.Module,rootItem)
         treeCtrl.Expand(rootItem)
-
         return True
            
     def TranverseItem(self,treeCtrl,node,parent):
-        
         for child in node.Childs:
             if child.Type == parserconfig.NODE_FUNCDEF_TYPE:
                 item_image_index = 1
                 item = treeCtrl.AppendItem(parent, child.Name)
                 treeCtrl.SetItemImage(item,item_image_index,wx.TreeItemIcon_Normal)
                 treeCtrl.SetDoSelectCallback(item, self, child)
-                ##self.TranverseItem(treeCtrl,child,item)
             elif child.Type == parserconfig.NODE_CLASSDEF_TYPE:
                 item_image_index = 2
                 item = treeCtrl.AppendItem(parent, child.Name)
@@ -416,6 +364,9 @@ class PythonView(CodeEditor.CodeView):
                     import_item = treeCtrl.AppendItem(from_import_item,name)
                     treeCtrl.SetItemImage(import_item,item_image_index,wx.TreeItemIcon_Normal)
                     treeCtrl.SetDoSelectCallback(import_item, self, node_import)
+
+    def IsUnitTestEnable(self):
+        return True
 
 class PythonInterpreterView(Service.ServiceView):
 
@@ -589,17 +540,39 @@ class PythonCtrl(CodeEditor.CodeCtrl):
     def CreatePopupMenu(self):
         FINDCLASS_ID = wx.NewId()
         FINDDEF_ID = wx.NewId()
+        SYNCTREE_ID = wx.NewId()
 
         menu = CodeEditor.CodeCtrl.CreatePopupMenu(self)
 
-        self.Bind(wx.EVT_MENU, self.OnPopFindDefinition, id=FINDDEF_ID)
-        menu.Insert(1, FINDDEF_ID, _("Find 'def'"))
+      #  self.Bind(wx.EVT_MENU, self.OnPopFindDefinition, id=FINDDEF_ID)
+       # menu.Insert(1, FINDDEF_ID, _("Find 'def'"))
 
-        self.Bind(wx.EVT_MENU, self.OnPopFindClass, id=FINDCLASS_ID)
-        menu.Insert(2, FINDCLASS_ID, _("Find 'class'"))
+        #self.Bind(wx.EVT_MENU, self.OnPopFindClass, id=FINDCLASS_ID)
+        #menu.Insert(2, FINDCLASS_ID, _("Find 'class'"))
 
+        self.Bind(wx.EVT_MENU, self.OnPopSyncOutline, id=SYNCTREE_ID)
+        item = wx.MenuItem(menu, SYNCTREE_ID, _("Find in Outline View"))
+        menu.AppendItem(item)
+        
+        self.Bind(wx.EVT_MENU, self.OnGotoDefinition, id=CompletionService.CompletionService.GO_TO_DEFINITION)
+        item = wx.MenuItem(menu, CompletionService.CompletionService.GO_TO_DEFINITION, \
+                            CompletionService.CompletionService.GOTODEF_MENU_ITEM_TEXT)
+        wx.EVT_UPDATE_UI(self,CompletionService.CompletionService.GO_TO_DEFINITION, self.DSProcessUpdateUIEvent)
+        menu.AppendItem(item)
+
+        menu.Append(DebuggerService.DebuggerService.RUN_ID, _("&Run\tF5"))
+        wx.EVT_MENU(self, DebuggerService.DebuggerService.RUN_ID, self.RunScript)
+
+        menu.Append(DebuggerService.DebuggerService.DEBUG_ID, _("&Debug\tCtrl+F5"))
+        wx.EVT_MENU(self, DebuggerService.DebuggerService.DEBUG_ID, self.DebugRunScript)
+        menu.AppendSeparator()
         return menu
 
+    def DebugRunScript(self,event):
+        wx.GetApp().GetService(DebuggerService.DebuggerService).DebugRunScript(event)
+    
+    def RunScript(self,event):
+        wx.GetApp().GetService(DebuggerService.DebuggerService).RunScript(event)
 
     def OnPopFindDefinition(self, event):
         view = wx.GetApp().GetDocumentManager().GetCurrentView()
@@ -880,20 +853,7 @@ class PythonCtrl(CodeEditor.CodeCtrl):
             self.CallTipShow(pos, 'param1, param2')
         elif key == ord(self.TYPE_POINT_WORD):
             self.AddText(self.TYPE_POINT_WORD)
-            text = self.GetTypeWord(pos)
-            line = self.LineFromPosition(pos)
-            scope = wx.GetApp().GetDocumentManager().GetCurrentView().ModuleScope.FindScope(line+1)
-            scope_found = scope.FindDefinitionScope(text)
-            member_list = []
-            if None != scope_found:
-                if isinstance(scope_found.Node,nodeast.ImportNode):
-                    member_list = scope_found.GetMemberList(text)
-                else:
-                    member_list = scope_found.GetMemberList()
-            if member_list == []:
-                return
-            self.AutoCompSetIgnoreCase(True)
-            self.AutoCompShow(0, string.join(member_list))
+            self.ListMembers(pos)
         elif key == wx.WXK_RETURN and not self.AutoCompActive():
             self.DoIndent()
         elif key == ord(self.TYPE_BLANK_WORD):
@@ -914,6 +874,69 @@ class PythonCtrl(CodeEditor.CodeCtrl):
                 self.AutoCompShow(0, string.join([self.TYPE_IMPORT_WORD]))
         else:
             event.Skip()
+
+    def IsListMemberFlag(self,pos):
+        at = self.GetCharAt(pos)
+        if chr(at) != self.TYPE_POINT_WORD:
+            return False
+        return True
+
+    def ListMembers(self,pos):
+        text = self.GetTypeWord(pos)
+        line = self.LineFromPosition(pos)
+        scope = wx.GetApp().GetDocumentManager().GetCurrentView().ModuleScope.FindScope(line+1)
+        scope_found = scope.FindDefinitionScope(text)
+        member_list = []
+        if None != scope_found:
+            if isinstance(scope_found.Node,nodeast.ImportNode):
+                member_list = scope_found.GetMemberList(text)
+            else:
+                member_list = scope_found.GetMemberList()
+        if member_list == []:
+            return
+        self.AutoCompSetIgnoreCase(True)
+        self.AutoCompShow(0, string.join(member_list))
+
+    def IsCaretLocateInWord(self):
+        pos = self.GetCurrentPos()
+        line = self.LineFromPosition(pos)
+        line_text = self.GetLine(line).strip()
+        if line_text == "":
+            return False
+        if line_text[0] == '#':
+            return False
+        start_pos = self.WordStartPosition(pos,True)
+        end_pos = self.WordEndPosition(pos,True)
+        word = self.GetTextRange(start_pos,end_pos).strip()
+        return False if word == "" else True
+
+    def GotoDefinition(self):
+        line = self.GetCurrentLine()
+        pos = self.GetCurrentPos()
+        text = self.GetTypeWord(pos)
+        scope = Service.Service.GetActiveView().ModuleScope.FindScope(line)
+        scope_found = scope.FindDefinition(text)
+        open_new_doc = False
+        if scope_found != None:
+            if scope_found.Node.Type == parserconfig.NODE_IMPORT_TYPE:
+                new_scope_found = scope_found.GetMember(text)
+                if new_scope_found != scope_found:
+                    open_new_doc = True
+                    scope_found = new_scope_found
+            else:
+                cur_view = wx.GetApp().GetDocumentManager().GetCurrentView()
+                scope_module_path = scope_found.Root.Module.Path
+                if scope_module_path != cur_view.GetDocument().GetFilename():
+                    open_new_doc = True
+        if scope_found is None:
+            wx.MessageBox(_("Cannot find definition\"" + text + "\""),"Goto Definition",wx.OK|wx.ICON_EXCLAMATION,wx.GetApp().GetTopWindow())
+        else:
+            if not open_new_doc:
+                wx.GetApp().GetDocumentManager().GetCurrentView().GotoLine(scope_found.Node.Line)
+            elif scope_found.Parent is None:
+                wx.GetApp().GotoView(scope_found.Module.Path,0)
+            else:
+                wx.GetApp().GotoView(scope_found.Root.Module.Path,scope_found.Node.Line)
 
 class PythonOptionsPanel(wx.Panel):
 
