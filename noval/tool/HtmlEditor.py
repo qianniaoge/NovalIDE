@@ -108,6 +108,8 @@ class HtmlCtrl(CodeEditor.CodeCtrl):
         CodeEditor.CodeCtrl.__init__(self, parent, id, style)
         self.SetLexer(wx.stc.STC_LEX_HTML)
         self.SetProperty("fold.html", "1")
+        self.SetProperty("fold.html.preprocessor", "1")
+        CodeEditor.CodeCtrl.SetMarginFoldStyle(self)
 
 
     def GetMatchingBraces(self):

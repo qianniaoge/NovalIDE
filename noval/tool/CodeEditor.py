@@ -621,7 +621,7 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         if self.GetMatchingBraces(): 
             wx.stc.EVT_STC_UPDATEUI(self, self.GetId(), self.OnUpdateUI)
 
-        self.StyleClearAll()
+    ##    self.StyleClearAll()
         self.UpdateStyles()
         
         self.SetWordChars(self.DEFAULT_WORD_CHARS)
@@ -726,8 +726,8 @@ class CodeCtrl(STCTextEditor.TextCtrl):
                   'color' : "%02x%02x%02x" % (self.GetFontColor().Red(), self.GetFontColor().Green(), self.GetFontColor().Blue())
                   }
         # Global default styles for all languages
-        ##self.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT,     "face:%(font)s,fore:#FFFFFF,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_STYLE_LINENUMBER,  "face:%(font)s,back:#C0C0C0,face:%(font)s,size:%(size2)d" % faces)
+        self.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT,     "face:%(font)s,fore:#FFFFFF,size:%(size)d" % faces)
+      ##  self.StyleSetSpec(wx.stc.STC_STYLE_LINENUMBER,  "face:%(font)s,back:#C0C0C0,face:%(font)s,size:%(size2)d" % faces)
         self.StyleSetSpec(wx.stc.STC_STYLE_CONTROLCHAR, "face:%(font)s" % faces)
         self.StyleSetSpec(wx.stc.STC_STYLE_BRACELIGHT,  "face:%(font)s,fore:#000000,back:#70FFFF,size:%(size)d" % faces)
         self.StyleSetSpec(wx.stc.STC_STYLE_BRACEBAD,    "face:%(font)s,fore:#000000,back:#FF0000,size:%(size)d" % faces)

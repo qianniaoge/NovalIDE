@@ -67,7 +67,7 @@ class XmlCtrl(CodeEditor.CodeCtrl):
         CodeEditor.CodeCtrl.__init__(self, parent, id, style)
         self.SetLexer(wx.stc.STC_LEX_XML)
         self.SetProperty("fold.html", "1")
-
+        CodeEditor.CodeCtrl.SetMarginFoldStyle(self)
 
     def GetMatchingBraces(self):
         return "<>[]{}()"

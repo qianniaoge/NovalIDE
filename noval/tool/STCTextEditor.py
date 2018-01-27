@@ -1168,8 +1168,6 @@ class TextCtrl(wx.stc.StyledTextCtrl):
 
         self.SetViewWhiteSpace(False)
         self.SetEOLMode(wx.stc.STC_EOL_LF)
-        self.SetEdgeMode(wx.stc.STC_EDGE_NONE)
-        self.SetEdgeColumn(78)
 
         self.SetMarginType(1, wx.stc.STC_MARGIN_NUMBER)
         self.SetMarginWidth(1, self.EstimatedLineNumberMarginWidth())
@@ -1188,6 +1186,7 @@ class TextCtrl(wx.stc.StyledTextCtrl):
         self.MarkerDefineDefault()
         self.SetCaretLineColor((210,210,210),)
         self.SetEdgeMode(wx.stc.STC_EDGE_LINE)
+        self.SetEdgeColumn(78)
 
         # for multisash initialization   
         if isinstance(parent, wx.lib.multisash.MultiClient):     
