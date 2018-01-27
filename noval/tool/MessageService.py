@@ -57,6 +57,7 @@ class MessageView(Service.ServiceView):
         txtCtrl = STCTextEditor.TextCtrl(parent, id)
         txtCtrl.SetMarginWidth(1, 0)  # hide line numbers
         txtCtrl.SetReadOnly(True)
+        txtCtrl.SetEdgeMode(wx.stc.STC_EDGE_NONE)
 
         if wx.Platform == '__WXMSW__':
             font = "Courier New"

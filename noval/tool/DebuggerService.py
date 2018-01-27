@@ -289,6 +289,7 @@ class RunCommandUI(wx.Panel):
         sizer.Add(self._textCtrl, 1, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 1)
         self._textCtrl.SetViewLineNumbers(False)
         self._textCtrl.SetReadOnly(False)
+        self._textCtrl.SetEdgeMode(wx.stc.STC_EDGE_NONE)
         if wx.Platform == '__WXMSW__':
             font = "Courier New"
         else:

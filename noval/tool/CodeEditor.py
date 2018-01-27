@@ -641,23 +641,8 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         TOGGLEMARKER_ID = wx.NewId()
         
         menu = wx.Menu()
-        
-##        self.Bind(wx.EVT_MENU, self.OnPopSyncOutline, id=SYNCTREE_ID)
-##        item = wx.MenuItem(menu, SYNCTREE_ID, _("Find in Outline View"))
-##        menu.AppendItem(item)
-##        
-##        self.Bind(wx.EVT_MENU, self.OnGotoDefinition, id=CompletionService.CompletionService.GO_TO_DEFINITION)
-##        item = wx.MenuItem(menu, CompletionService.CompletionService.GO_TO_DEFINITION, \
-##                            CompletionService.CompletionService.GOTODEF_MENU_ITEM_TEXT)
-##        wx.EVT_UPDATE_UI(self,CompletionService.CompletionService.GO_TO_DEFINITION, self.DSProcessUpdateUIEvent)
-##        menu.AppendItem(item)
-        
-   ##     menu.AppendSeparator()
-
-                
         itemIDs = [wx.ID_UNDO, wx.ID_REDO, None,
                    wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE, wx.ID_CLEAR, None, wx.ID_SELECTALL]
-
         menuBar = wx.GetApp().GetTopWindow().GetMenuBar()
         for itemID in itemIDs:
             if not itemID:
@@ -675,7 +660,6 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         self.Bind(wx.EVT_MENU, self.OnPopToggleMarker, id=TOGGLEMARKER_ID)
         item = wx.MenuItem(menu, TOGGLEMARKER_ID, _("Toggle Bookmark"))
         menu.AppendItem(item)
-        menu.AppendSeparator()
         return menu
                 
     def DSProcessUpdateUIEvent(self, event):

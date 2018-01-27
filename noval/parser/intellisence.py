@@ -261,8 +261,8 @@ class IntellisenceManager(object):
         self._process_obj.wait()
         interpreter.Analysing = False
         self._is_running = interpreter.Analysing
-        if progress_dlg != None and sysutilslib.isWindows():
-            progress_dlg.Destroy()
+        if progress_dlg != None:
+            progress_dlg.KeepGoing = False
         if load_data_end:
             self.load_intellisence_data(interpreter)            
         

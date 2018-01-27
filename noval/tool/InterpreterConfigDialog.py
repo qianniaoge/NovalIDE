@@ -257,24 +257,16 @@ class InterpreterConfigDialog(wx.Dialog):
         self.smart_analyse_btn.Enable(False)
 
         dlg = AnalyseProgressDialog(self)
-        if sysutils.isWindows():
+        intellisence.IntellisenceManager().generate_intellisence_data(interpreter,dlg)
+        while True:
+            if not dlg.KeepGoing:
+                break
+            wx.MilliSleep(250)
+            wx.Yield()
             dlg.Pulse()
-            intellisence.IntellisenceManager().generate_intellisence_data(interpreter,dlg)
-        else:
-            interpreter.Analysing = True
-            intellisence.IntellisenceManager().generate_intellisence_data(interpreter,dlg)
-            self.temp = 0
-            while True:
-                if not interpreter.Analysing:
-                    dlg.Destroy()
-                    self.smart_analyse_btn.Enable(True)
-                    break
-                if self.temp >=100:
-                    self.temp = 0
-                wx.MilliSleep(50)
-                wx.Yield()
-                dlg.Update(self.temp)
-                self.temp += 1
+            
+        dlg.Destroy()
+        self.smart_analyse_btn.Enable(True)
           
     def ScanAllInterpreters(self):
         for interpreter in Interpreter.InterpreterManager.interpreters:
@@ -307,7 +299,6 @@ class InterpreterConfigDialog(wx.Dialog):
         
 class AnalyseProgressDialog(wx.ProgressDialog):
     
-    Parent = None
     def __init__(self,parent):
         wx.ProgressDialog.__init__(self,"Interpreter Smart Analyse",
                                "Please wait a minute for end analysing",
@@ -317,9 +308,5 @@ class AnalyseProgressDialog(wx.ProgressDialog):
                                 | wx.PD_APP_MODAL
                                 | wx.PD_SMOOTH
                                 )
-                                
-        AnalyseProgressDialog.Parent = parent
+        self.KeepGoing = True                                
         
-    def Destroy(self):
-        wx.ProgressDialog.Destroy(self)
-        AnalyseProgressDialog.Parent.smart_analyse_btn.Enable(True)

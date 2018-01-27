@@ -538,18 +538,14 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         CodeEditor.CodeCtrl.SetMarginFoldStyle(self)
 
     def CreatePopupMenu(self):
-        FINDCLASS_ID = wx.NewId()
-        FINDDEF_ID = wx.NewId()
         SYNCTREE_ID = wx.NewId()
-
         menu = CodeEditor.CodeCtrl.CreatePopupMenu(self)
-
       #  self.Bind(wx.EVT_MENU, self.OnPopFindDefinition, id=FINDDEF_ID)
        # menu.Insert(1, FINDDEF_ID, _("Find 'def'"))
 
         #self.Bind(wx.EVT_MENU, self.OnPopFindClass, id=FINDCLASS_ID)
         #menu.Insert(2, FINDCLASS_ID, _("Find 'class'"))
-
+        menu.AppendSeparator()
         self.Bind(wx.EVT_MENU, self.OnPopSyncOutline, id=SYNCTREE_ID)
         item = wx.MenuItem(menu, SYNCTREE_ID, _("Find in Outline View"))
         menu.AppendItem(item)
@@ -565,7 +561,7 @@ class PythonCtrl(CodeEditor.CodeCtrl):
 
         menu.Append(DebuggerService.DebuggerService.DEBUG_ID, _("&Debug\tCtrl+F5"))
         wx.EVT_MENU(self, DebuggerService.DebuggerService.DEBUG_ID, self.DebugRunScript)
-        menu.AppendSeparator()
+        
         return menu
 
     def DebugRunScript(self,event):
