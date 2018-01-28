@@ -227,6 +227,7 @@ class CodeView(STCTextEditor.TextView):
                 line = node.Line
                 name = node.Name
                 line_count = self.GetCtrl().GetLineCount()
+                #search from xx import yy as zz
                 if node.AsName != None:
                     name = node.AsName
                     col = self.GetCtrl().GetLine(line-1).find(" as ")
@@ -239,6 +240,7 @@ class CodeView(STCTextEditor.TextView):
                         start,end = self.FindTextInLine(name,line,col)
                         if self.GetCtrl().GetLine(line).strip().endswith(")"):
                             break
+                #search from xx import yy
                 else:
                     col = self.GetCtrl().GetLine(line-1).find(" import ")
                     start,end = self.FindTextInLine(name,line,col)
@@ -248,6 +250,7 @@ class CodeView(STCTextEditor.TextView):
                         start,end = self.FindTextInLine(name,line,col)
                         if self.GetCtrl().GetLine(line).strip().endswith(")"):
                             break
+            #search import xx as yy
             elif node.Type == parserconfig.NODE_IMPORT_TYPE and node.AsName != None:
                 col = self.GetCtrl().GetLine(node.Line-1).find(" as ")
                 start,end = self.FindTextInLine(node.AsName,node.Line,col)

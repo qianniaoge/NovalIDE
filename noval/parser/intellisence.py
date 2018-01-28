@@ -45,8 +45,25 @@ class ModuleLoader(object):
             return data
 
     def LoadMembeList(self):
+        member_list = []
         with open(self._member_list_file) as f:
-            return map(lambda s:s.strip(),f.readlines())
+            for line in f.readlines():
+                if -1 == line.find("/"):
+                    member_list.append(line.strip())
+                else:
+                    names = line.strip().split("/")
+                    module_name = names[0]
+                    ref_name = names[1]
+                    if ref_name != "*":
+                        member_list.append(ref_name)
+                    else:
+                        ref_module = self._manager.GetModule(module_name)
+                        if ref_module is None:
+                            continue
+                        else:
+                            member_list.extend(ref_module.GetMemberList())
+            ##return map(lambda s:s.strip(),f.readlines())
+        return member_list
 
     def GetMemberList(self):
         member_list = self.LoadMembeList()
@@ -149,7 +166,7 @@ class ModuleLoader(object):
                     else:
                         child_module = self._manager.GetModule(child[self.FULL_NAME_KEY])
                         data = child_module.LoadMembers()
-                        return child_module.FindChildDefinition(child[self.PATH_KEY],data[self.CHILD_KEY],names[1:])
+                        return child_module.FindChildDefinition(data[self.CHILD_KEY],names[1:])
         return None
         
 class IntellisenceDataLoader(object):

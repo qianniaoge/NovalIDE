@@ -526,6 +526,7 @@ class PythonService(Service.Service):
 
 class PythonCtrl(CodeEditor.CodeCtrl):
 
+    TypeKeyWords = "complex list tuple dict int long float True False None"
 
     def __init__(self, parent, id=-1, style=wx.NO_FULL_REPAINT_ON_RESIZE):
         CodeEditor.CodeCtrl.__init__(self, parent, id, style)
@@ -533,7 +534,9 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         self.SetProperty("fold.comment.python", "1")
         self.SetProperty("fold.quotes.python", "1")
         self.SetLexer(wx.stc.STC_LEX_PYTHON)
+        self.SetStyleBits(7)
         self.SetKeyWords(0, string.join(keyword.kwlist))
+        self.SetKeyWords(1, self.TypeKeyWords)
         self.Bind(wx.EVT_CHAR, self.OnChar)
         CodeEditor.CodeCtrl.SetMarginFoldStyle(self)
 
@@ -622,6 +625,8 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         self.StyleSetSpec(wx.stc.STC_P_CHARACTER, "face:%(font)s,fore:#7F007F,face:%(font)s,size:%(size)d" % faces)
         # Keyword
         self.StyleSetSpec(wx.stc.STC_P_WORD, "face:%(font)s,fore:#00007F,bold,size:%(size)d" % faces)
+        # Keyword2
+        self.StyleSetSpec(wx.stc.STC_P_WORD2, "face:%(font)s,fore:#000080,bold,size:%(size)d" % faces)
         # Triple quotes
         self.StyleSetSpec(wx.stc.STC_P_TRIPLE, "face:%(font)s,fore:#7F0000,size:%(size)d" % faces)
         # Triple double quotes
@@ -927,14 +932,14 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         if scope_found is None:
             wx.MessageBox(_("Cannot find definition\"" + text + "\""),"Goto Definition",wx.OK|wx.ICON_EXCLAMATION,wx.GetApp().GetTopWindow())
         else:
-            if -1 == scope_found.Node.Line:
-                wx.MessageBox(_("Cannot go to definition\"" + text + "\""),"Goto Definition",wx.OK|wx.ICON_EXCLAMATION,wx.GetApp().GetTopWindow())
-                return
             if not open_new_doc:
                 wx.GetApp().GetDocumentManager().GetCurrentView().GotoLine(scope_found.Node.Line)
             elif scope_found.Parent is None:
                 wx.GetApp().GotoView(scope_found.Module.Path,0)
             else:
+                if -1 == scope_found.Node.Line:
+                    wx.MessageBox(_("Cannot go to definition\"" + text + "\""),"Goto Definition",wx.OK|wx.ICON_EXCLAMATION,wx.GetApp().GetTopWindow())
+                    return
                 wx.GetApp().GotoView(scope_found.Root.Module.Path,scope_found.Node.Line)
 
 class PythonOptionsPanel(wx.Panel):
