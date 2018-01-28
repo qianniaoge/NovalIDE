@@ -131,83 +131,108 @@ def GetBases(node):
             base_name = get_attribute_name(base)
             base_names.append(base_name)
     return base_names
-    
-def deep_walk(node,parent):
-    for element in node.body:
-        if isinstance(element,ast.FunctionDef):
-            def_name = element.name
-            line_no = element.lineno
-            col = element.col_offset
-            args = []
-            is_property_def = False
-            is_class_method = False
-            for deco in element.decorator_list:
-                line_no += 1
-                if type(deco) == ast.Name:
-                    if deco.id == "property":
-                        nodeast.PropertyDef(def_name,line_no,col,"",config.ASSIGN_TYPE_UNKNOWN,parent)
-                        is_property_def = True
-                        break
-                    elif deco.id == CLASS_METHOD_NAME or deco.id == STATIC_METHOD_NAME:
-                        is_class_method = True
-                        break
-            if is_property_def:
-                continue
-            is_method = False
-            for arg in element.args.args:
-                if type(arg) == ast.Name:
-                    if arg.id == 'self' and parent.Type == config.NODE_CLASSDEF_TYPE:
-                        is_method = True
-                    arg_node = nodeast.ArgNode(arg.id,arg.lineno,arg.col_offset,None)
-                    args.append(arg_node)
-            func_def = nodeast.FuncDef(def_name,line_no,col,parent,is_method=is_method,\
-                                is_class_method=is_class_method,args=args)
-            deep_walk(element,func_def)
-        elif isinstance(element,ast.ClassDef):
-            class_name = element.name
-            base_names = GetBases(element)
-            line_no = element.lineno
-            col = element.col_offset
-            class_def = nodeast.ClassDef(class_name,line_no,col,parent,bases=base_names)
-            deep_walk(element,class_def)
-        elif isinstance(element,ast.Assign):
-            targets = element.targets
-            line_no = element.lineno
-            col = element.col_offset
-            for target in targets:
-                if type(target) == ast.Tuple:
-                    pass
-               #     elts = target.elts
-                #    for elt in elts:
-                 #       name = elt.value
-                  #      print name
-                    #    data = dict(name=name,line=line_no,col=col,type=config.NODE_OBJECT_PROPERTY)
-                     #   childs.append(data)
-                   #     nodeast.PropertyDef(name,line_no,col,config.PROPERTY_TYPE_NONE,parent)
-                elif type(target) == ast.Name:
-                    name = target.id
+
+
+def make_element_node(element,parent,retain_new):
+    if isinstance(element,ast.FunctionDef):
+        def_name = element.name
+        line_no = element.lineno
+        col = element.col_offset
+        args = []
+        is_property_def = False
+        is_class_method = False
+        for deco in element.decorator_list:
+            line_no += 1
+            if type(deco) == ast.Name:
+                if deco.id == "property":
+                    nodeast.PropertyDef(def_name,line_no,col,"",config.ASSIGN_TYPE_UNKNOWN,parent)
+                    is_property_def = True
+                    break
+                elif deco.id == CLASS_METHOD_NAME or deco.id == STATIC_METHOD_NAME:
+                    is_class_method = True
+                    break
+        if is_property_def:
+            return
+        is_method = False
+        for arg in element.args.args:
+            if type(arg) == ast.Name:
+                if arg.id == 'self' and parent.Type == config.NODE_CLASSDEF_TYPE:
+                    is_method = True
+                arg_node = nodeast.ArgNode(arg.id,arg.lineno,arg.col_offset,None)
+                args.append(arg_node)
+        func_def = nodeast.FuncDef(def_name,line_no,col,parent,is_method=is_method,\
+                            is_class_method=is_class_method,args=args)
+        deep_walk(element,func_def)
+    elif isinstance(element,ast.ClassDef):
+        class_name = element.name
+        base_names = GetBases(element)
+        line_no = element.lineno
+        col = element.col_offset
+        class_def = nodeast.ClassDef(class_name,line_no,col,parent,bases=base_names)
+        deep_walk(element,class_def)
+    elif isinstance(element,ast.Assign):
+        targets = element.targets
+        line_no = element.lineno
+        col = element.col_offset
+        for target in targets:
+            if type(target) == ast.Tuple:
+                pass
+           #     elts = target.elts
+            #    for elt in elts:
+             #       name = elt.value
+              #      print name
+                #    data = dict(name=name,line=line_no,col=col,type=config.NODE_OBJECT_PROPERTY)
+                 #   childs.append(data)
+               #     nodeast.PropertyDef(name,line_no,col,config.PROPERTY_TYPE_NONE,parent)
+            elif type(target) == ast.Name:
+                name = target.id
+                if parent.HasChild(name):
+                    if retain_new:
+                        parent.RemoveChild(name)
+                    else:
+                        continue
+                value_type,value = GetAssignValueType(element)
+                nodeast.AssignDef(name,line_no,col,value,value_type,parent)
+            elif type(target) == ast.Attribute:
+                if type(target.value) == ast.Name and target.value.id == "self" and parent.Type == config.NODE_FUNCDEF_TYPE and \
+                        parent.IsMethod:
+                    name = target.attr
+                    if parent.Parent.HasChild(name):
+                        if parent.Name == "__init__":
+                            parent.Parent.RemoveChild(name)
+                        else:
+                            continue
                     value_type,value = GetAssignValueType(element)
-                    nodeast.AssignDef(name,line_no,col,value,value_type,parent)
-                elif type(target) == ast.Attribute:
-                    if type(target.value) == ast.Name and target.value.id == "self" and parent.Type == config.NODE_FUNCDEF_TYPE and \
-                            parent.IsMethod:
-                        name = target.attr
-                        if parent.Parent.HasChild(name):
-                            if parent.Name == "__init__":
-                                parent.Parent.RemoveChild(name)
-                            else:
-                                continue
-                        value_type,value = GetAssignValueType(element)
-                        nodeast.PropertyDef(name,line_no,col,value,value_type,parent.Parent)
-        elif isinstance(element,ast.Import):
-            for name in element.names:
-                nodeast.ImportNode(name.name,element.lineno,element.col_offset,parent,name.asname)
-        elif isinstance(element,ast.ImportFrom):
-            from_import_node = nodeast.FromImportNode(element.module,element.lineno,element.col_offset,parent)   
-            for name in element.names:
-                nodeast.ImportNode(name.name,element.lineno,element.col_offset,from_import_node,name.asname)
+                    nodeast.PropertyDef(name,line_no,col,value,value_type,parent.Parent)
+    elif isinstance(element,ast.Import):
+        for name in element.names:
+            nodeast.ImportNode(name.name,element.lineno,element.col_offset,parent,name.asname)
+    elif isinstance(element,ast.ImportFrom):
+        module_name = element.module
+        if utils.IsNoneOrEmpty(module_name):
+            if element.level == 1:
+                module_name = "."
+            elif element.level == 2:
+                module_name = ".."
         else:
-            nodeast.UnknownNode(element.lineno,element.col_offset,parent)
+            if element.level == 1:
+                module_name = "." + module_name
+            elif element.level == 2:
+                module_name = ".." + module_name
+        from_import_node = nodeast.FromImportNode(module_name,element.lineno,element.col_offset,parent)
+        for name in element.names:
+            nodeast.ImportNode(name.name,element.lineno,element.col_offset,from_import_node,name.asname)
+    elif isinstance(element,ast.If):
+        for body in element.body:
+            make_element_node(body,parent,retain_new)
+        for orelse in element.orelse:
+            make_element_node(orelse,parent,False)
+    else:
+        nodeast.UnknownNode(element.lineno,element.col_offset,parent)
+    
+def deep_walk(node,parent,retain_new=True):
+    for element in node.body:
+        make_element_node(element,parent,retain_new)
     
 def walk(node):
     childs = []
@@ -267,8 +292,8 @@ if __name__ == "__main__":
     
   ###  print get_package_childs(r"C:\Python27\Lib\site-packages\aliyunsdkcore\auth\__init__.py")
   ##  module = parse(r"D:\env\Noval\noval\parser\nodeast.py")
-    #module = parse(r"G:\work\Noval\noval\parser\scope.py")
-    #print module
+    module = parse(r"D:\env\Noval\noval\test\run_test_input.py")
+    print module
    ## dump(r"G:\work\Noval\noval\test\ast_test_file.py","tt","./")
     import pickle
     with open(r"C:\Users\wk\AppData\Roaming\NovalIDE\intellisence\264\2.7.11\wx.lib.docview.$members",'rb') as f:

@@ -223,12 +223,34 @@ class CodeView(STCTextEditor.TextView):
             self.EnsureVisibleEnforcePolicy(node.Line)
             # wxBug: need to select in reverse order (end, start) to place cursor at begining of line,
             #        otherwise, display is scrolled over to the right hard and is hard to view
-            if node.Type == parserconfig.NODE_IMPORT_TYPE and node.AsName != None:
+            if node.Type == parserconfig.NODE_IMPORT_TYPE and node.Parent.Type == parserconfig.NODE_FROMIMPORT_TYPE:
+                line = node.Line
+                name = node.Name
+                line_count = self.GetCtrl().GetLineCount()
+                if node.AsName != None:
+                    name = node.AsName
+                    col = self.GetCtrl().GetLine(line-1).find(" as ")
+                    start,end = self.FindTextInLine(name,line,col)
+                    while start == -1 and line < line_count:
+                        line += 1
+                        col = self.GetCtrl().GetLine(line-1).find(" as ")
+                        if col == -1:
+                            continue
+                        start,end = self.FindTextInLine(name,line,col)
+                        if self.GetCtrl().GetLine(line).strip().endswith(")"):
+                            break
+                else:
+                    col = self.GetCtrl().GetLine(line-1).find(" import ")
+                    start,end = self.FindTextInLine(name,line,col)
+                    col = 0
+                    while start == -1 and line < line_count:
+                        line += 1
+                        start,end = self.FindTextInLine(name,line,col)
+                        if self.GetCtrl().GetLine(line).strip().endswith(")"):
+                            break
+            elif node.Type == parserconfig.NODE_IMPORT_TYPE and node.AsName != None:
                 col = self.GetCtrl().GetLine(node.Line-1).find(" as ")
                 start,end = self.FindTextInLine(node.AsName,node.Line,col)
-            elif node.Type == parserconfig.NODE_IMPORT_TYPE and node.Parent.Type == parserconfig.NODE_FROMIMPORT_TYPE:
-                col = self.GetCtrl().GetLine(node.Line-1).find(" import ")
-                start,end = self.FindTextInLine(node.Name,node.Line,col)
             else:
                 start,end = self.FindTextInLine(node.Name,node.Line)
             self.SetSelection(start, end)

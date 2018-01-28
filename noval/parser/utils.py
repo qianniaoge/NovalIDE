@@ -55,3 +55,11 @@ def CompareDatabaseVersion(new_version,old_version):
         if int(v) > int(old_versions[i]):
             return 1
     return 0
+
+
+def IsNoneOrEmpty(value):
+    if value is None:
+        return True
+    elif value == "":
+        return True
+    return False

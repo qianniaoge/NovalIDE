@@ -124,8 +124,8 @@ class ModuleLoader(object):
             
     def MakeChildScope(self,child,parent):
         name = child[self.NAME_KEY]
-        line_no = child[self.LINE_KEY]
-        col = child[self.COL_KEY]
+        line_no = child.get(self.LINE_KEY,-1)
+        col = child.get(self.COL_KEY,-1)
         if child[self.TYPE_KEY] == config.NODE_FUNCDEF_TYPE:
             node = nodeast.FuncDef(name,line_no,col,parent)
         elif child[self.TYPE_KEY] == config.NODE_CLASSDEF_TYPE:
@@ -319,10 +319,14 @@ class IntellisenceManager(object):
         return self._loader.module_dicts.has_key(name)
 
     def GetModuleMembers(self,module_name,child_name):
-        modoule = self.GetModule(module_name)
-        return modoule.GetMembersWithName(child_name)
+        module = self.GetModule(module_name)
+        if module is None:
+            return None
+        return module.GetMembersWithName(child_name)
 
     def GetModuleMember(self,module_name,child_name):
-        modoule = self.GetModule(module_name)
-        return modoule.FindDefinitionWithName(child_name)
+        module = self.GetModule(module_name)
+        if module is None:
+            return None
+        return module.FindDefinitionWithName(child_name)
         

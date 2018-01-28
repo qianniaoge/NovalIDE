@@ -75,3 +75,6 @@ Version 1.0.3 -------------2018-01-16
 14.enable insert date,comment template and python coding declare to text
 15.enable gotodef and listmembers shortcut in menu item
 16.default use right edge mode in text document
+17.set xml and html parser fold style
+18.support parse relative import 
+19.repair relative import position bug

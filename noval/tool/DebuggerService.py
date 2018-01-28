@@ -393,7 +393,6 @@ class RunCommandUI(wx.Panel):
                 return
 
         self.StopExecution()
-        self.StopExecution()
         index = self._noteBook.GetSelection()
         self._noteBook.GetPage(index).Show(False)
         self._noteBook.RemovePage(index)

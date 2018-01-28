@@ -927,6 +927,9 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         if scope_found is None:
             wx.MessageBox(_("Cannot find definition\"" + text + "\""),"Goto Definition",wx.OK|wx.ICON_EXCLAMATION,wx.GetApp().GetTopWindow())
         else:
+            if -1 == scope_found.Node.Line:
+                wx.MessageBox(_("Cannot go to definition\"" + text + "\""),"Goto Definition",wx.OK|wx.ICON_EXCLAMATION,wx.GetApp().GetTopWindow())
+                return
             if not open_new_doc:
                 wx.GetApp().GetDocumentManager().GetCurrentView().GotoLine(scope_found.Node.Line)
             elif scope_found.Parent is None:
