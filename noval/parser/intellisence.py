@@ -133,9 +133,12 @@ class ModuleLoader(object):
             ref_module = self._manager.GetModule(ref_module_name)
             if ref_module is None:
                 continue
-            member_definition = ref_module.FindDefinition(names)
-            if member_definition is not None:
-                return member_definition
+            for ref_name in ref['names']:
+                print ref_module_name,ref_name['name'],names
+                if ref_name['name'] == '*' or ref_name['name'] == names[0]:
+                    member_definition = ref_module.FindDefinition(names)
+                    if member_definition is not None:
+                        return member_definition
         return None
 
     def MakeModuleScope(self):
