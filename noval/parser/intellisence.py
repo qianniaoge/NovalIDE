@@ -122,7 +122,21 @@ class ModuleLoader(object):
             return None
         if len(names) == 0:
             return self.MakeModuleScope()
-        return self.FindChildDefinition(data[self.CHILD_KEY],names)
+        child_definition =  self.FindChildDefinition(data[self.CHILD_KEY],names)
+        if child_definition is None:
+            return self.FindInRefModule(data.get('refs',[]),names)
+        return child_definition
+
+    def FindInRefModule(self,refs,names):
+        for ref in refs:
+            ref_module_name = ref['module']
+            ref_module = self._manager.GetModule(ref_module_name)
+            if ref_module is None:
+                continue
+            member_definition = ref_module.FindDefinition(names)
+            if member_definition is not None:
+                return member_definition
+        return None
 
     def MakeModuleScope(self):
         module = nodeast.Module(self._name,self._path)
@@ -338,7 +352,7 @@ class IntellisenceManager(object):
     def GetModuleMembers(self,module_name,child_name):
         module = self.GetModule(module_name)
         if module is None:
-            return None
+            return []
         return module.GetMembersWithName(child_name)
 
     def GetModuleMember(self,module_name,child_name):

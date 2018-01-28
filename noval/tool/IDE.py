@@ -377,14 +377,13 @@ class IDEApplication(wx.lib.pydocview.DocApp):
 
         if not projectService.OpenSavedProjects() and not docManager.GetDocuments() and self.IsSDI():  # Have to open something if it's SDI and there are no projects...
             projectTemplate.CreateDocument('', wx.lib.docview.DOC_NEW).OnNewDocument()
-            
-        self.ShowTipfOfDay()
-                   
+                       
         Interpreter.InterpreterManager().LoadDefaultInterpreter()
         self.AddInterpreters()
         intellisence.IntellisenceManager().generate_default_intellisence_data()
-        wx.UpdateUIEvent.SetUpdateInterval(1000)  # Overhead of updating menus was too much.  Change to update every n milliseconds.
 
+        self.ShowTipfOfDay()
+        wx.UpdateUIEvent.SetUpdateInterval(1000)  # Overhead of updating menus was too much.  Change to update every n milliseconds.
         return True
 
     def ShowTipfOfDay(self,must_display=False):

@@ -58,6 +58,24 @@ def get_package_childs(module_path):
         childs.append(d)        
     return childs
 
+def fix_ref_module_name(module_dir,ref_module_name):
+    ref_module_path = os.path.join(module_dir,ref_module_name + ".py")
+    ref_module_package_path = os.path.join(module_dir,ref_module_name)
+    ref_module_package_file_path = os.path.join(ref_module_package_path,"__init__.py")
+    if os.path.exists(ref_module_path):
+        return utils.get_top_modulename(ref_module_path)[0]
+    elif os.path.exists(ref_module_package_file_path):
+        return utils.get_top_modulename(ref_module_package_file_path)[0]
+    elif sys.modules.has_key(ref_module_name):
+        return sys.modules[ref_module_name].__name__
+    else:
+        return ref_module_name
+
+def fix_refs(module_dir,refs):
+    for ref in refs:
+        ref_module_name = fix_ref_module_name(module_dir,ref['module'])
+        ref['module'] = ref_module_name
+
 def dump(module_path,output_name,dest_path,is_package):
     with open(module_path) as f:
         content = f.read()
@@ -82,6 +100,7 @@ def dump(module_path,output_name,dest_path,is_package):
                     break
                     
         module_dict = make_module_dict(module_name,module_path,False,childs,refs)
+        fix_refs(os.path.dirname(module_path),refs)
         dest_file_name = os.path.join(dest_path,output_name )
         with open(dest_file_name + ".$members", 'wb') as o1:
             # Pickle dictionary using protocol 0.
@@ -97,7 +116,7 @@ def dump(module_path,output_name,dest_path,is_package):
                 name_sets.add(name)
             for ref in refs:
                 for name in ref['names']:
-                    o2.write(ref['module'] + "/" + name['name'])
+                    o2.write( ref['module'] + "/" + name['name'])
                     o2.write('\n')
 
 def make_module_dict(name,path,is_builtin,childs,refs=[]):
@@ -281,7 +300,7 @@ def make_element_data(element,childs,refs):
         line_no = element.lineno
         col = element.col_offset
         base_names = GetBases(element)
-        cls_childs = walk(element)
+        cls_childs,_ = walk(element)
         data = dict(name=class_name,line=line_no,col=col,type=config.NODE_CLASSDEF_TYPE,\
                         bases=base_names,childs=cls_childs)
         childs.append(data)
@@ -339,7 +358,7 @@ if __name__ == "__main__":
   ##  module = parse(r"D:\env\Noval\noval\parser\nodeast.py")
    ## module = parse(r"D:\env\Noval\noval\test\run_test_input.py")
     ##print module
-    dump(r"C:\Python26\Lib\os.py","os","./",False)
+    dump(r"C:\Python27\Lib\os.py","os","./",False)
     import pickle
     with open(r"D:\env\Noval\noval\parser\os.$members",'rb') as f:
         datas = pickle.load(f)
