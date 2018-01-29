@@ -134,7 +134,6 @@ class ModuleLoader(object):
             if ref_module is None:
                 continue
             for ref_name in ref['names']:
-                print ref_module_name,ref_name['name'],names
                 if ref_name['name'] == '*' or ref_name['name'] == names[0]:
                     member_definition = ref_module.FindDefinition(names)
                     if member_definition is not None:

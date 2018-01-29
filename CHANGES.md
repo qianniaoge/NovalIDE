@@ -80,3 +80,4 @@ Version 1.0.3 -------------2018-01-16
 19.repair relative import position bug
 20.upgrade intellisense database generation and update database version to 1.0.2
 21.support go to defition of from import modules and their childs
+22.optimise memberlist sort algorithm
