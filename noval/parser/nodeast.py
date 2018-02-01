@@ -181,6 +181,9 @@ class PropertyDef(AssignDef):
         else:
             super(PropertyDef,self).__init__(name,line,col,value,value_type,parent,\
                                 config.NODE_OBJECT_PROPERTY,is_built_in)
+        ###self property is the child of method and method's class
+        if self.Parent.Type == config.NODE_FUNCDEF_TYPE and self.Parent.IsMethod:
+            self.Parent.Parent.AppendChild(self)
 
     def __str__(self):
         print 'type is property, name is',self.Name,'line is',self.Line,'col is',self.Col

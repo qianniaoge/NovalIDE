@@ -889,7 +889,7 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         scope_found = scope.FindDefinitionScope(text)
         member_list = []
         if None != scope_found:
-            if isinstance(scope_found.Node,nodeast.ImportNode):
+            if scope_found.Parent is not None and isinstance(scope_found.Node,nodeast.ImportNode):
                 member_list = scope_found.GetMemberList(text)
             else:
                 member_list = scope_found.GetMemberList()
@@ -916,31 +916,34 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         pos = self.GetCurrentPos()
         text = self.GetTypeWord(pos)
         scope = Service.Service.GetActiveView().ModuleScope.FindScope(line)
-        scope_found = scope.FindDefinition(text)
+        scope_found = scope.FindDefinitionMember(text)
         open_new_doc = False
-        if scope_found != None:
-            if scope_found.Node.Type == parserconfig.NODE_IMPORT_TYPE:
-                new_scope_found = scope_found.GetMember(text)
-                if new_scope_found != scope_found:
-                    open_new_doc = True
-                    scope_found = new_scope_found
-            else:
-                cur_view = wx.GetApp().GetDocumentManager().GetCurrentView()
-                scope_module_path = scope_found.Root.Module.Path
-                if scope_module_path != cur_view.GetDocument().GetFilename():
-                    open_new_doc = True
+    #    if scope_found != None:
+     #       if scope_found.Node.Type == parserconfig.NODE_IMPORT_TYPE or \
+      #                      isinstance(scope_found.Node,nodeast.AssignDef):
+       #         new_scope_found = scope_found.GetMember(text)
+        #        if new_scope_found != scope_found:
+         #           open_new_doc = True
+          #          scope_found = new_scope_found
+            #else:
+             #   cur_view = wx.GetApp().GetDocumentManager().GetCurrentView()
+              #  scope_module_path = scope_found.Root.Module.Path
+               # if scope_module_path != cur_view.GetDocument().GetFilename():
+                #    open_new_doc = True
         if scope_found is None:
             wx.MessageBox(_("Cannot find definition\"" + text + "\""),"Goto Definition",wx.OK|wx.ICON_EXCLAMATION,wx.GetApp().GetTopWindow())
         else:
-            if not open_new_doc:
-                wx.GetApp().GetDocumentManager().GetCurrentView().GotoLine(scope_found.Node.Line)
-            elif scope_found.Parent is None:
+            if scope_found.Parent is None:
                 wx.GetApp().GotoView(scope_found.Module.Path,0)
             else:
-                if -1 == scope_found.Node.Line:
-                    wx.MessageBox(_("Cannot go to definition\"" + text + "\""),"Goto Definition",wx.OK|wx.ICON_EXCLAMATION,wx.GetApp().GetTopWindow())
-                    return
-                wx.GetApp().GotoView(scope_found.Root.Module.Path,scope_found.Node.Line)
+                open_new_doc = (scope_found.Root != scope and scope_found.Root != scope.Root)
+                if not open_new_doc:
+                    wx.GetApp().GetDocumentManager().GetCurrentView().GotoLine(scope_found.Node.Line)
+                else:
+                    if -1 == scope_found.Node.Line:
+                        wx.MessageBox(_("Cannot go to definition\"" + text + "\""),"Goto Definition",wx.OK|wx.ICON_EXCLAMATION,wx.GetApp().GetTopWindow())
+                        return
+                    wx.GetApp().GotoView(scope_found.Root.Module.Path,scope_found.Node.Line)
 
 class PythonOptionsPanel(wx.Panel):
 

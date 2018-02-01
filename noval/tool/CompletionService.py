@@ -18,6 +18,36 @@ import STCTextEditor
 import Service
 _ = wx.GetTranslation
 
+SPACE = 10
+HALF_SPACE = 5
+
+class MutipleDefinitionDialog(wx.Dialog):
+    def __init__(self,parent,dlg_id,title,definitions):
+        wx.Dialog.__init__(self,parent,dlg_id,title)
+        contentSizer = wx.BoxSizer(wx.VERTICAL)
+        self.listbox = wx.ListBox(self, -1, style=wx.LB_SINGLE)
+        contentSizer.Add(self.listbox, 1, wx.EXPAND|wx.BOTTOM,SPACE)
+        self.Bind(wx.EVT_LISTBOX, self.OnListBoxSelect, self.listbox)
+
+        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        ok_btn = wx.Button(self, wx.ID_OK, _("&OK"))
+        lineSizer.Add(ok_btn, 0, wx.LEFT, SPACE*22)
+        cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
+        lineSizer.Add(cancel_btn, 0, wx.LEFT, SPACE)
+
+        contentSizer.Add(lineSizer, 0, wx.BOTTOM|wx.RIGHT, SPACE)
+        self.SetSizer(contentSizer)
+
+    def AppendDefinitions(self,definitions):
+        for i,definition in enumerate(definitions):
+            itemsting = "%s(%d:%d)" % (definition.Path,definition.Line,definition.Col)
+            self.listbox.Insert(itemsting, i)
+            self.listbox.SetClientData(i, definition)
+
+    def OnListBoxSelect(self, event=None):
+        i = self.listbox.GetSelection()
+        definition = self.listbox.GetClientData(i)
+        wx.GetApp().GotoView(definition.Path,definition.Line)
 
 class CompletionService(Service.BaseService):
     GO_TO_DEFINITION = wx.NewId()

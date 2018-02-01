@@ -3094,7 +3094,7 @@ class CommandPropertiesDialog(wx.Dialog):
             startval = ""
         self._lastPythonPath = config.Read(self.GetKey("LastPythonPath"), startval)
         self._pythonPathEntry = wx.TextCtrl(self, -1, self._lastPythonPath)
-        self._pythonPathEntry.SetToolTipString(self._lastPythonPath)
+        self._pythonPathEntry.SetToolTipString('multiple path is seperated by %s' % os.pathsep)
         flexGridSizer.Add(self._pythonPathEntry, (4,1), (1,2), flag=wx.EXPAND)
 
         if debugging and _WINDOWS:

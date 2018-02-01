@@ -133,8 +133,16 @@ def generate_intelligent_data_by_pool(root_path,new_database_version):
         SaveDatabaseVersion(dest_path,new_database_version)
      
 def scan_sys_path(src_path,dest_path,need_renew_database):
+
+    def is_path_ignored(path):
+        for ignore_path in ignore_path_list:
+            if path.startswith(ignore_path):
+                return True
+        return False
     ignore_path_list = []
     for root,path,files in os.walk(src_path):
+        if is_path_ignored(root):
+            continue
         if root != src_path and is_test_dir(root):
             ignore_path_list.append(root)
           ##  print ('path',root,'is a test dir')
@@ -142,13 +150,6 @@ def scan_sys_path(src_path,dest_path,need_renew_database):
         elif root != src_path and not fileparser.is_package_dir(root):
             ignore_path_list.append(root)
            ### print ('path',root,'is not a package dir')
-            continue
-        is_path_ignore = False
-        for ignore_path in ignore_path_list:
-            if root.startswith(ignore_path):
-                is_path_ignore = True
-                break
-        if is_path_ignore:
             continue
         for afile in files:
             fullpath = os.path.join(root,afile)

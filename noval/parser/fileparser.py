@@ -241,7 +241,7 @@ def make_element_node(element,parent,retain_new):
                         else:
                             continue
                     value_type,value = GetAssignValueType(element)
-                    nodeast.PropertyDef(name,line_no,col,value,value_type,parent.Parent)
+                    nodeast.PropertyDef(name,line_no,col,value,value_type,parent)
     elif isinstance(element,ast.Import):
         for name in element.names:
             nodeast.ImportNode(name.name,element.lineno,element.col_offset,parent,name.asname)
@@ -272,7 +272,22 @@ def deep_walk(node,parent,retain_new=True):
     for element in node.body:
         make_element_node(element,parent,retain_new)
 
-def make_element_data(element,childs,refs):
+def walk_method_element(node):
+    childs = []
+    for element in node.body:
+        if isinstance(element,ast.Assign):
+            targets = element.targets
+            line_no = element.lineno
+            col = element.col_offset
+            for target in targets:
+                if type(target) == ast.Attribute:
+                    if type(target.value) == ast.Name and target.value.id == "self":
+                        name = target.attr
+                        data = dict(name=name,line=line_no,col=col,type=config.NODE_OBJECT_PROPERTY)
+                        childs.append(data)
+    return childs
+
+def make_element_data(element,parent,childs,refs):
     if isinstance(element,ast.FunctionDef):
         def_name = element.name
         line_no = element.lineno
@@ -295,6 +310,9 @@ def make_element_data(element,childs,refs):
         data = dict(name=def_name,line=line_no,col=col,type=config.NODE_FUNCDEF_TYPE,\
                     is_method=is_method,is_class_method=is_class_method,args=args)
         childs.append(data)
+        ##parse self method,parent is class definition
+        if is_method and isinstance(parent,ast.ClassDef):
+            childs.extend(walk_method_element(element))
     elif isinstance(element,ast.ClassDef):
         class_name = element.name
         line_no = element.lineno
@@ -321,16 +339,16 @@ def make_element_data(element,childs,refs):
                 childs.append(data)
     elif isinstance(element,ast.ImportFrom):
         module_name = element.module
-##        if utils.IsNoneOrEmpty(module_name):
-##            if element.level == 1:
-##                module_name = "."
-##            elif element.level == 2:
-##                module_name = ".."
-##        else:
-##            if element.level == 1:
-##                module_name = "." + module_name
-##            elif element.level == 2:
-##                module_name = ".." + module_name
+        if utils.IsNoneOrEmpty(module_name):
+            if element.level == 1:
+                module_name = "."
+            elif element.level == 2:
+                module_name = ".."
+        else:
+            if element.level == 1:
+                module_name = "." + module_name
+            elif element.level == 2:
+                module_name = ".." + module_name
         names = []
         for name in element.names:
             d = {'name':name.name}
@@ -341,15 +359,15 @@ def make_element_data(element,childs,refs):
         refs.append(data)
     elif isinstance(element,ast.If):
         for body in element.body:
-            make_element_data(body,childs,refs)
+            make_element_data(body,parent,childs,refs)
         for orelse in element.orelse:
-            make_element_data(orelse,childs,refs)
+            make_element_data(orelse,parent,childs,refs)
     
 def walk(node):
     childs = []
     refs = []
     for element in node.body:
-        make_element_data(element,childs,refs)
+        make_element_data(element,node,childs,refs)
     return childs,refs
         
 if __name__ == "__main__":
@@ -358,9 +376,9 @@ if __name__ == "__main__":
   ##  module = parse(r"D:\env\Noval\noval\parser\nodeast.py")
    ## module = parse(r"D:\env\Noval\noval\test\run_test_input.py")
     ##print module
-    dump(r"C:\Python27\Lib\os.py","os","./",False)
+    dump(r"C:\Python27\lib\subprocess.py","subprocess","./",False)
     import pickle
-    with open(r"D:\env\Noval\noval\parser\os.$members",'rb') as f:
+    with open(r"D:\env\Noval\noval\parser\subprocess.$members",'rb') as f:
         datas = pickle.load(f)
    ### print datas['name'],datas['path'],datas['is_builtin']
     import json

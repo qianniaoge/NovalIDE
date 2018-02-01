@@ -462,3 +462,42 @@ def start_file(file_path):
         os.startfile(file_path)
     else:
         subprocess.call(["xdg-open", file_path])
+
+def is_file_hiden(path):
+
+    def is_windows_file_hidden(path):
+        file_flag = win32file.GetFileAttributesW(path)
+        hidden_flag = file_flag & win32con.FILE_ATTRIBUTE_HIDDEN
+        is_hidden = True if hidden_flag == win32con.FILE_ATTRIBUTE_HIDDEN else False
+        return is_hidden
+
+    if sysutils.isWindows():
+        import win32con
+        import win32file
+        if os.path.isfile(path):
+            is_hidden = is_windows_file_hidden(path)
+        ###files or dirs in hidden dir is not hidden,so we shoud rotate to hidden dir
+        else:
+            while True:
+                if os.path.dirname(path) == path:
+                    break
+                is_hidden = is_windows_file_hidden(path)
+                if is_hidden:
+                    break
+                path = os.path.dirname(path)
+        return is_hidden
+    else:
+        if os.path.isfile(path):
+            filename = os.path.basename(path)
+            is_hidden = True if filename.startswith(".") else False
+        else:
+            while True:
+                dirname = os.path.basename(path)
+                if dirname == "" or dirname == "/":
+                    break
+                is_hidden = True if dirname.startswith(".") else False
+                if is_hidden:
+                    break
+                path = os.path.dirname(path)
+            return is_hidden
+            

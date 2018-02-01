@@ -23,6 +23,7 @@ import noval.util.strutils as strutils
 import time
 import threading
 from wx.lib.pubsub import pub as Publisher
+import noval.util.fileutils as fileutils
 _ = wx.GetTranslation
 
 
@@ -40,9 +41,10 @@ HALF_SPACE = 5
 
 class FindTextOption():
     def __init__(self,find_what,dir_string,match_case,\
-                    whole_word,reg_expr,searchSubfolders,file_type_list):
+                    whole_word,reg_expr,searchSubfolders,search_hidden,file_type_list):
         self.DirString = dir_string
         self.SearchSubfolders = searchSubfolders
+        self.SearchHidden = search_hidden
         self.FindString = find_what
         self.MatchCase = match_case
         self.WholeWord = whole_word
@@ -208,12 +210,16 @@ class FindInDirService(FindService.FindService):
                 break
             if not find_text_option.SearchSubfolders and root != find_text_option.DirString:
                 break
+            if not find_text_option.SearchHidden and fileutils.is_file_hiden(root):
+                continue
             for name in files:
                 if find_text_option.FileTypes != []:
                     file_ext = strutils.GetFileExt(name)
                     if file_ext not in find_text_option.FileTypes:
                         continue
                 filename = os.path.join(root, name)
+                if not find_text_option.SearchHidden and fileutils.is_file_hiden(filename):
+                    break
                 list_files.append(filename)
                 found_file_count += 1
                 now = time.time()
@@ -261,10 +267,15 @@ class FindInDirService(FindService.FindService):
                 dirCtrl.SetInsertionPointEnd()
             dlg.Destroy()
         wx.EVT_BUTTON(findDirButton, -1, OnBrowseButton)
-
+        
+        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
         subfolderCtrl = wx.CheckBox(frame, -1, _("Search in subdirectories"))
         subfolderCtrl.SetValue(config.ReadInt(FIND_MATCHDIRSUBFOLDERS, True))
-        contentSizer.Add(subfolderCtrl, 0, wx.BOTTOM, SPACE)
+        lineSizer.Add(subfolderCtrl,0,wx.LEFT)
+        searchHiddenCtrl = wx.CheckBox(frame, -1, _("Search hidden files"))
+        lineSizer.Add(searchHiddenCtrl,0,wx.LEFT,SPACE)
+        
+        contentSizer.Add(lineSizer, 0, wx.BOTTOM, SPACE)
 
         lineSizer = wx.BoxSizer(wx.VERTICAL)    # let the line expand horizontally without vertical expansion
         lineSizer.Add(wx.StaticLine(frame, -1, size = (10,-1)), 0, flag=wx.EXPAND)
@@ -348,6 +359,7 @@ class FindInDirService(FindService.FindService):
         # save user choice state for this and other Find Dialog Boxes
         dirString = dirCtrl.GetValue()
         searchSubfolders = subfolderCtrl.IsChecked()
+        searchHidden = searchHiddenCtrl.IsChecked()
         self.SaveFindInDirConfig(dirString, searchSubfolders)
 
         findString = findCtrl.GetValue()
@@ -360,7 +372,7 @@ class FindInDirService(FindService.FindService):
         file_type_list = self.GetFileTypeList(file_type)
 
         find_text_option = FindTextOption(findString,dirString,matchCase,\
-                    wholeWord,regExpr,searchSubfolders,file_type_list)
+                    wholeWord,regExpr,searchSubfolders,searchHidden,file_type_list)
         frame.Destroy()
         if status == wx.ID_OK:
             messageService = wx.GetApp().GetService(MessageService.MessageService)
