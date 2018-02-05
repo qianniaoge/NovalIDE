@@ -42,7 +42,7 @@ class AddInterpreterDialog(wx.Dialog):
         if sysutils.isWindows():
             descr = _("Executable (*.exe) |*.exe")
         else:
-            descr = "All|*.*"
+            descr = "All Files (*)|*"
         dlg = wx.FileDialog(self,_("Select Executable Path"),
                             wildcard=descr,style=wx.OPEN|wx.FILE_MUST_EXIST|wx.CHANGE_DIR)
         if dlg.ShowModal() == wx.ID_OK:
@@ -196,6 +196,7 @@ class InterpreterConfigDialog(wx.Dialog):
                 try:
                     interpreter = Interpreter.InterpreterManager().AddPythonInterpreter(dlg.path_ctrl.GetValue(),dlg.name_ctrl.GetValue())
                     self.AddOneInterpreter(interpreter)
+                    self.SmartAnalyse(interpreter)
                     passedCheck = True
                 except Exception,e:
                     wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR,self)
@@ -212,6 +213,8 @@ class InterpreterConfigDialog(wx.Dialog):
         self.path_panel.AppendSysPath(interpreter)
         self.builtin_panel.SetBuiltiins(interpreter)
         self.enviroment_panel.SetVariables()
+        self.dvlc.Refresh()
+        ###self.dvlc.SelectRow(item_count)
     
     def RemoveInterpreter(self,event):
         index = self.dvlc.GetSelectedRow()
@@ -249,6 +252,9 @@ class InterpreterConfigDialog(wx.Dialog):
         item = self.dvlc.RowToItem(index)
         id = self.dvlc.GetItemData(item)
         interpreter = Interpreter.InterpreterManager().GetInterpreterById(id)
+        self.SmartAnalyse(interpreter)
+
+    def SmartAnalyse(self,interpreter):
         interpreter.GetSyspathList()
         interpreter.GetBuiltins()
         self.path_panel.AppendSysPath(interpreter)

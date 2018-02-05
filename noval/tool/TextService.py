@@ -33,6 +33,8 @@ INSERT_DATETIME_ID = wx.NewId()
 INSERT_COMMENT_TEMPLATE_ID = wx.NewId()
 INSERT_FILE_CONTENT_ID = wx.NewId()
 INSERT_DECLARE_ENCODING_ID = wx.NewId()
+ID_TAB_TO_SPACE =  wx.NewId()
+ID_SPACE_TO_TAB =  wx.NewId()
 
 PYTHON_COMMENT_TEMPLATE = '''#-------------------------------------------------------------------------------
 # Name:        {File}
@@ -229,6 +231,14 @@ class TextService(Service.BaseService):
         advanceMenu.Append(CONVERT_TO_LOWER_ID, _("Conert To lowercase\tCtrl+U"), _("Convert Lower Word to Upper Word"))
         wx.EVT_MENU(frame, CONVERT_TO_LOWER_ID, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, CONVERT_TO_LOWER_ID, frame.ProcessUpdateUIEvent)
+
+        advanceMenu.Append(ID_TAB_TO_SPACE, _("Tabs To Spaces"), _("Convert tabs to spaces in selected/all text"))
+        wx.EVT_MENU(frame, ID_TAB_TO_SPACE, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, ID_TAB_TO_SPACE, frame.ProcessUpdateUIEvent)
+        advanceMenu.Append(ID_SPACE_TO_TAB, _("Spaces To Tabs"), _("Convert spaces to tabs in selected/all text"))
+        wx.EVT_MENU(frame, ID_SPACE_TO_TAB, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, ID_SPACE_TO_TAB, frame.ProcessUpdateUIEvent)
+
         editMenu.AppendMenu(ADVANCE_EDIT_ID, _("&Advance"), advanceMenu)
         wx.EVT_UPDATE_UI(frame, ADVANCE_EDIT_ID, frame.ProcessUpdateUIEvent)
 
@@ -282,6 +292,8 @@ class TextService(Service.BaseService):
                 text_view.GetCtrl().GotoPos(0)
                 text_view.AddText(dlg.name_ctrl.GetValue() + "\n")
             return True
+        elif id == ID_TAB_TO_SPACE or id == ID_SPACE_TO_TAB:
+            self.ConvertWhitespace(text_view,id)
         else:
             return False
 
@@ -317,6 +329,38 @@ class TextService(Service.BaseService):
             return True
         else:
             return False
+
+
+    def ConvertWhitespace(self, text_view,mode_id):
+        """Convert whitespace from using tabs to spaces or visa versa
+        @param mode_id: id of conversion mode
+
+        """
+        if mode_id not in (ID_TAB_TO_SPACE, ID_SPACE_TO_TAB):
+            return
+
+        text_ctrl = text_view.GetCtrl()
+        tabw = text_ctrl.GetIndent()
+        pos = text_ctrl.GetCurrentPos()
+        sel = text_ctrl.GetSelectedText()
+        if mode_id == ID_TAB_TO_SPACE:
+            cmd = (u"\t", u" " * tabw)
+            tabs = False
+        else:
+            cmd = (" " * tabw, u"\t")
+            tabs = True
+
+        if sel != wx.EmptyString:
+            text_ctrl.ReplaceSelection(sel.replace(cmd[0], cmd[1]))
+        else:
+            text_ctrl.BeginUndoAction()
+            part1 = text_ctrl.GetTextRange(0, pos).replace(cmd[0], cmd[1])
+            tmptxt = text_ctrl.GetTextRange(pos, text_ctrl.GetLength()).replace(cmd[0], \
+                                                                      cmd[1])
+            text_ctrl.SetText(part1 + tmptxt)
+            text_ctrl.GotoPos(len(part1))
+            text_ctrl.SetUseTabs(tabs)
+            text_ctrl.EndUndoAction()
 
 from wx import ImageFromStream, BitmapFromImage
 import cStringIO

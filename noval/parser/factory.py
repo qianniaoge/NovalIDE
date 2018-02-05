@@ -67,8 +67,9 @@ def NeedRenewDatabase(database_location,new_database_version):
     if 0 == utils.CompareDatabaseVersion(new_database_version,old_database_version):
         return False
     return True
-           
-def generate_intelligent_data(root_path,new_database_version):
+
+
+def get_python_version():
     if isinstance(sys.version_info,tuple):
         version = str(sys.version_info[0]) + "." +  str(sys.version_info[1]) 
         if sys.version_info[2] > 0:
@@ -76,6 +77,10 @@ def generate_intelligent_data(root_path,new_database_version):
             version += str(sys.version_info[2])
     else:
         version = str(sys.version_info.major) + "." +  str(sys.version_info.minor) + "."  + str(sys.version_info.micro)
+    return version
+           
+def generate_intelligent_data(root_path,new_database_version):
+    version = get_python_version()
     dest_path = os.path.join(root_path,version)
     utils.MakeDirs(dest_path)
     need_renew_database = NeedRenewDatabase(dest_path,new_database_version)
@@ -85,6 +90,7 @@ def generate_intelligent_data(root_path,new_database_version):
     for path in sys_path_list:
         print ('start parse path data',path)
         scan_sys_path(path,dest_path,need_renew_database)
+    process_sys_modules(dest_path)
     if need_renew_database:
         SaveDatabaseVersion(dest_path,new_database_version)
 
@@ -108,13 +114,7 @@ def quick_generate_intelligent_data(root_path):
      #       future.result()
      
 def generate_intelligent_data_by_pool(root_path,new_database_version):
-    if isinstance(sys.version_info,tuple):
-        version = str(sys.version_info[0]) + "." +  str(sys.version_info[1]) 
-        if sys.version_info[2] > 0:
-            version += "."
-            version += str(sys.version_info[2])
-    else:
-        version = str(sys.version_info.major) + "." +  str(sys.version_info.minor) + "."  + str(sys.version_info.micro)
+    version = get_python_version()
     dest_path = os.path.join(root_path,version)
     utils.MakeDirs(dest_path)
     need_renew_database = NeedRenewDatabase(dest_path,new_database_version)
@@ -129,6 +129,7 @@ def generate_intelligent_data_by_pool(root_path,new_database_version):
         pool.apply_async(scan_sys_path,(path,dest_path,need_renew_database))
     pool.close()
     pool.join()
+    process_sys_modules(dest_path)
     if need_renew_database:
         SaveDatabaseVersion(dest_path,new_database_version)
      
@@ -174,6 +175,20 @@ def is_test_dir(dir_path):
         return True
     else:
         return False
+
+
+def process_sys_modules(dest_path):
+    for name in sys.modules:
+        module_members_file = os.path.join(dest_path,name+ ".$members")
+        if os.path.exists(module_members_file):
+            ###print 'sys module',name,'has been already analyzed'
+            continue
+        if not hasattr(sys.modules[name],'__file__'):
+            continue
+        fullpath = sys.modules[name].__file__.rstrip("c")
+        if not fullpath.endswith(".py"):
+            continue
+        fileparser.dump(fullpath,name,dest_path,False)
     
 if __name__ == "__main__":
     start_time = time.time()

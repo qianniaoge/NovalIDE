@@ -293,6 +293,7 @@ class IntellisenceManager(object):
     def WaitProcessEnd(self,interpreter,progress_dlg,load_data_end):
         self._process_obj.wait()
         interpreter.Analysing = False
+        interpreter.IsAnalysed = True
         self._is_running = interpreter.Analysing
         if progress_dlg != None:
             progress_dlg.KeepGoing = False

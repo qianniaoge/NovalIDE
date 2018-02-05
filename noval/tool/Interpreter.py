@@ -71,6 +71,7 @@ class PythonInterpreter(Interpreter):
         self._sys_path_list = []
         self._builtins = []
         self._help_path = ""
+        self._is_analysed = False
         if not is_valid_interpreter:
             self.GetVersion()
         if not is_valid_interpreter and self._is_valid_interpreter:
@@ -178,6 +179,14 @@ class PythonInterpreter(Interpreter):
     @Analysing.setter
     def Analysing(self,is_analysing):
         self._is_analysing = is_analysing
+
+    @property
+    def IsAnalysed(self):
+        return self._is_analysed
+
+    @IsAnalysed.setter
+    def IsAnalysed(self,is_analysed):
+        self._is_analysed = is_analysed
          
 class InterpreterManager(Singleton):
     

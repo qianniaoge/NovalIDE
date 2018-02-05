@@ -43,8 +43,7 @@ USE_OLD_PROJECTS = False
 def printArg(argname):
     output = "'-" + argname + "'"
     if wx.Platform == "__WXMSW__":
-        output = output + " or '/" + argname + "'"
-        
+        output = output + " or '/" + argname + "'"        
     return output
         
 def isInArgs(argname, argv):
@@ -52,8 +51,7 @@ def isInArgs(argname, argv):
     if ("-" + argname) in argv:
         result = True
     if wx.Platform == "__WXMSW__" and ("/" + argname) in argv:
-        result = True
-        
+        result = True        
     return result
 
 # The default log action in wx is to prompt with a big message box
@@ -72,11 +70,11 @@ class AppLog(wx.PyLog):
 #----------------------------------------------------------------------------
 # Classes
 #----------------------------------------------------------------------------
-
 class IDEApplication(wx.lib.pydocview.DocApp):
 
     def __init__(self, redirect=False):
         wx.lib.pydocview.DocApp.__init__(self, redirect=redirect)
+        
 
     def OnInit(self):
         global ACTIVEGRID_BASE_IDE
@@ -86,7 +84,6 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         # Suppress non-fatal errors that might prompt the user even in cases
         # when the error does not impact them.
         wx.Log_SetActiveTarget(AppLog())
-        
         if "-h" in args or "-help" in args or "--help" in args\
             or (wx.Platform == "__WXMSW__" and "/help" in args):
             print "Usage: ActiveGridAppBuilder.py [options] [filenames]\n"
@@ -117,7 +114,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             self.SetDebug(False)
         if isInArgs("multiple", args) and wx.Platform != "__WXMAC__":
             self.SetSingleInstance(False)
-            
+           
         if not wx.lib.pydocview.DocApp.OnInit(self):
             return False
 
@@ -147,6 +144,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         import ExtensionService
         import Interpreter
         import CompletionService
+        import GeneralOption
 ##        import UpdateLogIniService
                             
         _EDIT_LAYOUTS = True                        
@@ -161,6 +159,17 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             config.WriteInt("MDIFrameMaximized", True)
         if not config.Exists("MDIEmbedRightVisible"):  # Make the properties embedded window hidden as default
             config.WriteInt("MDIEmbedRightVisible", False)
+
+        ##my_locale must be set as app member property,otherwise it will only workable when app start up
+        ##it will not workable after app start up,the translation also will not work
+        lang_id = GeneralOption.GetLangId(config.Read("Language",""))
+        print lang_id,wx.Locale.IsAvailable(lang_id)
+        if wx.Locale.IsAvailable(lang_id):
+            self.my_locale = wx.Locale(lang_id)
+            if self.my_locale.IsOk():
+                self.my_locale.AddCatalogLookupPathPrefix(os.path.join(sysutilslib.mainModuleDir,'noval','locale'))
+                ibRet = self.my_locale.AddCatalog(self.GetAppName().lower())
+                print ibRet
 
         docManager = IDEDocManager(flags = self.GetDefaultDocManagerFlags())
         self.SetDocumentManager(docManager)
@@ -296,9 +305,10 @@ class IDEApplication(wx.lib.pydocview.DocApp):
     ##    outputService          = self.InstallService(OutputService.OutputService("Output", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
         debuggerService         = self.InstallService(DebuggerService.DebuggerService("Debugger", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
         extensionService        = self.InstallService(ExtensionService.ExtensionService())
-        optionsService          = self.InstallService(wx.lib.pydocview.DocOptionsService(supportedModes=wx.lib.docview.DOC_MDI))
+        ###optionsService          = self.InstallService(wx.lib.pydocview.DocOptionsService(supportedModes=wx.lib.docview.DOC_MDI))
+        optionsService          = self.InstallService(GeneralOption.GeneralOptionsService())
         aboutService            = self.InstallService(wx.lib.pydocview.AboutService(AboutDialog.AboutDialog))
-        svnService              = self.InstallService(SVNService.SVNService())
+     ###   svnService              = self.InstallService(SVNService.SVNService())
         if not ACTIVEGRID_BASE_IDE:
             helpPath = os.path.join(sysutilslib.mainModuleDir, "activegrid", "tool", "data", "AGDeveloperGuideWebHelp", "AGDeveloperGuideWebHelp.hhp")
             helpService             = self.InstallService(HelpService.HelpService(helpPath))
@@ -393,10 +403,16 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         # for some reason messes up menu updates. This seems a low-level wxWidgets bug,
         # so until I track this down, turn off UI updates while the tip dialog is showing.
         if os.path.isfile(tips_path):
+            config = wx.ConfigBase_Get()
+            index = config.ReadInt("TipIndex", 0)
             if must_display:
-                wx.ShowTip(docManager.FindSuitableParent(), wx.CreateFileTipProvider(tips_path, 0),False)
+               ### wx.ShowTip(docManager.FindSuitableParent(), wx.CreateFileTipProvider(tips_path, 0),False)
+                showTip = config.ReadInt("ShowTipAtStartup", 1)
+                showTipResult = wx.ShowTip(docManager.FindSuitableParent(), wx.CreateFileTipProvider(tips_path, index), showAtStartup = showTip)
+                if showTipResult != showTip:
+                    config.WriteInt("ShowTipAtStartup", showTipResult)
             else:
-                self.ShowTip(docManager.FindSuitableParent(), wx.CreateFileTipProvider(tips_path, 0))
+                self.ShowTip(docManager.FindSuitableParent(), wx.CreateFileTipProvider(tips_path, index))
     
     @property
     def MainFrame(self):
@@ -492,6 +508,46 @@ class IDEDocManager(wx.lib.docview.DocManager):
                             break
                 else:
                     assert False, "Unknown type returned from NewDialog"
+
+
+    def SelectDocumentPath(self, templates, flags, save):
+        """
+        Under Windows, pops up a file selector with a list of filters
+        corresponding to document templates. The wxDocTemplate corresponding
+        to the selected file's extension is returned.
+
+        On other platforms, if there is more than one document template a
+        choice list is popped up, followed by a file selector.
+
+        This function is used in wxDocManager.CreateDocument.
+        """
+        descr = ''
+        for temp in templates:
+            if temp.IsVisible():
+                if len(descr) > 0:
+                    descr = descr + _('|')
+                descr = descr + temp.GetDescription() + _(" (") + temp.GetFileFilter() + _(") |") + temp.GetFileFilter()  # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
+        if sysutilslib.isWindows():
+            descr = _("All Files(*.*)|*.*|%s") % descr  # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
+        else:
+            descr = _("All Files (*)|*|%s") % descr 
+            
+        dlg = wx.FileDialog(self.FindSuitableParent(),
+                               _("Select a File"),
+                               wildcard=descr,
+                               style=wx.OPEN|wx.FILE_MUST_EXIST|wx.CHANGE_DIR)
+        # dlg.CenterOnParent()  # wxBug: caused crash with wx.FileDialog
+        if dlg.ShowModal() == wx.ID_OK:
+            path = dlg.GetPath()
+        else:
+            path = None
+        dlg.Destroy()
+            
+        if path:  
+            theTemplate = self.FindTemplateForPath(path)
+            return (theTemplate, path)
+        
+        return (None, None)       
 
     def OnFileSaveAs(self, event):
         doc = self.GetCurrentDocument()

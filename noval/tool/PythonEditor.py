@@ -936,7 +936,7 @@ class PythonCtrl(CodeEditor.CodeCtrl):
             if scope_found.Parent is None:
                 wx.GetApp().GotoView(scope_found.Module.Path,0)
             else:
-                open_new_doc = (scope_found.Root != scope and scope_found.Root != scope.Root)
+                open_new_doc = (scope_found.Root != scope.Root)
                 if not open_new_doc:
                     wx.GetApp().GetDocumentManager().GetCurrentView().GotoLine(scope_found.Node.Line)
                 else:

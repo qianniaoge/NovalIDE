@@ -177,6 +177,10 @@ class ModuleScope(Scope):
         def GetMemberList(self,sort=True):
             ##return self.Module.GetMemberList(sort)
             return intellisence.IntellisenceManager().GetModuleMembers(self.Module.Name,"")
+
+        @property
+        def Root(self):
+            return self
                                   
 class NodeScope(Scope):
         def __init__(self,node,parent,root):

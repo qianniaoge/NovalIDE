@@ -81,3 +81,10 @@ Version 1.0.3 -------------2018-01-16
 20.upgrade intellisense database generation and update database version to 1.0.2
 21.support go to defition of from import modules and their childs
 22.optimise memberlist sort algorithm
+
+
+
+Version 1.0.4 -------------2018-02-04
+1.repair show tip bug
+2.repair open all files bug in linux system
+3.auto analyse sys moudles intellisense data
