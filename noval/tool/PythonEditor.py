@@ -555,7 +555,7 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         
         self.Bind(wx.EVT_MENU, self.OnGotoDefinition, id=CompletionService.CompletionService.GO_TO_DEFINITION)
         item = wx.MenuItem(menu, CompletionService.CompletionService.GO_TO_DEFINITION, \
-                            CompletionService.CompletionService.GOTODEF_MENU_ITEM_TEXT)
+                            _("Goto Definition\tF12"))
         wx.EVT_UPDATE_UI(self,CompletionService.CompletionService.GO_TO_DEFINITION, self.DSProcessUpdateUIEvent)
         menu.AppendItem(item)
 

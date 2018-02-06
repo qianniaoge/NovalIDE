@@ -54,7 +54,6 @@ class CompletionService(Service.BaseService):
     COMPLETE_WORD_LIST = wx.NewId()
     AUTO_COMPLETE_WORD = wx.NewId()
     LIST_CURRENT_MEMBERS = wx.NewId()
-    GOTODEF_MENU_ITEM_TEXT = _("Goto Definition\tF12")
 
     def __init__(self):
         pass
@@ -67,7 +66,7 @@ class CompletionService(Service.BaseService):
 
         editMenu = menuBar.GetMenu(menuBar.FindMenu(_("&Edit")))
         editMenu.AppendSeparator()
-        editMenu.Append(CompletionService.GO_TO_DEFINITION, self.GOTODEF_MENU_ITEM_TEXT, _("Goto Definition of text"))
+        editMenu.Append(CompletionService.GO_TO_DEFINITION, _("Goto Definition\tF12"), _("Goto Definition of text"))
         wx.EVT_MENU(frame, CompletionService.GO_TO_DEFINITION, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, CompletionService.GO_TO_DEFINITION, frame.ProcessUpdateUIEvent)
         editMenu.Append(CompletionService.COMPLETE_WORD_LIST, _("Completion Word List\tCtrl+Shit+K"), _("List Completion Word List"))

@@ -36,7 +36,7 @@ class Interpreter(object):
         
     @property
     def Id(self):
-        return self._id        
+        pass   
 
 def GetCommandOutput(command,read_error=False):
     p = subprocess.Popen(command,shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -187,6 +187,10 @@ class PythonInterpreter(Interpreter):
     @IsAnalysed.setter
     def IsAnalysed(self,is_analysed):
         self._is_analysed = is_analysed
+
+    @property
+    def Id(self):
+        return self._id
          
 class InterpreterManager(Singleton):
     
