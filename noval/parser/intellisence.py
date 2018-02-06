@@ -33,16 +33,18 @@ class ModuleLoader(object):
         self._manager = mananger
         self._path = None
         self._is_builtin = False
+        self._data = None
     @property
     def Name(self):
         return self._name
 
     def LoadMembers(self):
-        with open(self._members_file,'rb') as f:
-            data = pickle.load(f)
-            self._is_builtin = data.get(self._is_builtin,False)
-            self._path = data.get(self.PATH_KEY)
-            return data
+        if self._data is None:
+            with open(self._members_file,'rb') as f:
+                self._data = pickle.load(f)
+                self._is_builtin = self._data.get(self._is_builtin,False)
+                self._path = self._data.get(self.PATH_KEY)
+        return self._data
 
     def LoadMembeList(self):
         member_list = []
@@ -92,7 +94,24 @@ class ModuleLoader(object):
                 if member.has_key(self.CHILD_KEY):
                     for child in member[self.CHILD_KEY]:
                         member_list.append(child[self.NAME_KEY])
+                ##get members in parent inherited classes
+                if member[self.TYPE_KEY] == config.NODE_CLASSDEF_TYPE:
+                    member_list.extend(self.GetBaseMembers(member,names))                    
         return member_list
+
+    def GetBaseMembers(self,member,names):
+        base_members = []
+        bases = member.get('bases',[])
+        for base in bases:
+            base_members.extend(self.GetMembers(names[0:(len(names) -1)] + [base]))
+        return base_members
+
+    def FindChildDefinitionInBases(self,bases,names):
+        for base in bases:
+            for child in self._data[self.CHILD_KEY]:
+                if child[self.NAME_KEY] == base:
+                    return self.FindChildDefinition(child[self.CHILD_KEY],names)
+        return None
         
     def GetMember(self,childs,names):
         for child in childs:
@@ -162,7 +181,11 @@ class ModuleLoader(object):
         if child[self.TYPE_KEY] == config.NODE_FUNCDEF_TYPE:
             node = nodeast.FuncDef(name,line_no,col,parent)
         elif child[self.TYPE_KEY] == config.NODE_CLASSDEF_TYPE:
-            node = nodeast.ClassDef(name,line_no,col,parent)
+            bases = child.get('bases',[])
+            for i,base in enumerate(bases):
+                bases[i] = parent.Name + "." + base
+            print bases
+            node = nodeast.ClassDef(name,line_no,col,parent,bases=bases)
             for class_child in child.get(self.CHILD_KEY,[]):
                 self.MakeChildScope(class_child,node)
         elif child[self.TYPE_KEY] == config.NODE_OBJECT_PROPERTY or \
@@ -178,7 +201,12 @@ class ModuleLoader(object):
                     return self.MakeDefinitionScope(child)
                 else:
                     if child[self.TYPE_KEY] != config.NODE_MODULE_TYPE:
-                        return self.FindChildDefinition(child[self.CHILD_KEY],names[1:])
+                        child_definition = self.FindChildDefinition(child[self.CHILD_KEY],names[1:])
+                        if child_definition is None and child[self.TYPE_KEY] == config.NODE_CLASSDEF_TYPE:
+                            bases = child.get('bases',[])
+                            #search member definition in parent inherited classes
+                            child_definition = self.FindChildDefinitionInBases(bases,names[1:])
+                        return child_definition
                     else:
                         child_module = self._manager.GetModule(child[self.FULL_NAME_KEY])
                         data = child_module.LoadMembers()

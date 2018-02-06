@@ -61,7 +61,7 @@ class PythonPathPanel(wx.Panel):
         
     def AppendSysPath(self,interpreter):
         self.tree_ctrl.DeleteAllItems()
-        root_item = self.tree_ctrl.AddRoot("Path List")
+        root_item = self.tree_ctrl.AddRoot(_("Path List"))
         for path in interpreter.SyspathList:
             if path.strip() == "":
                 continue
@@ -84,8 +84,8 @@ class EnviromentPanel(wx.Panel):
         wx.Panel.__init__(self, parent)
         self.Sizer = wx.BoxSizer()
         self.dvlc = dataview.DataViewListCtrl(self)
-        self.dvlc.AppendTextColumn('Key', width=100)
-        self.dvlc.AppendTextColumn('Value',width=500)
+        self.dvlc.AppendTextColumn(_('Key'), width=100)
+        self.dvlc.AppendTextColumn(_('Value'),width=500)
         self.Sizer.Add(self.dvlc, 1, wx.EXPAND)
         
     def SetVariables(self):
@@ -102,10 +102,10 @@ class InterpreterConfigDialog(wx.Dialog):
         
         contentSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.dvlc = dataview.DataViewListCtrl(self,size=(510,150))
-        self.dvlc.AppendTextColumn('Name', width=100)
-        self.dvlc.AppendTextColumn('Version', width=70)
-        self.dvlc.AppendTextColumn('Path', width=260)
-        self.dvlc.AppendTextColumn('Default', width=70)
+        self.dvlc.AppendTextColumn(_('Name'), width=100)
+        self.dvlc.AppendTextColumn(_('Version'), width=70)
+        self.dvlc.AppendTextColumn(_('Path'), width=260)
+        self.dvlc.AppendTextColumn(_('Default'), width=70)
         dataview.EVT_DATAVIEW_SELECTION_CHANGED(self.dvlc, -1, self.UpdateUI)
         dataview.EVT_DATAVIEW_ITEM_ACTIVATED(self.dvlc, -1, self.ModifyInterpreterNameDlg)
         contentSizer.Add(self.dvlc, 0, wx.EXPAND, 0)
@@ -134,11 +134,11 @@ class InterpreterConfigDialog(wx.Dialog):
         bottom_sizer = wx.BoxSizer(wx.HORIZONTAL)
         nb = wx.Notebook(self,size=(650,330))
         self.path_panel = PythonPathPanel(nb)
-        nb.AddPage(self.path_panel, "Sys Path")
+        nb.AddPage(self.path_panel, _("Sys Path"))
         self.builtin_panel = PythonBuiltinsPanel(nb)
-        nb.AddPage(self.builtin_panel, "Builtin Modules")
+        nb.AddPage(self.builtin_panel, _("Builtin Modules"))
         self.enviroment_panel = EnviromentPanel(nb)
-        nb.AddPage(self.enviroment_panel, "Enviroment Variable")
+        nb.AddPage(self.enviroment_panel, _("Enviroment Variable"))
         bottom_sizer.Add(nb, 0, wx.BOTTOM, HALF_SPACE)
         
         box_sizer.Add(top_sizer, 0, wx.BOTTOM, HALF_SPACE)
@@ -206,9 +206,9 @@ class InterpreterConfigDialog(wx.Dialog):
     def AddOneInterpreter(self,interpreter):
         def GetDefaultFlag(is_default):
             if is_default:
-                return "Yes"
+                return _("Yes")
             else:
-                return "No"
+                return _("No")
         self.dvlc.AppendItem([interpreter.Name,interpreter.Version,interpreter.Path,GetDefaultFlag(interpreter.Default)],interpreter.Id)
         self.path_panel.AppendSysPath(interpreter)
         self.builtin_panel.SetBuiltiins(interpreter)
@@ -225,9 +225,9 @@ class InterpreterConfigDialog(wx.Dialog):
         id = self.dvlc.GetItemData(item)
         interpreter = Interpreter.InterpreterManager().GetInterpreterById(id)
         if interpreter.Default:
-            wx.MessageBox("Default Interpreter cannot be remove",_("Warning"),wx.OK|wx.ICON_WARNING,self)
+            wx.MessageBox(_("Default Interpreter cannot be remove"),_("Warning"),wx.OK|wx.ICON_WARNING,self)
             return
-        ret = wx.MessageBox("Interpreter remove action cannot be recover,Do you want to continue remove this interpreter?",_("Warning"),wx.YES_NO|wx.ICON_QUESTION,self)
+        ret = wx.MessageBox(_("Interpreter remove action cannot be recover,Do you want to continue remove this interpreter?"),_("Warning"),wx.YES_NO|wx.ICON_QUESTION,self)
         if ret == wx.YES:
             Interpreter.InterpreterManager().RemovePythonInterpreter(interpreter)
             self.ReloadAllInterpreters()
@@ -306,8 +306,8 @@ class InterpreterConfigDialog(wx.Dialog):
 class AnalyseProgressDialog(wx.ProgressDialog):
     
     def __init__(self,parent):
-        wx.ProgressDialog.__init__(self,"Interpreter Smart Analyse",
-                               "Please wait a minute for end analysing",
+        wx.ProgressDialog.__init__(self,_("Interpreter Smart Analyse"),
+                               _("Please wait a minute for end analysing"),
                                maximum = 100,
                                parent=parent,
                                style = 0

@@ -931,7 +931,7 @@ class PythonCtrl(CodeEditor.CodeCtrl):
                # if scope_module_path != cur_view.GetDocument().GetFilename():
                 #    open_new_doc = True
         if scope_found is None:
-            wx.MessageBox(_("Cannot find definition\"" + text + "\""),"Goto Definition",wx.OK|wx.ICON_EXCLAMATION,wx.GetApp().GetTopWindow())
+            wx.MessageBox(_("Cannot find definition") + "\"" + text + "\"",_("Goto Definition"),wx.OK|wx.ICON_EXCLAMATION,wx.GetApp().GetTopWindow())
         else:
             if scope_found.Parent is None:
                 wx.GetApp().GotoView(scope_found.Module.Path,0)
@@ -941,7 +941,7 @@ class PythonCtrl(CodeEditor.CodeCtrl):
                     wx.GetApp().GetDocumentManager().GetCurrentView().GotoLine(scope_found.Node.Line)
                 else:
                     if -1 == scope_found.Node.Line:
-                        wx.MessageBox(_("Cannot go to definition\"" + text + "\""),"Goto Definition",wx.OK|wx.ICON_EXCLAMATION,wx.GetApp().GetTopWindow())
+                        wx.MessageBox(_("Cannot go to definition") + "\"" + text + "\"",_("Goto Definition"),wx.OK|wx.ICON_EXCLAMATION,wx.GetApp().GetTopWindow())
                         return
                     wx.GetApp().GotoView(scope_found.Root.Module.Path,scope_found.Node.Line)
 

@@ -123,11 +123,11 @@ class ExtensionService(Service.BaseService):
                 index = menuBar.FindMenu(_("&View"))
             menuBar.Insert(index + 1, toolsMenu, _("&Tools"))
             id = wx.NewId()
-            toolsMenu.Append(id,"&Terminator")
+            toolsMenu.Append(id,_("&Terminator"))
             wx.EVT_MENU(frame, id, self.OpenTerminator)  
 
             id = wx.NewId()
-            toolsMenu.Append(id,"&UnitTest")
+            toolsMenu.Append(id,_("&UnitTest"))
             wx.EVT_MENU(frame, id, self.RunUnitTest)
         
         helpMenuIndex = menuBar.FindMenu(_("&Help"))
@@ -135,12 +135,12 @@ class ExtensionService(Service.BaseService):
         start_index = 0
         if sysutilslib.isWindows():
             id = wx.NewId()
-            helpMenu.Insert(0,id,"&Python Help Document")
+            helpMenu.Insert(0,id,_("&Python Help Document"))
             wx.EVT_MENU(frame, id, self.OpenPythonHelpDocument)
             start_index += 1
 
         id = wx.NewId()
-        helpMenu.Insert(start_index,id,"&Tips of Day")
+        helpMenu.Insert(start_index,id,_("&Tips of Day"))
         wx.EVT_MENU(frame, id, self.ShowTipsOfDay)
 
         if self._extensions:

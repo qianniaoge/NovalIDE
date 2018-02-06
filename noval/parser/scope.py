@@ -43,6 +43,9 @@ class Scope(object):
         self.ChildScopes.sort(key=lambda c :c.LineStart)
         last_scope = None
         for child_scope in self.ChildScopes:
+            ##exclude child scopes which is import from other modules
+            if child_scope.Root.Module.Path != self.Root.Module.Path:
+                continue
             if child_scope.Node.Type == config.NODE_FUNCDEF_TYPE:
                 child_scope.RouteChildScopes()
             elif child_scope.Node.Type == config.NODE_CLASSDEF_TYPE:
@@ -140,6 +143,22 @@ class ModuleScope(Scope):
         
         def MakeModuleScopes(self):
             self.MakeScopes(self.Module,self)
+
+        def MakeImportScope(self,from_import_scope,parent_scope):
+            from_import_name = from_import_scope.Node.Name
+            member_names = []
+            for child_scope in from_import_scope.ChildScopes:
+                #get all import members
+                if child_scope.Node.Name == "*":
+                    member_names.extend(intellisence.IntellisenceManager().GetModuleMembers(from_import_name,""))
+                    break
+                #get one import member
+                else:
+                    member_names.append(child_scope.Node.Name)
+            for member_name in member_names:
+                member_scope = intellisence.IntellisenceManager().GetModuleMember(from_import_name,member_name)
+                if member_scope is not None:
+                    parent_scope.AppendChildScope(member_scope)
             
         def MakeScopes(self,node,parent_scope):
             for child in node.Childs:
@@ -156,6 +175,8 @@ class ModuleScope(Scope):
                     NameScope(child,parent_scope,self)
                 elif child.Type == config.NODE_IMPORT_TYPE:
                     ImportScope(child,parent_scope,self)
+                    if child.Parent.Type == config.NODE_FROMIMPORT_TYPE:
+                        self.MakeImportScope(parent_scope,parent_scope.Parent)                        
                 elif child.Type == config.NODE_FROMIMPORT_TYPE:
                     from_import_scope = FromImportScope(child,parent_scope,self)
                     self.MakeScopes(child,from_import_scope)
@@ -175,12 +196,14 @@ class ModuleScope(Scope):
             return find_scope
 
         def GetMemberList(self,sort=True):
-            ##return self.Module.GetMemberList(sort)
             return intellisence.IntellisenceManager().GetModuleMembers(self.Module.Name,"")
 
         @property
         def Root(self):
             return self
+
+        def EqualName(self,name):
+            return self.Module.Name == name
                                   
 class NodeScope(Scope):
         def __init__(self,node,parent,root):
@@ -299,12 +322,14 @@ class NameScope(NodeScope):
             return self.Node.Name
 
         def GetMemberList(self,sort=True):
+            member_list = []
             if self.Node.ValueType == config.ASSIGN_TYPE_OBJECT:
                 found_scope = self.FindDefinitionScope(self.Node.Value)
-                if found_scope.Node.Type == config.NODE_IMPORT_TYPE:
-                    member_list = found_scope.GetMemberList(self.Node.Value)
-                else:
-                    member_list = found_scope.GetMemberList()
+                if found_scope is not None:
+                    if found_scope.Node.Type == config.NODE_IMPORT_TYPE:
+                        member_list = found_scope.GetMemberList(self.Node.Value)
+                    else:
+                        member_list = found_scope.GetMemberList()
             else:
                 member_list = intellisence.IntellisenceManager().\
                              GetTypeObjectMembers(self.Node.ValueType)
@@ -357,7 +382,9 @@ class ImportScope(NodeScope):
 
         def GetMemberList(self,name):
             fix_name = self.MakeFixName(name)
-            return intellisence.IntellisenceManager().GetModuleMembers(self.Node.Name,fix_name)
+            member_list = intellisence.IntellisenceManager().GetModuleMembers(self.Node.Name,fix_name)
+            member_list.sort(CmpMember)
+            return member_list
 
         def GetMember(self,name):
             fix_name = self.MakeFixName(name)

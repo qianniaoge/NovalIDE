@@ -350,7 +350,7 @@ class FindDialog(wx.Dialog):
         choiceSizer.Add(self._wrapCtrl, 0)
         gridSizer.Add(choiceSizer, pos=(1,0), span=(2,1))
 
-        self._radioBox = wx.RadioBox(self, -1, _("Direction"), choices = ["Up", "Down"])
+        self._radioBox = wx.RadioBox(self, -1, _("Direction"), choices = [_("Up"), _("Down")])
         self._radioBox.SetSelection(config.ReadInt(FIND_MATCHUPDOWN, 1))
         gridSizer.Add(self._radioBox, pos=(1,1), span=(2,1))
 

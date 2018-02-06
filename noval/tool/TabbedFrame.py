@@ -3,6 +3,7 @@ import wx.lib.pydocview
 import wx
 import noval.util.sysutils as sysutilslib
 import noval.util.fileutils as fileutils
+import noval.parser.config as parserconfig
 
 _ = wx.GetTranslation
 
@@ -44,6 +45,8 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame):
             self.GetDocumentManager().OnFileSave(event)
         def OnSaveFileAs(event):
             self.GetDocumentManager().SaveAsDocument(doc)
+        def OnCopyModuleName(event):
+            sysutilslib.CopyToClipboard(os.path.basename(doc.GetFilename()).split('.')[0])
         def OnCloseAllWithoutDoc(event):
             for i in range(self._notebook.GetPageCount()-1, -1, -1): # Go from len-1 to 0
                 if i != index:
@@ -54,13 +57,14 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame):
         menu = wx.Menu()
         x, y = event.GetX(), event.GetY()
         if index > -1:
-            doc = self._notebook.GetPage(index).GetView().GetDocument()
+            view = self._notebook.GetPage(index).GetView()
+            doc = view.GetDocument()
             self.AppendMenuItem(menu,_("Save"),OnSaveFile)
             self.AppendMenuItem(menu,_("SaveAs"),OnSaveFileAs)
             self.AppendMenuItem(menu,_("Close"),OnCloseDoc)
             self.AppendMenuItem(menu,_("CloseAll"),OnCloseAllDocs)
             if self._notebook.GetPageCount() > 1:
-                item_name = _("Close All but \"%s\"" % doc.GetPrintableName())
+                item_name = _("Close All but \"%s\"") % doc.GetPrintableName()
                 self.AppendMenuItem(menu,item_name,OnCloseAllWithoutDoc,True)
                 tabsMenu = wx.Menu()
                 menu.AppendMenu(wx.NewId(), _("Select Tab"), tabsMenu)
@@ -68,6 +72,8 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame):
             self.AppendMenuItem(menu,_("Open File Path In Terminator"),OnOpenPathInTerminator)
             self.AppendMenuItem(menu,_("Copy File Path"),OnCopyFilePath)
             self.AppendMenuItem(menu,_("Copy File Name"),OnCopyFileName)
+            if view.GetLangLexer() == parserconfig.LANG_PYTHON_LEXER:
+                self.AppendMenuItem(menu,_("Copy Module Name"),OnCopyModuleName)
         else:
             y = y - 25  # wxBug: It is offsetting click events in the blank notebook area
             tabsMenu = menu

@@ -2,7 +2,7 @@
 
 ; 安装程序初始定义常量
 !define PRODUCT_NAME "NovalIDE"
-!define PRODUCT_VERSION "1.0.3"
+!define PRODUCT_VERSION "1.0.4"
 !define PRODUCT_PUBLISHER "wukan"
 !define PRODUCT_WEB_SITE "http://www.genetalks.com"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\NovalIDE.exe"
@@ -68,6 +68,7 @@ Section "MainSection" SEC01
   File "dist\wx._stc.pyd"
   File "dist\wx._misc_.pyd"
   File "dist\wx._grid.pyd"
+  File "dist\wx._combo.pyd"
   File "dist\wx._gizmos.pyd"
   File "dist\wx._gdi_.pyd"
   File "dist\wx._dataview.pyd"

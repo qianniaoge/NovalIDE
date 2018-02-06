@@ -56,8 +56,8 @@ UPDATE_PROGRESS_SIGNAL_NAME = "UpdateProgress"
 class SearchProgressDialog(wx.GenericProgressDialog):
     
     def __init__(self,parent):
-        welcome_msg = "Please wait a minute for end find text"
-        wx.GenericProgressDialog.__init__(self,"Find Text In Directory",welcome_msg,\
+        welcome_msg = _("Please wait a minute for end find text")
+        wx.GenericProgressDialog.__init__(self,_("Find Text In Directory"),welcome_msg,\
                 maximum = 100, parent=parent,\
                     style = 0|wx.PD_APP_MODAL|wx.PD_CAN_ABORT)
 
@@ -190,7 +190,7 @@ class FindInDirService(FindService.FindService):
             wx.MilliSleep(50)
             wx.SafeYield(self.progress_dlg,True)
             wx.CallAfter(Publisher.sendMessage,UPDATE_PROGRESS_SIGNAL_NAME, \
-                    temp=cur_pos,msg="search file:%s" % list_file)
+                    temp=cur_pos,msg=_("search file:%s") % list_file)
            ## Publisher.sendMessage(UPDATE_PROGRESS_SIGNAL_NAME, temp=temp,msg="search file:%s" % filename)
             cur_pos += 1
         return found_line,cur_pos

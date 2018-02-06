@@ -5,21 +5,21 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-02-02 09:01+ÖÐ¹ú±ê×¼Ê±¼ä\n"
-"PO-Revision-Date: 2018-02-02 09:40+0800\n"
+"POT-Creation-Date: 2018-02-06 14:23+ÖÐ¹ú±ê×¼Ê±¼ä\n"
+"PO-Revision-Date: 2018-02-06 15:03+0800\n"
+"Last-Translator: \n"
 "Language-Team: \n"
+"Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
 "X-Generator: Poedit 2.0.6\n"
-"Last-Translator: \n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"Language: zh_CN\n"
 
 #: G:\work\Noval\noval\tool\AboutDialog.py:63
 msgid "About "
-msgstr ""
+msgstr "关于 "
 
 #: G:\work\Noval\noval\tool\AboutDialog.py:87
 msgid ""
@@ -36,12 +36,12 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\AboutDialog.py:90
 msgid "Copyright"
-msgstr ""
+msgstr "版权"
 
 #: G:\work\Noval\noval\tool\AboutDialog.py:98
 #: G:\work\Noval\noval\tool\AboutDialog.py:100
 msgid "License"
-msgstr ""
+msgstr "许可证"
 
 #: G:\work\Noval\noval\tool\AboutDialog.py:99
 #: G:\work\Noval\noval\tool\AboutDialog.py:101
@@ -50,7 +50,7 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\AboutDialog.py:132
 msgid "Licenses"
-msgstr ""
+msgstr "开源协议"
 
 #: G:\work\Noval\noval\tool\AboutDialog.py:136
 msgid ""
@@ -64,247 +64,276 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\AboutDialog.py:138
 msgid "Credits"
-msgstr ""
+msgstr "关于作者"
 
 #: G:\work\Noval\noval\tool\AbstractEditor.py:866
 msgid "Move/Resize %s"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:295
+#: G:\work\Noval\noval\tool\CodeEditor.py:302
 msgid "The file successfully compiled"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:299
+#: G:\work\Noval\noval\tool\CodeEditor.py:306
 msgid "Syntax Error: %s"
-msgstr ""
+msgstr "语法错误: %s"
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:395
+#: G:\work\Noval\noval\tool\CodeEditor.py:402
 msgid "Enter new indent width (2-10):"
-msgstr ""
+msgstr "输入新的缩进宽度(2-10)"
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:395
+#: G:\work\Noval\noval\tool\CodeEditor.py:402
 msgid "Set Indent Width"
-msgstr ""
+msgstr "设置缩进宽度"
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:494
-#: G:\work\Noval\noval\tool\CodeEditor.py:585
+#: G:\work\Noval\noval\tool\CodeEditor.py:501
+#: G:\work\Noval\noval\tool\CodeEditor.py:592
 #: G:\work\Noval\noval\tool\ExtensionService.py:123
 #: G:\work\Noval\noval\tool\OutlineService.py:403
 #: G:\work\Noval\noval\tool\ProjectEditor.py:3457
 #: G:\work\Noval\noval\tool\Service.py:272
-#: G:\work\Noval\noval\tool\TextService.py:143
-#: G:\work\Noval\noval\tool\TextService.py:202
+#: G:\work\Noval\noval\tool\TextService.py:148
+#: G:\work\Noval\noval\tool\TextService.py:213
 msgid "&View"
 msgstr "查看(&V)"
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:499
+#: G:\work\Noval\noval\tool\CodeEditor.py:506
 msgid "&Use Fold Style"
-msgstr ""
+msgstr "使用代码折叠"
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:499
+#: G:\work\Noval\noval\tool\CodeEditor.py:506
 msgid "Show or hide fold index"
-msgstr ""
+msgstr "显示或隐藏代码折叠"
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:503
+#: G:\work\Noval\noval\tool\CodeEditor.py:510
 msgid "&Expand\tNumpad-Plus"
-msgstr ""
+msgstr "展开\tNumpad-Plus"
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:503
-#: G:\work\Noval\noval\tool\CodeEditor.py:505
+#: G:\work\Noval\noval\tool\CodeEditor.py:510
+#: G:\work\Noval\noval\tool\CodeEditor.py:512
 msgid "Expands a collapsed block of text"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:505
+#: G:\work\Noval\noval\tool\CodeEditor.py:512
 msgid "&Expand"
-msgstr ""
+msgstr "展开"
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:511
+#: G:\work\Noval\noval\tool\CodeEditor.py:518
 msgid "&Collapse\tNumpad+Minus"
-msgstr ""
+msgstr "折叠\tNumpad+Minus"
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:511
-#: G:\work\Noval\noval\tool\CodeEditor.py:513
+#: G:\work\Noval\noval\tool\CodeEditor.py:518
+#: G:\work\Noval\noval\tool\CodeEditor.py:520
 msgid "Collapse a block of text"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:513
-msgid "&Collapse"
-msgstr ""
-
-#: G:\work\Noval\noval\tool\CodeEditor.py:518
-msgid "Expand &Top Level\tCtrl+Numpad+Plus"
-msgstr ""
-
-#: G:\work\Noval\noval\tool\CodeEditor.py:518
 #: G:\work\Noval\noval\tool\CodeEditor.py:520
+msgid "&Collapse"
+msgstr "折叠"
+
+#: G:\work\Noval\noval\tool\CodeEditor.py:525
+msgid "Expand &Top Level\tCtrl+Numpad+Plus"
+msgstr "展开顶层代码\tCtrl+Numpad+Plus"
+
+#: G:\work\Noval\noval\tool\CodeEditor.py:525
+#: G:\work\Noval\noval\tool\CodeEditor.py:527
 msgid "Expands the top fold levels in the document"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:520
-msgid "Expand &Top Level"
-msgstr ""
-
-#: G:\work\Noval\noval\tool\CodeEditor.py:525
-msgid "Collapse Top &Level\tCtrl+Numpad+Minus"
-msgstr ""
-
-#: G:\work\Noval\noval\tool\CodeEditor.py:525
 #: G:\work\Noval\noval\tool\CodeEditor.py:527
+msgid "Expand &Top Level"
+msgstr "展开顶层代码"
+
+#: G:\work\Noval\noval\tool\CodeEditor.py:532
+msgid "Collapse Top &Level\tCtrl+Numpad+Minus"
+msgstr "折叠顶层代码\tCtrl+Numpad+Minus"
+
+#: G:\work\Noval\noval\tool\CodeEditor.py:532
+#: G:\work\Noval\noval\tool\CodeEditor.py:534
 msgid "Collapses the top fold levels in the document"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:527
-msgid "Collapse Top &Level"
-msgstr ""
-
-#: G:\work\Noval\noval\tool\CodeEditor.py:532
-msgid "Expand &All\tShift+Numpad+Plus"
-msgstr ""
-
-#: G:\work\Noval\noval\tool\CodeEditor.py:532
 #: G:\work\Noval\noval\tool\CodeEditor.py:534
+msgid "Collapse Top &Level"
+msgstr "折叠顶层代码"
+
+#: G:\work\Noval\noval\tool\CodeEditor.py:539
+msgid "Expand &All\tShift+Numpad+Plus"
+msgstr "展开所有\tShift+Numpad+Plus"
+
+#: G:\work\Noval\noval\tool\CodeEditor.py:539
+#: G:\work\Noval\noval\tool\CodeEditor.py:541
 msgid "Expands all of the fold levels in the document"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:534
-msgid "Expand &All"
-msgstr ""
-
-#: G:\work\Noval\noval\tool\CodeEditor.py:539
-msgid "Colla&pse All\tShift+Numpad+Minus"
-msgstr ""
-
-#: G:\work\Noval\noval\tool\CodeEditor.py:539
 #: G:\work\Noval\noval\tool\CodeEditor.py:541
+msgid "Expand &All"
+msgstr "展开所有"
+
+#: G:\work\Noval\noval\tool\CodeEditor.py:546
+msgid "Colla&pse All\tShift+Numpad+Minus"
+msgstr "折叠所有\tShift+Numpad+Minus"
+
+#: G:\work\Noval\noval\tool\CodeEditor.py:546
+#: G:\work\Noval\noval\tool\CodeEditor.py:548
 msgid "Collapses all of the fold levels in the document"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:541
-msgid "Colla&pse All"
-msgstr ""
-
-#: G:\work\Noval\noval\tool\CodeEditor.py:545
-msgid "&Folding"
-msgstr ""
-
 #: G:\work\Noval\noval\tool\CodeEditor.py:548
-#: G:\work\Noval\noval\tool\CodeEditor.py:586
+msgid "Colla&pse All"
+msgstr "折叠所有"
+
+#: G:\work\Noval\noval\tool\CodeEditor.py:552
+msgid "&Folding"
+msgstr "代码折叠"
+
+#: G:\work\Noval\noval\tool\CodeEditor.py:555
+#: G:\work\Noval\noval\tool\CodeEditor.py:593
 #: G:\work\Noval\noval\tool\ExtensionService.py:121
 #: G:\work\Noval\noval\tool\ProjectEditor.py:3455
-#: G:\work\Noval\noval\tool\TextService.py:188
-#: G:\work\Noval\noval\tool\TextService.py:203
+#: G:\work\Noval\noval\tool\TextService.py:199
+#: G:\work\Noval\noval\tool\TextService.py:214
 msgid "&Format"
 msgstr "格式化(&F)"
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:555
+#: G:\work\Noval\noval\tool\CodeEditor.py:562
 msgid "&Check Code"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:555
+#: G:\work\Noval\noval\tool\CodeEditor.py:562
 msgid "Checks the document for syntax and indentation errors"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:558
+#: G:\work\Noval\noval\tool\CodeEditor.py:565
 msgid "&Auto Complete\tCtrl+Space"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:558
+#: G:\work\Noval\noval\tool\CodeEditor.py:565
 msgid "Provides suggestions on how to complete the current statement"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:561
+#: G:\work\Noval\noval\tool\CodeEditor.py:568
 msgid "Clean &Whitespace"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:561
+#: G:\work\Noval\noval\tool\CodeEditor.py:568
 msgid ""
 "Converts leading spaces to tabs or vice versa per 'use tabs' and clears "
 "trailing spaces"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:565
+#: G:\work\Noval\noval\tool\CodeEditor.py:572
 msgid "&Indent Lines\tTab"
-msgstr ""
+msgstr "增加行缩进\tTab"
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:565
+#: G:\work\Noval\noval\tool\CodeEditor.py:572
 msgid "Indents the selected lines one indent width"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:568
+#: G:\work\Noval\noval\tool\CodeEditor.py:575
 msgid "&Dedent Lines\tShift+Tab"
-msgstr ""
+msgstr "减少行缩进\tShift+Tab"
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:568
+#: G:\work\Noval\noval\tool\CodeEditor.py:575
 msgid "Dedents the selected lines one indent width"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:571
+#: G:\work\Noval\noval\tool\CodeEditor.py:578
 msgid "Comment &Lines\tCtrl+Q"
-msgstr ""
+msgstr "注释代码行\tCtrl+Q"
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:571
+#: G:\work\Noval\noval\tool\CodeEditor.py:578
 msgid ""
 "Comments out the selected lines be prefixing each one with a comment "
 "indicator"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:574
+#: G:\work\Noval\noval\tool\CodeEditor.py:581
 msgid "&Uncomment Lines\tCtrl+Shift+Q"
-msgstr ""
+msgstr "取消注释代码行\tCtrl+Shift+Q"
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:574
+#: G:\work\Noval\noval\tool\CodeEditor.py:581
 msgid "Removes comment prefixes from each of the selected lines"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:578
+#: G:\work\Noval\noval\tool\CodeEditor.py:585
 msgid "Toggles use of tabs or whitespaces for indents"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:578
+#: G:\work\Noval\noval\tool\CodeEditor.py:585
 msgid "Use &Tabs"
-msgstr ""
+msgstr "使用制表符"
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:581
+#: G:\work\Noval\noval\tool\CodeEditor.py:588
 msgid "&Set Indent Width..."
-msgstr ""
+msgstr "设置缩进宽度..."
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:581
+#: G:\work\Noval\noval\tool\CodeEditor.py:588
 msgid "Sets the indent width"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:694
+#: G:\work\Noval\noval\tool\CodeEditor.py:604
+#: G:\work\Noval\noval\tool\CodeEditor.py:606
+msgid "Old Macintosh (\\r)"
+msgstr ""
+
+#: G:\work\Noval\noval\tool\CodeEditor.py:605
+#: G:\work\Noval\noval\tool\CodeEditor.py:608
+#: G:\work\Noval\noval\tool\CodeEditor.py:611
+msgid "Format all EOL characters to %s Mode"
+msgstr ""
+
+#: G:\work\Noval\noval\tool\CodeEditor.py:607
+#: G:\work\Noval\noval\tool\CodeEditor.py:609
+msgid "Unix (\\n)"
+msgstr ""
+
+#: G:\work\Noval\noval\tool\CodeEditor.py:610
+#: G:\work\Noval\noval\tool\CodeEditor.py:612
+msgid "Windows (\\r\\n)"
+msgstr ""
+
+#: G:\work\Noval\noval\tool\CodeEditor.py:613
+msgid "EOL Mode"
+msgstr ""
+
+#: G:\work\Noval\noval\tool\CodeEditor.py:713
 msgid "Toggle Breakpoint"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\CodeEditor.py:697
+#: G:\work\Noval\noval\tool\CodeEditor.py:716
 msgid "Toggle Bookmark"
-msgstr ""
+msgstr "切换书签"
 
 #: G:\work\Noval\noval\tool\CompletionService.py:33
 #: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:34
 #: G:\work\Noval\noval\tool\UnitTestDialog.py:47
 msgid "&OK"
-msgstr ""
+msgstr "确定"
 
 #: G:\work\Noval\noval\tool\CompletionService.py:35
 #: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:36
-#: G:\work\Noval\noval\tool\TextService.py:66
+#: G:\work\Noval\noval\tool\TextService.py:71
 #: G:\work\Noval\noval\tool\UnitTestDialog.py:49
 msgid "&Cancel"
-msgstr ""
+msgstr "取消"
+
+#: G:\work\Noval\noval\tool\CompletionService.py:57
+msgid "Goto Definition\tF12"
+msgstr "转到定义\tF12"
 
 #: G:\work\Noval\noval\tool\CompletionService.py:68
 #: G:\work\Noval\noval\tool\FindInDirService.py:85
 #: G:\work\Noval\noval\tool\FindService.py:70
 #: G:\work\Noval\noval\tool\MarkerService.py:38
 #: G:\work\Noval\noval\tool\ProjectEditor.py:3459
-#: G:\work\Noval\noval\tool\TextService.py:205
+#: G:\work\Noval\noval\tool\TextService.py:216
 msgid "&Edit"
 msgstr ""
 
 #: G:\work\Noval\noval\tool\CompletionService.py:70
 msgid "Goto Definition of text"
-msgstr ""
+msgstr "转到文本定义"
 
 #: G:\work\Noval\noval\tool\CompletionService.py:73
 msgid "Completion Word List\tCtrl+Shit+K"
@@ -331,13 +360,13 @@ msgid "List Members In Current Scope"
 msgstr ""
 
 #: G:\work\Noval\noval\tool\DebugOutputCtrl.py:31
-#: G:\work\Noval\noval\tool\TextService.py:198
+#: G:\work\Noval\noval\tool\TextService.py:209
 msgid "Word Wrap"
-msgstr ""
+msgstr "自动换行"
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:157
 msgid "Python Executable Location Unknown"
-msgstr ""
+msgstr "Python解释器位置未知"
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:157
 msgid ""
@@ -350,19 +379,27 @@ msgstr ""
 #: G:\work\Noval\noval\tool\DebuggerService.py:276
 #: G:\work\Noval\noval\tool\DebuggerService.py:545
 msgid "Close Window"
-msgstr ""
+msgstr "关闭"
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:280
 msgid "Stop the Run."
-msgstr ""
+msgstr "停止运行."
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:284
 msgid "Stop All the Run."
-msgstr ""
+msgstr "停止所有."
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:324
 msgid "Run Error"
 msgstr ""
+
+#: G:\work\Noval\noval\tool\DebuggerService.py:350
+msgid "Finished"
+msgstr "完成运行"
+
+#: G:\work\Noval\noval\tool\DebuggerService.py:350
+msgid "Running"
+msgstr "正在运行"
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:390
 msgid "Process Running.."
@@ -379,7 +416,7 @@ msgstr ""
 #: G:\work\Noval\noval\tool\ProjectEditor.py:3024
 #: G:\work\Noval\noval\tool\STCTextEditor.py:70
 #: G:\work\Noval\noval\tool\STCTextEditor.py:159
-#: G:\work\Noval\noval\tool\TabbedFrame.py:110
+#: G:\work\Noval\noval\tool\TabbedFrame.py:116
 msgid "File Error"
 msgstr ""
 
@@ -454,37 +491,37 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:2329
 msgid "&Run...\tF5"
-msgstr ""
+msgstr "运行...\tF5"
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:2329
 #: G:\work\Noval\noval\tool\DebuggerService.py:2378
 msgid "Run a file"
-msgstr ""
+msgstr "运行脚本"
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:2333
 msgid "&Debug...\tCtrl+F5"
-msgstr ""
+msgstr "调试...\tCtrl+F5"
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:2333
 #: G:\work\Noval\noval\tool\DebuggerService.py:2379
 msgid "Debug a file"
-msgstr ""
+msgstr "调试脚本"
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:2337
 msgid "&Check Syntax...\tCtrl+F3"
-msgstr ""
+msgstr "检查语法...\tCtrl+F3"
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:2337
 msgid "Check syntax of file"
-msgstr ""
+msgstr "检查脚本语法"
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:2341
 msgid "&Set Parameter And Environment"
-msgstr ""
+msgstr "设置参数和环境变量"
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:2341
 msgid "Set Parameter and Environment of Python Script"
-msgstr ""
+msgstr "设置运行脚本的参数以及环境变量"
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:2345
 msgid "&Run Using Last Settings\tCtrl+R"
@@ -547,16 +584,25 @@ msgstr "运行(&R)"
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:2378
 msgid "Run a file in system teminator"
-msgstr ""
+msgstr "在系统终端中运行Python脚本"
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:2379
 msgid "Debug a file in Editor"
-msgstr ""
+msgstr "在编辑器中调试脚本"
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:2395
 #: G:\work\Noval\noval\tool\PythonEditor.py:978
 msgid "Configure Interpreter"
-msgstr ""
+msgstr "配置解释器"
+
+#: G:\work\Noval\noval\tool\DebuggerService.py:2498
+msgid "Check Syntax Ok!"
+msgstr "语法检查通过!"
+
+#: G:\work\Noval\noval\tool\DebuggerService.py:2533
+#: G:\work\Noval\noval\tool\DebuggerService.py:2839
+msgid "Running: "
+msgstr "正在运行: "
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:2596
 #: G:\work\Noval\noval\tool\DebuggerService.py:2715
@@ -606,7 +652,7 @@ msgstr ""
 #: G:\work\Noval\noval\tool\DebuggerService.py:2767
 #: G:\work\Noval\noval\tool\ProjectEditor.py:3771
 msgid "Run"
-msgstr ""
+msgstr "运行"
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:2772
 msgid ""
@@ -616,7 +662,11 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:2773
 msgid "Debug"
-msgstr ""
+msgstr "调试"
+
+#: G:\work\Noval\noval\tool\DebuggerService.py:2792
+msgid "Set Parameter And Environment"
+msgstr "参数和环境变量设置"
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:2800
 msgid ""
@@ -653,19 +703,19 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:3047
 msgid "Project:"
-msgstr ""
+msgstr "项目名称:"
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:3048
 msgid "File:"
-msgstr ""
+msgstr "文件:"
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:3049
 msgid "Arguments:"
-msgstr ""
+msgstr "参数:"
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:3050
 msgid "Start in:"
-msgstr ""
+msgstr "启动目录:"
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:3051
 msgid "PYTHONPATH:"
@@ -689,7 +739,7 @@ msgstr ""
 #: G:\work\Noval\noval\tool\UICommon.py:78
 #: G:\work\Noval\noval\tool\UICommon.py:239
 msgid "Browse..."
-msgstr ""
+msgstr "浏览..."
 
 #: G:\work\Noval\noval\tool\DebuggerService.py:3110
 msgid " button completes the dialog"
@@ -719,13 +769,29 @@ msgstr ""
 msgid "&Tools"
 msgstr "工具(&T)"
 
+#: G:\work\Noval\noval\tool\ExtensionService.py:126
+msgid "&Terminator"
+msgstr "命令行终端"
+
+#: G:\work\Noval\noval\tool\ExtensionService.py:130
+msgid "&UnitTest"
+msgstr "单元测试"
+
 #: G:\work\Noval\noval\tool\ExtensionService.py:133
 msgid "&Help"
 msgstr ""
 
+#: G:\work\Noval\noval\tool\ExtensionService.py:138
+msgid "&Python Help Document"
+msgstr "Python帮助文档"
+
+#: G:\work\Noval\noval\tool\ExtensionService.py:143
+msgid "&Tips of Day"
+msgstr "每日技巧"
+
 #: G:\work\Noval\noval\tool\ExtensionService.py:266
 msgid "External Tools:"
-msgstr ""
+msgstr "外部工具:"
 
 #: G:\work\Noval\noval\tool\ExtensionService.py:271
 msgid "Move Up"
@@ -790,9 +856,10 @@ msgid "External Tools"
 msgstr ""
 
 #: G:\work\Noval\noval\tool\ExtensionService.py:364
+#: G:\work\Noval\noval\tool\GeneralOption.py:145
 #: G:\work\Noval\noval\tool\ProjectEditor.py:3316
 msgid "Document Options"
-msgstr ""
+msgstr "文档选项"
 
 #: G:\work\Noval\noval\tool\ExtensionService.py:365
 msgid "Extension changes will not appear until the application is restarted."
@@ -804,11 +871,11 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\ExtensionService.py:451
 msgid "Untitled"
-msgstr ""
+msgstr "未命名"
 
 #: G:\work\Noval\noval\tool\ExtensionService.py:455
 msgid "Untitled%s"
-msgstr ""
+msgstr "未命名%s"
 
 #: G:\work\Noval\noval\tool\FindInDirService.py:33
 msgid "Found in file: "
@@ -822,9 +889,17 @@ msgstr ""
 msgid "Searching file: "
 msgstr ""
 
+#: G:\work\Noval\noval\tool\FindInDirService.py:59
+msgid "Please wait a minute for end find text"
+msgstr ""
+
+#: G:\work\Noval\noval\tool\FindInDirService.py:60
+msgid "Find Text In Directory"
+msgstr "在目录中查找文本"
+
 #: G:\work\Noval\noval\tool\FindInDirService.py:88
 msgid "Find in File...\tCtrl+Shift+F"
-msgstr ""
+msgstr "在文件中查找...\tCtrl+Shift+F"
 
 #: G:\work\Noval\noval\tool\FindInDirService.py:88
 msgid "Searches for the specified text in the current file"
@@ -840,11 +915,11 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\FindInDirService.py:94
 msgid "Find in Directory...\tCtrl+Shift+D"
-msgstr ""
+msgstr "在目录中查找...\tCtrl+Shift+D"
 
 #: G:\work\Noval\noval\tool\FindInDirService.py:94
 msgid "Searches for the specified text in all the files in the directory"
-msgstr ""
+msgstr "在目录下的所有文件中查找特定的文本"
 
 #: G:\work\Noval\noval\tool\FindInDirService.py:156
 #: G:\work\Noval\noval\tool\FindInDirService.py:413
@@ -852,22 +927,26 @@ msgstr ""
 msgid "Warning, unable to read file: '%s'.  %s"
 msgstr ""
 
+#: G:\work\Noval\noval\tool\FindInDirService.py:193
+msgid "search file:%s"
+msgstr "正在搜索文件:%s"
+
 #: G:\work\Noval\noval\tool\FindInDirService.py:240
 msgid "Search completed,Find total %d results."
-msgstr ""
+msgstr "完成搜索，总共查找到%d个结果."
 
 #: G:\work\Noval\noval\tool\FindInDirService.py:245
 #: G:\work\Noval\noval\tool\FindInDirService.py:336
 #: G:\work\Noval\noval\tool\FindInDirService.py:347
 #: G:\work\Noval\noval\tool\ProjectEditor.py:2455
 msgid "Find in Directory"
-msgstr ""
+msgstr "在目录中查找"
 
 #: G:\work\Noval\noval\tool\FindInDirService.py:250
 #: G:\work\Noval\noval\tool\ProjectEditor.py:2390
 #: G:\work\Noval\noval\tool\UICommon.py:26
 msgid "Directory:"
-msgstr ""
+msgstr "路径:"
 
 #: G:\work\Noval\noval\tool\FindInDirService.py:259
 #: G:\work\Noval\noval\tool\ProjectEditor.py:2400
@@ -880,11 +959,11 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\FindInDirService.py:272
 msgid "Search in subdirectories"
-msgstr ""
+msgstr "搜索子目录"
 
 #: G:\work\Noval\noval\tool\FindInDirService.py:275
 msgid "Search hidden files"
-msgstr ""
+msgstr "搜索隐藏文件"
 
 #: G:\work\Noval\noval\tool\FindInDirService.py:288
 #: G:\work\Noval\noval\tool\FindInDirService.py:570
@@ -892,15 +971,15 @@ msgstr ""
 #: G:\work\Noval\noval\tool\FindService.py:332
 #: G:\work\Noval\noval\tool\FindService.py:427
 msgid "Find what:"
-msgstr ""
+msgstr "查找内容:"
 
 #: G:\work\Noval\noval\tool\FindInDirService.py:296
 msgid "File types:"
-msgstr ""
+msgstr "文件扩展名:"
 
 #: G:\work\Noval\noval\tool\FindInDirService.py:298
 msgid "Multiple file types seperated by semicolon"
-msgstr ""
+msgstr "多个文件扩展名用分号分割"
 
 #: G:\work\Noval\noval\tool\FindInDirService.py:304
 #: G:\work\Noval\noval\tool\FindInDirService.py:576
@@ -908,7 +987,7 @@ msgstr ""
 #: G:\work\Noval\noval\tool\FindService.py:339
 #: G:\work\Noval\noval\tool\FindService.py:437
 msgid "Match whole word only"
-msgstr ""
+msgstr "匹配整个单词"
 
 #: G:\work\Noval\noval\tool\FindInDirService.py:306
 #: G:\work\Noval\noval\tool\FindInDirService.py:578
@@ -916,7 +995,7 @@ msgstr ""
 #: G:\work\Noval\noval\tool\FindService.py:341
 #: G:\work\Noval\noval\tool\FindService.py:439
 msgid "Match case"
-msgstr ""
+msgstr "大小写敏感"
 
 #: G:\work\Noval\noval\tool\FindInDirService.py:308
 #: G:\work\Noval\noval\tool\FindInDirService.py:580
@@ -924,7 +1003,7 @@ msgstr ""
 #: G:\work\Noval\noval\tool\FindService.py:343
 #: G:\work\Noval\noval\tool\FindService.py:441
 msgid "Regular expression"
-msgstr ""
+msgstr "匹配正则表达式"
 
 #: G:\work\Noval\noval\tool\FindInDirService.py:316
 #: G:\work\Noval\noval\tool\FindInDirService.py:588
@@ -932,26 +1011,28 @@ msgstr ""
 #: G:\work\Noval\noval\tool\FindService.py:89
 #: G:\work\Noval\noval\tool\FindService.py:133
 msgid "Find"
-msgstr ""
+msgstr "查找"
 
 #: G:\work\Noval\noval\tool\FindInDirService.py:335
 #: G:\work\Noval\noval\tool\ProjectEditor.py:2454
 msgid "'%s' does not exist."
-msgstr ""
+msgstr "文本'%s'不存在."
 
 #: G:\work\Noval\noval\tool\FindInDirService.py:346
 msgid "'Find what:' cannot be empty."
-msgstr ""
+msgstr "查找文本不能为空."
 
 #: G:\work\Noval\noval\tool\FindInDirService.py:391
 msgid ""
 "Searching for '%s' in '%s'\n"
 "\n"
 msgstr ""
+"搜索文本 '%s' 在 '%s' 中\n"
+"\n"
 
 #: G:\work\Noval\noval\tool\FindInDirService.py:550
 msgid "Search for '%s' completed, Find total %d results."
-msgstr ""
+msgstr "搜索文本 '%s' 结束, 总共查找到 %d 个结果."
 
 #: G:\work\Noval\noval\tool\FindInDirService.py:565
 msgid "Find in Project"
@@ -959,11 +1040,11 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\FindInDirService.py:622
 msgid "Find in File"
-msgstr ""
+msgstr "在文件中查找"
 
 #: G:\work\Noval\noval\tool\FindService.py:72
 msgid "&Find...\tCtrl+F"
-msgstr ""
+msgstr "查找...\tCtrl+F"
 
 #: G:\work\Noval\noval\tool\FindService.py:72
 #: G:\work\Noval\noval\tool\FindService.py:75
@@ -974,15 +1055,15 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\FindService.py:75
 msgid "Find &Previous\tShift+F3"
-msgstr ""
+msgstr "查找上一个\tShift+F3"
 
 #: G:\work\Noval\noval\tool\FindService.py:78
 msgid "Find &Next\tF3"
-msgstr ""
+msgstr "查找下一个\tF3"
 
 #: G:\work\Noval\noval\tool\FindService.py:81
 msgid "R&eplace...\tCtrl+H"
-msgstr ""
+msgstr "替换...\tCtrl+H"
 
 #: G:\work\Noval\noval\tool\FindService.py:81
 msgid "Replaces specific text with different text"
@@ -990,20 +1071,20 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\FindService.py:84
 msgid "&Go to Line...\tCtrl+G"
-msgstr ""
+msgstr "转到行...\tCtrl+G"
 
 #: G:\work\Noval\noval\tool\FindService.py:84
 msgid "Goes to a certain line in the file"
-msgstr ""
+msgstr "跳转到文件指定行"
 
 #: G:\work\Noval\noval\tool\FindService.py:124
 #: G:\work\Noval\noval\tool\FindService.py:461
 msgid "Replace"
-msgstr ""
+msgstr "替换"
 
 #: G:\work\Noval\noval\tool\FindService.py:157
 msgid "Go to Line"
-msgstr ""
+msgstr "跳转到行"
 
 #: G:\work\Noval\noval\tool\FindService.py:197
 msgid "Regular Expression Search"
@@ -1016,25 +1097,76 @@ msgstr ""
 #: G:\work\Noval\noval\tool\FindService.py:345
 #: G:\work\Noval\noval\tool\FindService.py:443
 msgid "Wrap"
-msgstr ""
+msgstr "循环查找"
+
+#: G:\work\Noval\noval\tool\FindService.py:353
+msgid "Down"
+msgstr "向下"
+
+#: G:\work\Noval\noval\tool\FindService.py:353
+msgid "Up"
+msgstr "向上"
 
 #: G:\work\Noval\noval\tool\FindService.py:353
 #: G:\work\Noval\noval\tool\FindService.py:451
 msgid "Direction"
-msgstr ""
+msgstr "方向"
 
 #: G:\work\Noval\noval\tool\FindService.py:358
 #: G:\work\Noval\noval\tool\FindService.py:456
 msgid "Find Next"
-msgstr ""
+msgstr "查找下一个"
 
 #: G:\work\Noval\noval\tool\FindService.py:432
 msgid "Replace with:"
-msgstr ""
+msgstr "替换为:"
 
 #: G:\work\Noval\noval\tool\FindService.py:463
 msgid "Replace All"
+msgstr "替换所有"
+
+#: G:\work\Noval\noval\tool\GeneralOption.py:118
+msgid "Show tips at start up"
+msgstr "启动时显示每日技巧"
+
+#: G:\work\Noval\noval\tool\GeneralOption.py:123
+msgid "Show each document in its own window"
 msgstr ""
+
+#: G:\work\Noval\noval\tool\GeneralOption.py:124
+msgid "Show all documents in a single window with tabs"
+msgstr ""
+
+#: G:\work\Noval\noval\tool\GeneralOption.py:125
+msgid "Show all documents in a single window with child windows"
+msgstr ""
+
+#: G:\work\Noval\noval\tool\GeneralOption.py:131
+msgid "Document Display Style"
+msgstr ""
+
+#: G:\work\Noval\noval\tool\GeneralOption.py:146
+msgid ""
+"Document interface changes will not appear until the application is "
+"restarted."
+msgstr ""
+
+#: G:\work\Noval\noval\tool\GeneralOption.py:160
+msgid "Language"
+msgstr "界面语言"
+
+#: G:\work\Noval\noval\tool\GeneralOption.py:171
+#: G:\work\Noval\noval\tool\ProjectEditor.py:3215
+msgid "General"
+msgstr ""
+
+#: G:\work\Noval\noval\tool\GeneralOption.py:186
+msgid "Language changes will not appear until the application is restarted."
+msgstr "程序重启时界面语言改变才能生效."
+
+#: G:\work\Noval\noval\tool\GeneralOption.py:187
+msgid "Language Options"
+msgstr "语言选项"
 
 #: G:\work\Noval\noval\tool\IDE.py:101
 msgid "NovalBuilderDev"
@@ -1052,215 +1184,246 @@ msgstr ""
 msgid "NovalBuilder"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:172 G:\work\Noval\noval\tool\IDE.py:174
+#: G:\work\Noval\noval\tool\IDE.py:178 G:\work\Noval\noval\tool\IDE.py:180
 msgid "Any"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:175 G:\work\Noval\noval\tool\IDE.py:262
+#: G:\work\Noval\noval\tool\IDE.py:181 G:\work\Noval\noval\tool\IDE.py:268
 msgid ".txt"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:176 G:\work\Noval\noval\tool\IDE.py:263
+#: G:\work\Noval\noval\tool\IDE.py:182 G:\work\Noval\noval\tool\IDE.py:269
 msgid "Text Document"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:177 G:\work\Noval\noval\tool\IDE.py:264
+#: G:\work\Noval\noval\tool\IDE.py:183 G:\work\Noval\noval\tool\IDE.py:270
 msgid "Text View"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:185 G:\work\Noval\noval\tool\IDE.py:187
+#: G:\work\Noval\noval\tool\IDE.py:191 G:\work\Noval\noval\tool\IDE.py:193
 msgid "HTML"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:188
+#: G:\work\Noval\noval\tool\IDE.py:194
 msgid ".html"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:189
+#: G:\work\Noval\noval\tool\IDE.py:195
 msgid "HTML Document"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:190
+#: G:\work\Noval\noval\tool\IDE.py:196
 msgid "HTML View"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:197 G:\work\Noval\noval\tool\IDE.py:199
+#: G:\work\Noval\noval\tool\IDE.py:203 G:\work\Noval\noval\tool\IDE.py:205
 msgid "Image"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:200
+#: G:\work\Noval\noval\tool\IDE.py:206
 msgid ".png"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:201
+#: G:\work\Noval\noval\tool\IDE.py:207
 msgid "Image Document"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:202
+#: G:\work\Noval\noval\tool\IDE.py:208
 msgid "Image View"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:210 G:\work\Noval\noval\tool\IDE.py:212
+#: G:\work\Noval\noval\tool\IDE.py:216 G:\work\Noval\noval\tool\IDE.py:218
 msgid "Perl"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:213
+#: G:\work\Noval\noval\tool\IDE.py:219
 msgid ".pl"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:214
+#: G:\work\Noval\noval\tool\IDE.py:220
 msgid "Perl Document"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:215
+#: G:\work\Noval\noval\tool\IDE.py:221
 msgid "Perl View"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:222 G:\work\Noval\noval\tool\IDE.py:224
+#: G:\work\Noval\noval\tool\IDE.py:228 G:\work\Noval\noval\tool\IDE.py:230
 #: G:\work\Noval\noval\tool\PHPEditor.py:305
 msgid "PHP"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:225
+#: G:\work\Noval\noval\tool\IDE.py:231
 msgid ".php"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:226
+#: G:\work\Noval\noval\tool\IDE.py:232
 msgid "PHP Document"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:227
+#: G:\work\Noval\noval\tool\IDE.py:233
 msgid "PHP View"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:234 G:\work\Noval\noval\tool\IDE.py:236
+#: G:\work\Noval\noval\tool\IDE.py:240 G:\work\Noval\noval\tool\IDE.py:242
 #: G:\work\Noval\noval\tool\ProjectEditor.py:3309
 #: G:\work\Noval\noval\tool\SVNService.py:283
 msgid "Project"
 msgstr "项目"
 
-#: G:\work\Noval\noval\tool\IDE.py:237
+#: G:\work\Noval\noval\tool\IDE.py:243
 msgid ".agp"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:238
+#: G:\work\Noval\noval\tool\IDE.py:244
 msgid "Project Document"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:239
+#: G:\work\Noval\noval\tool\IDE.py:245
 #: G:\work\Noval\noval\tool\ProjectEditor.py:1556
 msgid "Project View"
-msgstr ""
+msgstr "项目视图"
 
-#: G:\work\Noval\noval\tool\IDE.py:247 G:\work\Noval\noval\tool\IDE.py:249
+#: G:\work\Noval\noval\tool\IDE.py:253 G:\work\Noval\noval\tool\IDE.py:255
 #: G:\work\Noval\noval\tool\PythonEditor.py:975
 msgid "Python"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:250
+#: G:\work\Noval\noval\tool\IDE.py:256
 msgid ".py"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:251
+#: G:\work\Noval\noval\tool\IDE.py:257
 msgid "Python Document"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:252
+#: G:\work\Noval\noval\tool\IDE.py:258
 msgid "Python View"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:259 G:\work\Noval\noval\tool\IDE.py:261
+#: G:\work\Noval\noval\tool\IDE.py:265 G:\work\Noval\noval\tool\IDE.py:267
 msgid "Text"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:271 G:\work\Noval\noval\tool\IDE.py:273
+#: G:\work\Noval\noval\tool\IDE.py:277 G:\work\Noval\noval\tool\IDE.py:279
 msgid "XML"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:274
+#: G:\work\Noval\noval\tool\IDE.py:280
 msgid ".xml"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:275
+#: G:\work\Noval\noval\tool\IDE.py:281
 msgid "XML Document"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:276
+#: G:\work\Noval\noval\tool\IDE.py:282
 msgid "XML View"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:334
+#: G:\work\Noval\noval\tool\IDE.py:341
 #: G:\work\Noval\noval\tool\ProjectEditor.py:1536
 #: G:\work\Noval\noval\tool\ProjectEditor.py:1570
 msgid "Projects"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:335 G:\work\Noval\noval\tool\IDE.py:336
+#: G:\work\Noval\noval\tool\IDE.py:342 G:\work\Noval\noval\tool\IDE.py:343
 msgid "Services"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:337
+#: G:\work\Noval\noval\tool\IDE.py:344
 msgid "Data Models"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:338 G:\work\Noval\noval\tool\IDE.py:360
+#: G:\work\Noval\noval\tool\IDE.py:345 G:\work\Noval\noval\tool\IDE.py:367
 msgid "Page Flows"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:339 G:\work\Noval\noval\tool\IDE.py:361
+#: G:\work\Noval\noval\tool\IDE.py:346 G:\work\Noval\noval\tool\IDE.py:368
 msgid "Pages"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:340
+#: G:\work\Noval\noval\tool\IDE.py:347
 msgid "Security"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:341
+#: G:\work\Noval\noval\tool\IDE.py:348
 msgid "Presentation/Layouts"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:342
+#: G:\work\Noval\noval\tool\IDE.py:349
 msgid "Presentation/Skins"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:343
+#: G:\work\Noval\noval\tool\IDE.py:350
 msgid "Presentation/Stylesheets"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:344
+#: G:\work\Noval\noval\tool\IDE.py:351
 msgid "Presentation/Javascript"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:345 G:\work\Noval\noval\tool\IDE.py:346
+#: G:\work\Noval\noval\tool\IDE.py:352 G:\work\Noval\noval\tool\IDE.py:353
 msgid "Presentation/Static"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:347 G:\work\Noval\noval\tool\IDE.py:348
-#: G:\work\Noval\noval\tool\IDE.py:349 G:\work\Noval\noval\tool\IDE.py:350
-#: G:\work\Noval\noval\tool\IDE.py:351 G:\work\Noval\noval\tool\IDE.py:352
+#: G:\work\Noval\noval\tool\IDE.py:354 G:\work\Noval\noval\tool\IDE.py:355
+#: G:\work\Noval\noval\tool\IDE.py:356 G:\work\Noval\noval\tool\IDE.py:357
+#: G:\work\Noval\noval\tool\IDE.py:358 G:\work\Noval\noval\tool\IDE.py:359
 msgid "Presentation/Images"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:353 G:\work\Noval\noval\tool\IDE.py:354
-#: G:\work\Noval\noval\tool\IDE.py:355 G:\work\Noval\noval\tool\IDE.py:356
-#: G:\work\Noval\noval\tool\IDE.py:357 G:\work\Noval\noval\tool\IDE.py:358
+#: G:\work\Noval\noval\tool\IDE.py:360 G:\work\Noval\noval\tool\IDE.py:361
+#: G:\work\Noval\noval\tool\IDE.py:362 G:\work\Noval\noval\tool\IDE.py:363
+#: G:\work\Noval\noval\tool\IDE.py:364 G:\work\Noval\noval\tool\IDE.py:365
 msgid "Code"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:457
+#: G:\work\Noval\noval\tool\IDE.py:470
 msgid "Configuration"
-msgstr ""
+msgstr "配置"
 
-#: G:\work\Noval\noval\tool\IDE.py:478 G:\work\Noval\noval\tool\IDE.py:481
+#: G:\work\Noval\noval\tool\IDE.py:491 G:\work\Noval\noval\tool\IDE.py:494
 msgid "New Database Application"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:484
+#: G:\work\Noval\noval\tool\IDE.py:497
 msgid "New Service Application"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\IDE.py:487
+#: G:\work\Noval\noval\tool\IDE.py:500
 msgid "New Skeleton Application"
+msgstr ""
+
+#: G:\work\Noval\noval\tool\IDE.py:527
+#: G:\work\Noval\noval\tool\ProjectEditor.py:2358
+#: G:\work\Noval\noval\tool\ProjectEditor.py:2421
+msgid "|"
+msgstr ""
+
+#: G:\work\Noval\noval\tool\IDE.py:528
+#: G:\work\Noval\noval\tool\ProjectEditor.py:2359
+msgid ") |"
+msgstr ""
+
+#: G:\work\Noval\noval\tool\IDE.py:528
+#: G:\work\Noval\noval\tool\ProjectEditor.py:2359
+#: G:\work\Noval\noval\tool\ProjectEditor.py:2422
+msgid " ("
+msgstr ""
+
+#: G:\work\Noval\noval\tool\IDE.py:530
+msgid "All Files(*.*)|*.*|%s"
+msgstr ""
+
+#: G:\work\Noval\noval\tool\IDE.py:532
+msgid "All Files (*)|*|%s"
+msgstr ""
+
+#: G:\work\Noval\noval\tool\IDE.py:535
+#: G:\work\Noval\noval\tool\PHPEditor.py:317
+#: G:\work\Noval\noval\tool\PHPEditor.py:341
+msgid "Select a File"
 msgstr ""
 
 #: G:\work\Noval\noval\tool\ImageEditor.py:36
@@ -1283,19 +1446,47 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:18
 msgid "Interpreter Path:"
-msgstr ""
+msgstr "解释器路径:"
 
 #: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:28
 msgid "Interpreter Name:"
-msgstr ""
+msgstr "解释器名称:"
 
 #: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:43
 msgid "Executable (*.exe) |*.exe"
-msgstr ""
+msgstr "可执行文件 (*.exe) |*.exe"
 
 #: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:46
 msgid "Select Executable Path"
-msgstr ""
+msgstr "选择可执行文件路径"
+
+#: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:64
+msgid "Path List"
+msgstr "路径列表"
+
+#: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:87
+msgid "Key"
+msgstr "键"
+
+#: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:88
+msgid "Value"
+msgstr "值"
+
+#: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:105
+msgid "Name"
+msgstr "名称"
+
+#: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:106
+msgid "Version"
+msgstr "版本"
+
+#: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:107
+msgid "Path"
+msgstr "位置"
+
+#: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:108
+msgid "Default"
+msgstr "默认"
 
 #: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:116
 #: G:\work\Noval\noval\tool\ProjectEditor.py:2438
@@ -1308,44 +1499,82 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:124
 msgid "Smart Analyse"
-msgstr ""
+msgstr "智能分析"
 
 #: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:128
 msgid "Set Default"
-msgstr ""
+msgstr "设置为默认"
+
+#: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:137
+msgid "Sys Path"
+msgstr "搜索路径"
+
+#: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:139
+msgid "Builtin Modules"
+msgstr "内建模块"
+
+#: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:141
+msgid "Enviroment Variable"
+msgstr "环境变量"
 
 #: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:161
 msgid "Modify Interpreter Name"
-msgstr ""
+msgstr "修改解释器名称"
 
 #: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:171
 #: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:187
 #: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:190
 #: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:193
-#: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:201
+#: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:202
 msgid "Error"
-msgstr ""
+msgstr "错误"
 
 #: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:181
 msgid "Add Interpreter Path"
-msgstr ""
+msgstr "添加解释器路径"
 
-#: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:225
-#: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:227
+#: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:209
+msgid "Yes"
+msgstr "是"
+
+#: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:211
+msgid "No"
+msgstr "否"
+
+#: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:228
+msgid "Default Interpreter cannot be remove"
+msgstr "默认解释器不能移除"
+
+#: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:228
+#: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:230
 msgid "Warning"
-msgstr ""
+msgstr "警告"
+
+#: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:230
+msgid ""
+"Interpreter remove action cannot be recover,Do you want to continue remove "
+"this interpreter?"
+msgstr "解释器移除操作将不可恢复，确定要继续移除该解释器吗?"
+
+#: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:309
+msgid "Interpreter Smart Analyse"
+msgstr "解释器智能分析"
+
+#: G:\work\Noval\noval\tool\InterpreterConfigDialog.py:310
+msgid "Please wait a minute for end analysing"
+msgstr "请等待解释器数据分析完成"
 
 #: G:\work\Noval\noval\tool\MarkerService.py:41
 msgid "Toggle &Bookmark\tCtrl+M"
-msgstr ""
+msgstr "切换书签\tCtrl+M"
 
 #: G:\work\Noval\noval\tool\MarkerService.py:41
 msgid "Toggles a bookmark at text line"
-msgstr ""
+msgstr "在文本行切换书签"
 
 #: G:\work\Noval\noval\tool\MarkerService.py:44
 msgid "Clear Bookmarks"
-msgstr ""
+msgstr "移除所有书签"
 
 #: G:\work\Noval\noval\tool\MarkerService.py:44
 msgid "Removes all jump bookmarks from selected file"
@@ -1353,7 +1582,7 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\MarkerService.py:47
 msgid "Bookmark Next\tF4"
-msgstr ""
+msgstr "下一个书签\tF4"
 
 #: G:\work\Noval\noval\tool\MarkerService.py:47
 msgid "Moves to next bookmark in selected file"
@@ -1361,7 +1590,7 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\MarkerService.py:50
 msgid "Bookmark Previous\tShift+F4"
-msgstr ""
+msgstr "上一个书签\tShift+F4"
 
 #: G:\work\Noval\noval\tool\MarkerService.py:50
 msgid "Moves to previous bookmark in selected file"
@@ -1369,7 +1598,7 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\MarkerService.py:54
 msgid "&BookMark"
-msgstr ""
+msgstr "书签"
 
 #: G:\work\Noval\noval\tool\OutlineService.py:62
 #: G:\work\Noval\noval\tool\OutlineService.py:405
@@ -1379,7 +1608,7 @@ msgstr ""
 #: G:\work\Noval\noval\tool\OutlineService.py:62
 #: G:\work\Noval\noval\tool\OutlineService.py:405
 msgid "Unsorted"
-msgstr ""
+msgstr "自然顺序"
 
 #: G:\work\Noval\noval\tool\OutlineService.py:63
 #: G:\work\Noval\noval\tool\OutlineService.py:406
@@ -1389,7 +1618,7 @@ msgstr ""
 #: G:\work\Noval\noval\tool\OutlineService.py:63
 #: G:\work\Noval\noval\tool\OutlineService.py:406
 msgid "Sort By Line"
-msgstr ""
+msgstr "按行号排序"
 
 #: G:\work\Noval\noval\tool\OutlineService.py:64
 #: G:\work\Noval\noval\tool\OutlineService.py:407
@@ -1399,11 +1628,11 @@ msgstr ""
 #: G:\work\Noval\noval\tool\OutlineService.py:64
 #: G:\work\Noval\noval\tool\OutlineService.py:407
 msgid "Sort By Name(A-Z)"
-msgstr ""
+msgstr "按字母顺序(A-Z)排序"
 
 #: G:\work\Noval\noval\tool\OutlineService.py:408
 msgid "Outline Sort"
-msgstr ""
+msgstr "大纲排序"
 
 #: G:\work\Noval\noval\tool\PHPEditor.py:173
 msgid "Find 'function'"
@@ -1428,11 +1657,6 @@ msgstr ""
 #: G:\work\Noval\noval\tool\PHPEditor.py:315
 #: G:\work\Noval\noval\tool\PHPEditor.py:339
 msgid "*"
-msgstr ""
-
-#: G:\work\Noval\noval\tool\PHPEditor.py:317
-#: G:\work\Noval\noval\tool\PHPEditor.py:341
-msgid "Select a File"
 msgstr ""
 
 #: G:\work\Noval\noval\tool\PHPEditor.py:335
@@ -1476,7 +1700,7 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\ProjectEditor.py:1019
 msgid "Name:"
-msgstr ""
+msgstr "名称:"
 
 #: G:\work\Noval\noval\tool\ProjectEditor.py:1019
 #: G:\work\Noval\noval\tool\ProjectEditor.py:3188
@@ -1527,7 +1751,7 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\ProjectEditor.py:1560
 msgid "Resource View"
-msgstr ""
+msgstr "资源视图"
 
 #: G:\work\Noval\noval\tool\ProjectEditor.py:2296
 msgid "Home Dir '%s' does not exist.  Please specify a valid directory."
@@ -1550,20 +1774,6 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\ProjectEditor.py:2331
 msgid "%sUntitled%s"
-msgstr ""
-
-#: G:\work\Noval\noval\tool\ProjectEditor.py:2358
-#: G:\work\Noval\noval\tool\ProjectEditor.py:2421
-msgid "|"
-msgstr ""
-
-#: G:\work\Noval\noval\tool\ProjectEditor.py:2359
-msgid ") |"
-msgstr ""
-
-#: G:\work\Noval\noval\tool\ProjectEditor.py:2359
-#: G:\work\Noval\noval\tool\ProjectEditor.py:2422
-msgid " ("
 msgstr ""
 
 #: G:\work\Noval\noval\tool\ProjectEditor.py:2360
@@ -1600,7 +1810,7 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\ProjectEditor.py:2566
 msgid "&Open"
-msgstr ""
+msgstr "打开"
 
 #: G:\work\Noval\noval\tool\ProjectEditor.py:2566
 msgid "Opens the selection"
@@ -1739,10 +1949,6 @@ msgstr ""
 msgid "[new project]"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\ProjectEditor.py:3215
-msgid "General"
-msgstr ""
-
 #: G:\work\Noval\noval\tool\ProjectEditor.py:3219
 msgid "Home Dir:"
 msgstr ""
@@ -1878,23 +2084,36 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\PythonEditor.py:553
 msgid "Find in Outline View"
-msgstr ""
+msgstr "在大纲视图中查找"
 
 #: G:\work\Noval\noval\tool\PythonEditor.py:562
 msgid "&Run\tF5"
-msgstr ""
+msgstr "运行\tF5"
 
 #: G:\work\Noval\noval\tool\PythonEditor.py:565
 msgid "&Debug\tCtrl+F5"
-msgstr ""
+msgstr "调试\tCtrl+F5"
+
+#: G:\work\Noval\noval\tool\PythonEditor.py:934
+msgid "Cannot find definition"
+msgstr "未能找到定义文本"
+
+#: G:\work\Noval\noval\tool\PythonEditor.py:934
+#: G:\work\Noval\noval\tool\PythonEditor.py:944
+msgid "Goto Definition"
+msgstr "转到定义"
+
+#: G:\work\Noval\noval\tool\PythonEditor.py:944
+msgid "Cannot go to definition"
+msgstr "不能转到定义文本"
 
 #: G:\work\Noval\noval\tool\PythonEditor.py:952
 msgid "Interpreters:"
-msgstr ""
+msgstr "解释器列表:"
 
 #: G:\work\Noval\noval\tool\PythonEditor.py:961
 msgid "Configure..."
-msgstr ""
+msgstr "配置..."
 
 #: G:\work\Noval\noval\tool\ResourceView.py:102
 msgid "Open Directory Error"
@@ -1902,11 +2121,11 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\STCTextEditor.py:455
 msgid "&Undo\tCtrl+Z"
-msgstr ""
+msgstr "撤销\tCtrl+Z"
 
 #: G:\work\Noval\noval\tool\STCTextEditor.py:459
 msgid "&Redo\tCtrl+Y"
-msgstr ""
+msgstr "重做\tCtrl+Y"
 
 #: G:\work\Noval\noval\tool\STCTextEditor.py:673
 msgid "Have been reached the end of document,Can't find \"%s\"."
@@ -1921,11 +2140,19 @@ msgstr ""
 msgid "No markers"
 msgstr ""
 
+#: G:\work\Noval\noval\tool\STCTextEditor.py:948
+msgid "File \"%s\" has already been modified outside,Do You Want to reload it?"
+msgstr "文件 \"%s\" 已经在外部被改变，要重载文档内容吗？"
+
+#: G:\work\Noval\noval\tool\STCTextEditor.py:948
+msgid "Reload.."
+msgstr "重载文档..."
+
 #: G:\work\Noval\noval\tool\STCTextEditor.py:956
 msgid ""
 "File \"%s\" has already been moved or deleted outside,Do You Want to keep it "
 "in Editor?"
-msgstr ""
+msgstr "文件 \"%s\" 已经在外部被移动或删除，要继续保持文档标签页吗？"
 
 #: G:\work\Noval\noval\tool\STCTextEditor.py:956
 msgid "Keep Document.."
@@ -1937,7 +2164,7 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\STCTextEditor.py:997
 msgid "Choose Font..."
-msgstr ""
+msgstr "选择字体..."
 
 #: G:\work\Noval\noval\tool\STCTextEditor.py:1000
 msgid "Wrap words inside text area"
@@ -1945,27 +2172,27 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\STCTextEditor.py:1002
 msgid "Show whitespace"
-msgstr ""
+msgstr "显示空白字符"
 
 #: G:\work\Noval\noval\tool\STCTextEditor.py:1004
 msgid "Show end of line markers"
-msgstr ""
+msgstr "显示行尾符"
 
 #: G:\work\Noval\noval\tool\STCTextEditor.py:1006
 msgid "Show indentation guides"
-msgstr ""
+msgstr "显示缩进标识线"
 
 #: G:\work\Noval\noval\tool\STCTextEditor.py:1008
 msgid "Show right edge"
-msgstr ""
+msgstr "显示边界线"
 
 #: G:\work\Noval\noval\tool\STCTextEditor.py:1010
 msgid "Show line numbers"
-msgstr ""
+msgstr "显示行号"
 
 #: G:\work\Noval\noval\tool\STCTextEditor.py:1013
 msgid "Show folding"
-msgstr ""
+msgstr "使用代码折叠"
 
 #: G:\work\Noval\noval\tool\STCTextEditor.py:1016
 msgid "Use spaces instead of tabs"
@@ -1973,7 +2200,7 @@ msgstr ""
 
 #: G:\work\Noval\noval\tool\STCTextEditor.py:1018
 msgid "Indent Width:"
-msgstr ""
+msgstr "缩进宽度:"
 
 #: G:\work\Noval\noval\tool\STCTextEditor.py:1060
 msgid " pt. "
@@ -2326,7 +2553,7 @@ msgid "SVN"
 msgstr ""
 
 #: G:\work\Noval\noval\tool\Service.py:152
-#: G:\work\Noval\noval\tool\TabbedFrame.py:60
+#: G:\work\Noval\noval\tool\TabbedFrame.py:64
 msgid "Close"
 msgstr ""
 
@@ -2342,225 +2569,269 @@ msgstr ""
 msgid "Show or hides the %s window"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\TabbedFrame.py:58
+#: G:\work\Noval\noval\tool\TabbedFrame.py:62
 msgid "Save"
-msgstr ""
+msgstr "保存"
 
-#: G:\work\Noval\noval\tool\TabbedFrame.py:59
+#: G:\work\Noval\noval\tool\TabbedFrame.py:63
 msgid "SaveAs"
-msgstr ""
+msgstr "另存为"
 
-#: G:\work\Noval\noval\tool\TabbedFrame.py:61
+#: G:\work\Noval\noval\tool\TabbedFrame.py:65
 msgid "CloseAll"
-msgstr ""
-
-#: G:\work\Noval\noval\tool\TabbedFrame.py:66
-msgid "Select Tab"
-msgstr ""
+msgstr "关闭所有"
 
 #: G:\work\Noval\noval\tool\TabbedFrame.py:67
-msgid "Open File Path In FileManager"
-msgstr ""
-
-#: G:\work\Noval\noval\tool\TabbedFrame.py:68
-msgid "Open File Path In Terminator"
-msgstr ""
-
-#: G:\work\Noval\noval\tool\TabbedFrame.py:69
-msgid "Copy File Path"
-msgstr ""
+msgid "Close All but \"%s\""
+msgstr "关闭所有除了 \"%s\""
 
 #: G:\work\Noval\noval\tool\TabbedFrame.py:70
-msgid "Copy File Name"
-msgstr ""
+msgid "Select Tab"
+msgstr "切换文档标签页"
 
-#: G:\work\Noval\noval\tool\TextService.py:59
+#: G:\work\Noval\noval\tool\TabbedFrame.py:71
+msgid "Open File Path In FileManager"
+msgstr "在资源管理器中打开文件"
+
+#: G:\work\Noval\noval\tool\TabbedFrame.py:72
+msgid "Open File Path In Terminator"
+msgstr "在终端中打开文件路径"
+
+#: G:\work\Noval\noval\tool\TabbedFrame.py:73
+msgid "Copy File Path"
+msgstr "复制完整路径"
+
+#: G:\work\Noval\noval\tool\TabbedFrame.py:74
+msgid "Copy File Name"
+msgstr "复制文件名"
+
+#: G:\work\Noval\noval\tool\TabbedFrame.py:76
+msgid "Copy Module Name"
+msgstr "复制模块名"
+
+#: G:\work\Noval\noval\tool\TextService.py:64
 msgid "Edit"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\TextService.py:64
-#: G:\work\Noval\noval\tool\TextService.py:222
+#: G:\work\Noval\noval\tool\TextService.py:69
+#: G:\work\Noval\noval\tool\TextService.py:233
 msgid "&Insert"
-msgstr ""
+msgstr "插入"
 
-#: G:\work\Noval\noval\tool\TextService.py:89
+#: G:\work\Noval\noval\tool\TextService.py:94
 msgid "Ins"
-msgstr ""
-
-#: G:\work\Noval\noval\tool\TextService.py:91
-msgid "Over"
-msgstr ""
+msgstr "插入"
 
 #: G:\work\Noval\noval\tool\TextService.py:96
-msgid "Ln %i"
-msgstr ""
+msgid "Over"
+msgstr "覆写"
 
 #: G:\work\Noval\noval\tool\TextService.py:101
+msgid "Ln %i"
+msgstr "行 %i"
+
+#: G:\work\Noval\noval\tool\TextService.py:106
 msgid "Col %i"
+msgstr "列 %i"
+
+#: G:\work\Noval\noval\tool\TextService.py:151
+#: G:\work\Noval\noval\tool\TextService.py:260
+msgid "Goto next position in history."
 msgstr ""
 
-#: G:\work\Noval\noval\tool\TextService.py:147
+#: G:\work\Noval\noval\tool\TextService.py:151
+#: G:\work\Noval\noval\tool\TextService.py:260
+msgid "Next Position"
+msgstr ""
+
+#: G:\work\Noval\noval\tool\TextService.py:152
+#: G:\work\Noval\noval\tool\TextService.py:261
+msgid "Goto previous position in history."
+msgstr ""
+
+#: G:\work\Noval\noval\tool\TextService.py:152
+#: G:\work\Noval\noval\tool\TextService.py:261
+msgid "Previous Position"
+msgstr ""
+
+#: G:\work\Noval\noval\tool\TextService.py:158
 msgid "&View Whitespace"
-msgstr ""
+msgstr "查看空白字符"
 
-#: G:\work\Noval\noval\tool\TextService.py:147
+#: G:\work\Noval\noval\tool\TextService.py:158
 msgid "Shows or hides whitespace"
-msgstr ""
+msgstr "显示或隐藏空白字符"
 
-#: G:\work\Noval\noval\tool\TextService.py:150
+#: G:\work\Noval\noval\tool\TextService.py:161
 msgid "&View End of Line Markers"
-msgstr ""
+msgstr "查看行尾符"
 
-#: G:\work\Noval\noval\tool\TextService.py:150
+#: G:\work\Noval\noval\tool\TextService.py:161
 msgid "Shows or hides indicators at the end of each line"
-msgstr ""
+msgstr "显示或隐藏每行行尾结束符"
 
-#: G:\work\Noval\noval\tool\TextService.py:153
+#: G:\work\Noval\noval\tool\TextService.py:164
 msgid "&View Indentation Guides"
-msgstr ""
+msgstr "显示缩进参考线"
 
-#: G:\work\Noval\noval\tool\TextService.py:153
+#: G:\work\Noval\noval\tool\TextService.py:164
 msgid "Shows or hides indentations"
-msgstr ""
+msgstr "显示或隐藏缩进标识线"
 
-#: G:\work\Noval\noval\tool\TextService.py:156
+#: G:\work\Noval\noval\tool\TextService.py:167
 msgid "&View Right Edge"
-msgstr ""
+msgstr "显示边界线"
 
-#: G:\work\Noval\noval\tool\TextService.py:156
+#: G:\work\Noval\noval\tool\TextService.py:167
 msgid "Shows or hides the right edge marker"
-msgstr ""
+msgstr "显示或隐藏右边边界线"
 
-#: G:\work\Noval\noval\tool\TextService.py:159
+#: G:\work\Noval\noval\tool\TextService.py:170
 msgid "&View Line Numbers"
-msgstr ""
+msgstr "显示行号"
 
-#: G:\work\Noval\noval\tool\TextService.py:159
+#: G:\work\Noval\noval\tool\TextService.py:170
 msgid "Shows or hides the line numbers"
-msgstr ""
+msgstr "显示或隐藏行号"
 
-#: G:\work\Noval\noval\tool\TextService.py:163
+#: G:\work\Noval\noval\tool\TextService.py:174
 msgid "&Text"
-msgstr ""
+msgstr "文本"
 
-#: G:\work\Noval\noval\tool\TextService.py:169
+#: G:\work\Noval\noval\tool\TextService.py:180
 msgid "Normal Size"
-msgstr ""
+msgstr "正常大小"
 
-#: G:\work\Noval\noval\tool\TextService.py:169
+#: G:\work\Noval\noval\tool\TextService.py:180
 msgid "Sets the document to its normal size"
-msgstr ""
+msgstr "设置文档字体正常大小"
 
-#: G:\work\Noval\noval\tool\TextService.py:173
+#: G:\work\Noval\noval\tool\TextService.py:184
 msgid "Zoom In\tCtrl+Page Up"
-msgstr ""
+msgstr "放大\tCtrl+Page Up"
 
-#: G:\work\Noval\noval\tool\TextService.py:173
-#: G:\work\Noval\noval\tool\TextService.py:175
-#: G:\work\Noval\noval\tool\TextService.py:237
+#: G:\work\Noval\noval\tool\TextService.py:184
+#: G:\work\Noval\noval\tool\TextService.py:186
+#: G:\work\Noval\noval\tool\TextService.py:262
 msgid "Zooms the document to a larger size"
-msgstr ""
+msgstr "放大文档字体大小"
 
-#: G:\work\Noval\noval\tool\TextService.py:175
-#: G:\work\Noval\noval\tool\TextService.py:237
+#: G:\work\Noval\noval\tool\TextService.py:186
+#: G:\work\Noval\noval\tool\TextService.py:262
 msgid "Zoom In"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\TextService.py:179
+#: G:\work\Noval\noval\tool\TextService.py:190
 msgid "Zoom Out\tCtrl+Page Down"
-msgstr ""
+msgstr "缩小\tCtrl+Page Down"
 
-#: G:\work\Noval\noval\tool\TextService.py:179
-#: G:\work\Noval\noval\tool\TextService.py:181
-#: G:\work\Noval\noval\tool\TextService.py:238
+#: G:\work\Noval\noval\tool\TextService.py:190
+#: G:\work\Noval\noval\tool\TextService.py:192
+#: G:\work\Noval\noval\tool\TextService.py:263
 msgid "Zooms the document to a smaller size"
-msgstr ""
+msgstr "缩小文档字体大小"
 
-#: G:\work\Noval\noval\tool\TextService.py:181
-#: G:\work\Noval\noval\tool\TextService.py:238
+#: G:\work\Noval\noval\tool\TextService.py:192
+#: G:\work\Noval\noval\tool\TextService.py:263
 msgid "Zoom Out"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\TextService.py:185
+#: G:\work\Noval\noval\tool\TextService.py:196
 msgid "&Zoom"
-msgstr ""
+msgstr "缩放"
 
-#: G:\work\Noval\noval\tool\TextService.py:194
+#: G:\work\Noval\noval\tool\TextService.py:205
 msgid "&Font..."
-msgstr ""
+msgstr "字体..."
 
-#: G:\work\Noval\noval\tool\TextService.py:194
+#: G:\work\Noval\noval\tool\TextService.py:205
 msgid "Sets the font to use"
-msgstr ""
+msgstr "设置字体"
 
-#: G:\work\Noval\noval\tool\TextService.py:198
+#: G:\work\Noval\noval\tool\TextService.py:209
 msgid "Wraps text horizontally when checked"
-msgstr ""
+msgstr "选择时文本水平自动换行"
 
-#: G:\work\Noval\noval\tool\TextService.py:208
+#: G:\work\Noval\noval\tool\TextService.py:219
 msgid "Insert Datetime"
-msgstr ""
+msgstr "插入日期"
 
-#: G:\work\Noval\noval\tool\TextService.py:208
+#: G:\work\Noval\noval\tool\TextService.py:219
 msgid "Insert Datetime to Current Document"
-msgstr ""
+msgstr "在当前文档中插入日期"
 
-#: G:\work\Noval\noval\tool\TextService.py:211
+#: G:\work\Noval\noval\tool\TextService.py:222
 msgid "Insert Comment Template"
-msgstr ""
+msgstr "插入注释模板"
 
-#: G:\work\Noval\noval\tool\TextService.py:211
+#: G:\work\Noval\noval\tool\TextService.py:222
 msgid "Insert Comment Template to Current Document"
-msgstr ""
+msgstr "在当前文档中插入注释模板"
 
-#: G:\work\Noval\noval\tool\TextService.py:215
+#: G:\work\Noval\noval\tool\TextService.py:226
 msgid "Insert File Content"
-msgstr ""
+msgstr "插入文件内容"
 
-#: G:\work\Noval\noval\tool\TextService.py:215
+#: G:\work\Noval\noval\tool\TextService.py:226
 msgid "Insert File Content to Current Document"
-msgstr ""
+msgstr "在当前文档中插入其它文件内容"
 
-#: G:\work\Noval\noval\tool\TextService.py:219
+#: G:\work\Noval\noval\tool\TextService.py:230
 msgid "Insert Encoding Declare"
-msgstr ""
+msgstr "插入编码声明"
 
-#: G:\work\Noval\noval\tool\TextService.py:219
+#: G:\work\Noval\noval\tool\TextService.py:230
 msgid "Insert Encoding Declare to Current Document"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\TextService.py:226
+#: G:\work\Noval\noval\tool\TextService.py:237
 msgid "Conert To UPPERCASE\tCtrl+Shift+U"
-msgstr ""
+msgstr "转成大写\tCtrl+Shift+U"
 
-#: G:\work\Noval\noval\tool\TextService.py:226
+#: G:\work\Noval\noval\tool\TextService.py:237
 msgid "Convert Upper Word to Lower Word"
-msgstr ""
+msgstr "将文本转化成大写"
 
-#: G:\work\Noval\noval\tool\TextService.py:229
+#: G:\work\Noval\noval\tool\TextService.py:240
 msgid "Conert To lowercase\tCtrl+U"
-msgstr ""
+msgstr "转成小写\tCtrl+U"
 
-#: G:\work\Noval\noval\tool\TextService.py:229
+#: G:\work\Noval\noval\tool\TextService.py:240
 msgid "Convert Lower Word to Upper Word"
+msgstr "将文本转化成小写"
+
+#: G:\work\Noval\noval\tool\TextService.py:244
+msgid "Convert tabs to spaces in selected/all text"
 msgstr ""
 
-#: G:\work\Noval\noval\tool\TextService.py:232
+#: G:\work\Noval\noval\tool\TextService.py:244
+msgid "Tabs To Spaces"
+msgstr "制表符转换空格"
+
+#: G:\work\Noval\noval\tool\TextService.py:247
+msgid "Convert spaces to tabs in selected/all text"
+msgstr ""
+
+#: G:\work\Noval\noval\tool\TextService.py:247
+msgid "Spaces To Tabs"
+msgstr "空格转换制表符"
+
+#: G:\work\Noval\noval\tool\TextService.py:251
 msgid "&Advance"
-msgstr ""
+msgstr "高级"
 
-#: G:\work\Noval\noval\tool\TextService.py:261
+#: G:\work\Noval\noval\tool\TextService.py:286
 msgid "Select File Path"
-msgstr ""
+msgstr "选择文件路径"
 
-#: G:\work\Noval\noval\tool\TextService.py:272
+#: G:\work\Noval\noval\tool\TextService.py:297
 msgid "Declare Encoding"
-msgstr ""
+msgstr "编码声明"
 
-#: G:\work\Noval\noval\tool\TextService.py:272
+#: G:\work\Noval\noval\tool\TextService.py:297
 msgid ""
 "The Python Document have already declare coding,Do you want to overwrite it?"
-msgstr ""
+msgstr "Python脚本文件已经声明了编码，你想要覆盖吗？"
 
 #: G:\work\Noval\noval\tool\UICommon.py:26
 msgid "File Name:"

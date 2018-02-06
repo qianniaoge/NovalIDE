@@ -378,7 +378,7 @@ if __name__ == "__main__":
     ##print module
     dump(r"C:\Python27\lib\subprocess.py","subprocess","./",False)
     import pickle
-    with open(r"D:\env\Noval\noval\parser\subprocess.$members",'rb') as f:
+    with open(r"C:\Users\Administrator\AppData\Roaming\NovalIDE\intellisence\283\2.7.11\libaws.base.callback.$members",'rb') as f:
         datas = pickle.load(f)
    ### print datas['name'],datas['path'],datas['is_builtin']
     import json

@@ -8,7 +8,9 @@ if sys.platform == "win32":
           options = { "py2exe":{"dll_excludes":["MSVCP90.dll"]}},
             data_files=[("noval/tool/bmp_source", glob.glob("noval/tool/bmp_source/*.ico") + glob.glob("noval/tool/bmp_source/*.jpg") + glob.glob("noval/tool/bmp_source/*.png")),
                 ("noval/tool/data",["noval/tool/data/tips.txt"]),
-                 ("noval/parser",glob.glob("noval/parser/*.py"))],)
+                 ("noval/parser",glob.glob("noval/parser/*.py")),
+                  ("noval/locale/en_US/LC_MESSAGES",['noval/locale/en_US/LC_MESSAGES/novalide.mo']),
+                   ("noval/locale/zh_CN/LC_MESSAGES",['noval/locale/zh_CN/LC_MESSAGES/novalide.mo']),],)
 
 elif sys.platform.find('linux') != -1:
     from distutils.core import setup
@@ -34,6 +36,8 @@ elif sys.platform.find('linux') != -1:
                         'tool/bmp_source/*',
                         'tool/data/*',
                         'tool/data/intellisence/builtins/*',
+                        'locale/en_US/LC_MESSAGES/*.mo',
+                        'locale/zh_CN/LC_MESSAGES/*.mo'
                         ],
             },
             data_files = [('',['version.txt']),],

@@ -54,7 +54,7 @@ class CompletionService(Service.BaseService):
     COMPLETE_WORD_LIST = wx.NewId()
     AUTO_COMPLETE_WORD = wx.NewId()
     LIST_CURRENT_MEMBERS = wx.NewId()
-    GOTODEF_MENU_ITEM_TEXT = "Goto Definition\tF12"
+    GOTODEF_MENU_ITEM_TEXT = _("Goto Definition\tF12")
 
     def __init__(self):
         pass

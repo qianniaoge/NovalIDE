@@ -347,7 +347,7 @@ class RunCommandUI(wx.Panel):
         for i in range(0,nb.GetPageCount()):
             if self == nb.GetPage(i):
                 text = nb.GetPageText(i)
-                newText = text.replace("Running", "Finished")
+                newText = text.replace(_("Running"), _("Finished"))
                 nb.SetPageText(i, newText)
                 break
         self._stopped = True
@@ -2495,7 +2495,7 @@ class DebuggerService(Service.Service):
             return
         ok,line,msg = interpreter.CheckSyntax(document.GetFilename())
         if ok:
-            wx.MessageBox("Check Syntax Ok!",wx.GetApp().GetAppName(),wx.OK | wx.ICON_INFORMATION,doc_view.GetFrame())
+            wx.MessageBox(_("Check Syntax Ok!"),wx.GetApp().GetAppName(),wx.OK | wx.ICON_INFORMATION,doc_view.GetFrame())
             return
         wx.MessageBox(msg,wx.GetApp().GetAppName(),wx.OK | wx.ICON_ERROR,doc_view.GetFrame())
         if line > 0:
@@ -2530,7 +2530,7 @@ class DebuggerService(Service.Service):
         shortFile = os.path.basename(fileToRun)
         page = RunCommandUI(Service.ServiceView.bottomTab, -1, fileToRun)
         count = Service.ServiceView.bottomTab.GetPageCount()
-        Service.ServiceView.bottomTab.AddPage(page, "Running: " + shortFile)
+        Service.ServiceView.bottomTab.AddPage(page, _("Running: ") + shortFile)
         Service.ServiceView.bottomTab.SetSelection(count)
         startIn = os.path.dirname(fileToRun)
         initialArgs = None
@@ -2789,7 +2789,7 @@ class DebuggerService(Service.Service):
         doc_view = self.GetActiveView()
         if not doc_view:
             return
-        dlg = CommandPropertiesDialog(doc_view.GetFrame(), 'Set Parameter And Environment of Script', projectService, None)
+        dlg = CommandPropertiesDialog(doc_view.GetFrame(), _('Set Parameter And Environment'), projectService, None)
         dlg.CenterOnParent()
         if dlg.ShowModal() == wx.ID_OK:
             projectPath, fileToRun, initialArgs, startIn, isPython, environment = dlg.GetSettings()
@@ -2836,7 +2836,7 @@ class DebuggerService(Service.Service):
         shortFile = os.path.basename(fileToRun)
         page = RunCommandUI(Service.ServiceView.bottomTab, -1, str(fileToRun))
         count = Service.ServiceView.bottomTab.GetPageCount()
-        Service.ServiceView.bottomTab.AddPage(page, "Running: " + shortFile)
+        Service.ServiceView.bottomTab.AddPage(page, _("Running: ") + shortFile)
         Service.ServiceView.bottomTab.SetSelection(count)
         page.Execute(initialArgs, startIn, environment, onWebServer = True)
 

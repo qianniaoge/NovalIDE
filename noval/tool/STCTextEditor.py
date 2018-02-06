@@ -945,7 +945,7 @@ class TextView(wx.lib.docview.View):
     @WxThreadSafe.call_after
     def Alarm(self,alarm_type):
         if alarm_type == FileObserver.FileEventHandler.FILE_MODIFY_EVENT:
-            ret = wx.MessageBox("File \"%s\" has already been modified outside,Do You Want to reload it?" % self.GetDocument().GetFilename(), "Reload..",
+            ret = wx.MessageBox(_("File \"%s\" has already been modified outside,Do You Want to reload it?") % self.GetDocument().GetFilename(), _("Reload.."),
                            wx.YES_NO  | wx.ICON_QUESTION,self.GetFrame())
             if ret == wx.YES:
                 document = self.GetDocument()

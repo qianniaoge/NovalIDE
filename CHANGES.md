@@ -88,3 +88,6 @@ Version 1.0.4 -------------2018-02-04
 1.repair show tip bug
 2.repair open all files bug in linux system
 3.auto analyse sys moudles intellisense data
+4.improve and supplement chinese translation
+5.smart anlalyse class base inherited classes members
+6.analyse from import members

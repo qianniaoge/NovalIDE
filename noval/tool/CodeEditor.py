@@ -47,6 +47,10 @@ DEDENT_LINES_ID = wx.NewId()
 USE_TABS_ID = wx.NewId()
 SET_INDENT_WIDTH_ID = wx.NewId()
 FOLDING_ID = wx.NewId()
+ID_EOL_MODE      = wx.NewId()
+ID_EOL_MAC       = wx.NewId()
+ID_EOL_UNIX      = wx.NewId()
+ID_EOL_WIN       = wx.NewId()
 
 
 class CodeDocument(STCTextEditor.TextDocument):
@@ -220,6 +224,7 @@ class CodeView(STCTextEditor.TextView):
 
     def DoSelectCallback(self, node):
         if node and not isinstance(node,nodeast.Module):
+            #must enable node line to see
             self.EnsureVisibleEnforcePolicy(node.Line)
             # wxBug: need to select in reverse order (end, start) to place cursor at begining of line,
             #        otherwise, display is scrolled over to the right hard and is hard to view
@@ -256,6 +261,8 @@ class CodeView(STCTextEditor.TextView):
                 start,end = self.FindTextInLine(node.AsName,node.Line,col)
             else:
                 start,end = self.FindTextInLine(node.Name,node.Line)
+            if start == -1 or end == -1:
+                return
             self.SetSelection(start, end)
 
 ##    def checksum(self, bytes):        
@@ -592,6 +599,18 @@ class CodeService(TextService.TextService):
 ##            eval(_("wx.ACCEL_CTRL | wx.ACCEL_SHIFT, ord('Q'), UNCOMMENT_LINES_ID"))
 ##            ])
 ##        frame.SetAcceleratorTable(accelTable)
+        if not menuBar.FindItemById(ID_EOL_MODE):
+            lineformat_menu = wx.Menu()
+            lineformat_menu.AppendCheckItem(ID_EOL_MAC, _("Old Macintosh (\\r)"),
+                              _("Format all EOL characters to %s Mode") % \
+                              _(u"Old Macintosh (\\r)"))
+            lineformat_menu.AppendCheckItem(ID_EOL_UNIX, _("Unix (\\n)"),
+                              _("Format all EOL characters to %s Mode") % \
+                              _(u"Unix (\\n)"))
+            lineformat_menu.AppendCheckItem(ID_EOL_WIN, _("Windows (\\r\\n)"),
+                              _("Format all EOL characters to %s Mode") % \
+                              _("Windows (\\r\\n)"))
+            formatMenu.AppendMenu(ID_EOL_MODE, _("EOL Mode"), lineformat_menu)
 
     def ProcessUpdateUIEvent(self, event):
         id = event.GetId()

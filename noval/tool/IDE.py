@@ -163,13 +163,12 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         ##my_locale must be set as app member property,otherwise it will only workable when app start up
         ##it will not workable after app start up,the translation also will not work
         lang_id = GeneralOption.GetLangId(config.Read("Language",""))
-        print lang_id,wx.Locale.IsAvailable(lang_id)
         if wx.Locale.IsAvailable(lang_id):
             self.my_locale = wx.Locale(lang_id)
             if self.my_locale.IsOk():
                 self.my_locale.AddCatalogLookupPathPrefix(os.path.join(sysutilslib.mainModuleDir,'noval','locale'))
                 ibRet = self.my_locale.AddCatalog(self.GetAppName().lower())
-                print ibRet
+                ibRet = self.my_locale.AddCatalog("wxstd")
 
         docManager = IDEDocManager(flags = self.GetDefaultDocManagerFlags())
         self.SetDocumentManager(docManager)
