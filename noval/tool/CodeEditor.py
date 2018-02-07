@@ -28,6 +28,7 @@ import FindService
 import DebugOutputCtrl
 import TextService
 import noval.util.sysutils as sysutilslib
+import EOLFormat
 _ = wx.GetTranslation
 
 ENABLE_FOLD_ID = wx.NewId()
@@ -52,10 +53,20 @@ ID_EOL_MAC       = wx.NewId()
 ID_EOL_UNIX      = wx.NewId()
 ID_EOL_WIN       = wx.NewId()
 
+MODE_MAP = { 
+    ID_EOL_MAC  : wx.stc.STC_EOL_CR,
+    ID_EOL_UNIX : wx.stc.STC_EOL_LF,
+    ID_EOL_WIN  : wx.stc.STC_EOL_CRLF
+}
+
 
 class CodeDocument(STCTextEditor.TextDocument):
-    pass    
-
+    def OnOpenDocument(self, filename):
+        if not STCTextEditor.TextDocument.OnOpenDocument(self,filename):
+            return False
+        view = self.GetFirstView()
+        view.GetCtrl().CheckEOL()
+        return True
 
 class CodeView(STCTextEditor.TextView):
 
@@ -128,6 +139,9 @@ class CodeView(STCTextEditor.TextView):
         elif id == ENABLE_FOLD_ID:
             self.GetCtrl().SetViewFolding(not self.GetCtrl().GetViewFolding())
             return True
+        elif id == ID_EOL_MAC or id == ID_EOL_UNIX or id == ID_EOL_WIN:
+            self.GetCtrl().ConvertLineMode(id)
+            return True
         else:
             return STCTextEditor.TextView.ProcessEvent(self, event)
 
@@ -189,6 +203,13 @@ class CodeView(STCTextEditor.TextView):
         elif id == ENABLE_FOLD_ID:
             event.Enable(True)
             event.Check(self.GetCtrl().GetViewFolding())
+            return True
+        elif id == ID_EOL_MODE:
+            event.Enable(True)
+            return True
+        elif id == ID_EOL_MAC or id == ID_EOL_UNIX or id == ID_EOL_WIN:
+            event.Enable(True)
+            event.Check(self.GetCtrl().IsEOLModeId(id))
             return True
         else:
             return STCTextEditor.TextView.ProcessUpdateUIEvent(self, event)
@@ -601,16 +622,24 @@ class CodeService(TextService.TextService):
 ##        frame.SetAcceleratorTable(accelTable)
         if not menuBar.FindItemById(ID_EOL_MODE):
             lineformat_menu = wx.Menu()
-            lineformat_menu.AppendCheckItem(ID_EOL_MAC, _("Old Macintosh (\\r)"),
+            lineformat_menu.AppendCheckItem(ID_EOL_MAC, _("Old Machintosh (\\r)"),
                               _("Format all EOL characters to %s Mode") % \
-                              _(u"Old Macintosh (\\r)"))
+                              _(u"Old Machintosh (\\r)"))
+            wx.EVT_MENU(frame, ID_EOL_MAC, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, ID_EOL_MAC, frame.ProcessUpdateUIEvent)
             lineformat_menu.AppendCheckItem(ID_EOL_UNIX, _("Unix (\\n)"),
                               _("Format all EOL characters to %s Mode") % \
                               _(u"Unix (\\n)"))
+            wx.EVT_MENU(frame, ID_EOL_UNIX, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, ID_EOL_UNIX, frame.ProcessUpdateUIEvent)
             lineformat_menu.AppendCheckItem(ID_EOL_WIN, _("Windows (\\r\\n)"),
                               _("Format all EOL characters to %s Mode") % \
                               _("Windows (\\r\\n)"))
+            wx.EVT_MENU(frame, ID_EOL_WIN, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, ID_EOL_WIN, frame.ProcessUpdateUIEvent)
             formatMenu.AppendMenu(ID_EOL_MODE, _("EOL Mode"), lineformat_menu)
+            wx.EVT_MENU(frame, ID_EOL_MODE, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, ID_EOL_MODE, frame.ProcessUpdateUIEvent)
 
     def ProcessUpdateUIEvent(self, event):
         id = event.GetId()
@@ -630,7 +659,11 @@ class CodeService(TextService.TextService):
         or id == COMMENT_LINES_ID
         or id == UNCOMMENT_LINES_ID
         or id == FOLDING_ID
-        or id == ENABLE_FOLD_ID):
+        or id == ENABLE_FOLD_ID
+        or id == ID_EOL_UNIX
+        or id == ID_EOL_MAC
+        or id == ID_EOL_WIN
+        or id == ID_EOL_MODE):
             event.Enable(False)
             return True
         else:
@@ -675,6 +708,11 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         wx.EVT_KEY_DOWN(self, self.OnKeyPressed)
         if self.GetMatchingBraces(): 
             wx.stc.EVT_STC_UPDATEUI(self, self.GetId(), self.OnUpdateUI)
+
+        if sysutilslib.isWindows():
+            STCTextEditor.TextCtrl.SetEOLMode(self,wx.stc.STC_EOL_CRLF)
+        else:
+            STCTextEditor.TextCtrl.SetEOLMode(self,wx.stc.STC_EOL_LF)
 
     ##    self.StyleClearAll()
         self.UpdateStyles()
@@ -932,9 +970,7 @@ class CodeCtrl(STCTextEditor.TextCtrl):
                         line = self.Expand(line, False, force, visLevels-1)
             else:
                 line = line + 1;
-
         return line
-
 
     def SetMarginFoldStyle(self):
         # Setup a margin to hold fold markers
@@ -950,3 +986,94 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDER,        wx.stc.STC_MARK_BOXPLUS,  "white", "black")
         self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDEROPEN,    wx.stc.STC_MARK_BOXMINUS, "white", "black")
         self.SetFoldFlags(16)  ###  WHAT IS THIS VALUE?  WHAT ARE THE OTHER FLAGS?  DOES IT MATTER?
+
+    def SetEOLMode(self,eol_id):
+        mode = MODE_MAP.get(eol_id, wx.stc.STC_EOL_LF)
+        STCTextEditor.TextCtrl.SetEOLMode(self,mode)
+
+    def IsEOLModeId(self,eol_id):
+        mode = MODE_MAP.get(eol_id, wx.stc.STC_EOL_LF)
+        return mode == STCTextEditor.TextCtrl.GetEOLMode(self)
+
+    def CheckEOL(self):
+        """Checks the EOL mode of the opened document. If the mode
+        that the document was saved in is different than the editors
+        current mode the editor will switch modes to preserve the eol
+        type of the file, if the eol chars are mixed then the editor
+        will toggle on eol visibility.
+        @postcondition: eol mode is configured to best match file
+        @todo: Is showing line endings the best way to show mixed?
+        """
+        mixed = diff = False
+        eol_map = {u"\n" : wx.stc.STC_EOL_LF,
+                   u"\r\n" : wx.stc.STC_EOL_CRLF,
+                   u"\r" : wx.stc.STC_EOL_CR}
+
+        eol = unichr(self.GetCharAt(self.GetLineEndPosition(0)))
+        if eol == u"\r":
+            tmp = unichr(self.GetCharAt(self.GetLineEndPosition(0) + 1))
+            if tmp == u"\n":
+                eol += tmp
+
+        # Is the eol used in the document the same as what is currently set.
+        if eol != self.GetEOLChar():
+            diff = True
+
+        # Check the lines to see if they are all matching or not.
+        LEPFunct = self.GetLineEndPosition
+        GCAFunct = self.GetCharAt
+        for line in range(self.GetLineCount() - 1):
+            end = LEPFunct(line)
+            tmp = unichr(GCAFunct(end))
+            if tmp == u"\r":
+                tmp2 = unichr(GCAFunct(LEPFunct(0) + 1))
+                if tmp2 == u"\n":
+                    tmp += tmp2
+            if tmp != eol:
+                mixed = True
+                break
+
+        if mixed or diff:
+            if mixed:
+                # Warn about mixed end of line characters and offer to convert
+                msg = _("Mixed EOL characters detected.\n\n"
+                        "Would you like to format them to all be the same?")
+                dlg = EOLFormat.EOLFormatDlg(wx.GetApp().GetTopWindow(), msg,
+                                             _("Format EOL?"),
+                                             eol_map.get(eol, self.GetEOLMode()))
+
+                if dlg.ShowModal() == wx.ID_YES:
+                    sel = dlg.GetSelection()
+                    self.ConvertEOLs(sel)
+                    super(STCTextEditor.TextCtrl, self).SetEOLMode(sel)
+                dlg.Destroy()
+            else:
+                # The end of line character is different from the preferred
+                # user setting for end of line. So change our eol mode to
+                # preserve that of what the document is using.
+                mode = eol_map.get(eol, wx.stc.STC_EOL_LF)
+                super(STCTextEditor.TextCtrl, self).SetEOLMode(mode)
+        else:
+            pass
+
+    def ConvertLineMode(self, mode_id):
+        """Converts all line endings in a document to a specified
+        format.
+        @param mode_id: (menu) id of eol mode to set
+
+        """
+        self.ConvertEOLs(MODE_MAP[mode_id])
+        super(STCTextEditor.TextCtrl, self).SetEOLMode(MODE_MAP[mode_id])
+
+    def GetEOLChar(self):
+        """Gets the eol character used in document
+        @return: the character used for eol in this document
+
+        """
+        m_id = self.GetEOLMode()
+        if m_id == wx.stc.STC_EOL_CR:
+            return u'\r'
+        elif m_id == wx.stc.STC_EOL_CRLF:
+            return u'\r\n'
+        else:
+            return u'\n'

@@ -285,22 +285,22 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 icon = XmlEditor.getXMLIcon())
         docManager.AssociateTemplate(xmlTemplate)
         
-        pythonService           = self.InstallService(PythonEditor.PythonService("Python Interpreter",embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
+        pythonService           = self.InstallService(PythonEditor.PythonService(_("Python Interpreter"),embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
         if not ACTIVEGRID_BASE_IDE:
             propertyService     = self.InstallService(PropertyService.PropertyService("Properties", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_RIGHT))
-        projectService          = self.InstallService(ProjectEditor.ProjectService("Projects", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_TOPLEFT))
+        projectService          = self.InstallService(ProjectEditor.ProjectService(_("Projects/Resources View"), embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_TOPLEFT))
         findService             = self.InstallService(FindInDirService.FindInDirService())
         if not ACTIVEGRID_BASE_IDE:
             webBrowserService   = self.InstallService(WebBrowserService.WebBrowserService())  # this must be before webServerService since it sets the proxy environment variable that is needed by the webServerService.
             webServerService    = self.InstallService(WebServerService.WebServerService())  # this must be after webBrowserService since that service sets the proxy environment variables.
-        outlineService          = self.InstallService(OutlineService.OutlineService("Outline", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOMLEFT))
+        outlineService          = self.InstallService(OutlineService.OutlineService(_("Outline"), embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOMLEFT))
         filePropertiesService   = self.InstallService(wx.lib.pydocview.FilePropertiesService())
         markerService           = self.InstallService(MarkerService.MarkerService())
         textService             = self.InstallService(TextService.TextService())
         perlService             = self.InstallService(PerlEditor.PerlService())
         phpService              = self.InstallService(PHPEditor.PHPService())
         comletionService        = self.InstallService(CompletionService.CompletionService())
-        messageService          = self.InstallService(MessageService.MessageService("Search Results", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
+        messageService          = self.InstallService(MessageService.MessageService(_("Search Results"), embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
     ##    outputService          = self.InstallService(OutputService.OutputService("Output", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
         debuggerService         = self.InstallService(DebuggerService.DebuggerService("Debugger", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
         extensionService        = self.InstallService(ExtensionService.ExtensionService())
@@ -405,7 +405,6 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             config = wx.ConfigBase_Get()
             index = config.ReadInt("TipIndex", 0)
             if must_display:
-               ### wx.ShowTip(docManager.FindSuitableParent(), wx.CreateFileTipProvider(tips_path, 0),False)
                 showTip = config.ReadInt("ShowTipAtStartup", 1)
                 showTipResult = wx.ShowTip(docManager.FindSuitableParent(), wx.CreateFileTipProvider(tips_path, index), showAtStartup = showTip)
                 if showTipResult != showTip:
