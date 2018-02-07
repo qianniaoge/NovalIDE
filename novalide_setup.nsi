@@ -202,6 +202,7 @@ Section Uninstall
   Delete "$INSTDIR\wx._grid.pyd"
   Delete "$INSTDIR\wx._misc_.pyd"
   Delete "$INSTDIR\wx._stc.pyd"
+  Delete "$INSTDIR\wx._combo.pyd"
   Delete "$INSTDIR\wx._windows_.pyd"
   Delete "$INSTDIR\wx._wizard.pyd"
   Delete "$INSTDIR\wx._xrc.pyd"

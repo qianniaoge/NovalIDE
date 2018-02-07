@@ -92,3 +92,4 @@ Version 1.0.4 -------------2018-02-04
 5.smart anlalyse class base inherited classes members
 6.analyse from import members
 7.update install instructions on linux system of readme
+8.enable user choose line eol mode
