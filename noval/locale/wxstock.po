@@ -1,0 +1,1001 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2018-02-07 14:57+ÖÐ¹ú±ê×¼Ê±¼ä\n"
+"PO-Revision-Date: 2018-02-08 22:27+0800\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+"X-Generator: Poedit 2.0.6\n"
+"Last-Translator: \n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"Language: zh_CN\n"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\artmanager.py:643
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\artmanager.py:2067
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\fmcustomizedlg.py:504
+msgid "Default"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\artmanager.py:2068
+msgid "Dark"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\artmanager.py:2069
+msgid "Dark Olive Green"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\artmanager.py:2070
+msgid "Generic"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\aui\aui_switcherdialog.py:1052
+msgid "Pane Switcher"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\aui\aui_switcherdialog.py:1177
+msgid "\"><b>"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\aui\aui_switcherdialog.py:1177
+msgid "</b>"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\aui\aui_switcherdialog.py:1177
+msgid "<body bgcolor=\"#"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\aui\aui_switcherdialog.py:1180
+msgid "<p>"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\aui\aui_switcherdialog.py:1183
+msgid "</body>"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\aui\framemanager.py:10133
+msgid "Restore %s"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\aui\framemanager.py:10566
+msgid "Pane Preview"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\aui\tabmdi.py:32
+msgid "Cl&ose"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\aui\tabmdi.py:33
+msgid "Close All"
+msgstr "关闭所有"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\aui\tabmdi.py:35
+msgid "&Next"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\aui\tabmdi.py:36
+msgid "&Previous"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\aui\tabmdi.py:203
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\aui\tabmdi.py:214
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\aui\tabmdi.py:216
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2912
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:3014
+msgid "&Window"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:2857
+msgid "CubeColourDialog: Choose Colour"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:2876
+msgid "HSB"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:2877
+msgid "RGB Values"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:2878
+msgid "HSB Values"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:2879
+msgid "RGB"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:2880
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:2881
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:3051
+msgid "Alpha"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:2888
+msgid "Show Alpha Control"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:2890
+msgid "Add to custom colours"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:2892
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\genericmessagedialog.py:1046
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\multidirdialog.py:502
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:2258
+msgid "OK"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:2893
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\genericmessagedialog.py:1059
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\multidirdialog.py:504
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:2259
+msgid "Cancel"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:2986
+msgid "HTML Code"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:2987
+msgid "Web Safe"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:2997
+msgid "HTML Name"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:3003
+msgid "Custom Colours"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:3017
+msgid "Old Colour"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:3020
+msgid "New Colour"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:3021
+msgid "MS Access Code"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:3029
+msgid "Red"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:3031
+msgid "Green"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:3033
+msgid "Blue"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:3040
+msgid "Hue"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:3042
+msgid "Saturation"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\cubecolourdialog.py:3044
+msgid "Brightness"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\flatmenu.py:3591
+msgid "Customize..."
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\fmcustomizedlg.py:169
+msgid "Customize"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\fmcustomizedlg.py:204
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:86
+msgid "&Close"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\fmcustomizedlg.py:213
+msgid "Menus"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\fmcustomizedlg.py:214
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:1488
+msgid "Options"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\fmcustomizedlg.py:282
+msgid "Select Menu To Add/Remove:"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\fmcustomizedlg.py:321
+msgid "Default Style"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\fmcustomizedlg.py:321
+msgid "Metallic"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\fmcustomizedlg.py:322
+msgid "Menu bar style"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\fmcustomizedlg.py:338
+msgid "Default style settings"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\fmcustomizedlg.py:340
+msgid "Draw vertical gradient"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\fmcustomizedlg.py:346
+msgid "Draw border around menu bar"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\fmcustomizedlg.py:352
+msgid "Toolbar float over menu bar"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\fmcustomizedlg.py:360
+msgid "Colour Scheme"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\genericmessagedialog.py:522
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:175
+msgid "Save"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\genericmessagedialog.py:524
+msgid "Don't Save"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\genericmessagedialog.py:1020
+msgid "Yes"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\genericmessagedialog.py:1033
+msgid "No"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\genericmessagedialog.py:1072
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:2260
+msgid "Help"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\infobar.py:382
+msgid "Hide this notification message."
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\multidirdialog.py:300
+msgid "Browse For Folders"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\multidirdialog.py:300
+msgid "Choose one or more folders:"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\multidirdialog.py:427
+msgid "Folder:"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\multidirdialog.py:500
+msgid "Make New Folder"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\pybusyinfo.py:256
+msgid "Busy"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:473
+msgid "New accelerator..."
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:475
+msgid "Disabled"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:944
+msgid "Configure Keyboard Shortcuts Help"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:983
+msgid "Back"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:984
+msgid "Go to the previous page"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:986
+msgid "Forward"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:987
+msgid "Go to the next page"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:991
+msgid "Home"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:991
+msgid "Home Page"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:992
+msgid "Go to the home page"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:994
+msgid "Refresh"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:995
+msgid "Refresh the current page"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:1000
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:178
+msgid "Print"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:1001
+msgid "Print the current page"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:1654
+msgid ""
+"Shortcut \"%(shortcut)s\" is already taken by\n"
+"\"%(item)s\" from the \"%(group)s\" group. "
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:1657
+msgid ""
+"Reassigning the shortcut will cause it to be removed from \n"
+"\"%(item)s\". "
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:1659
+msgid "Conflicting Shortcuts"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:1662
+msgid "Reassing shortcut "
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:1697
+msgid "Action"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:1698
+msgid "Shortcut"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:1699
+msgid "Help Label"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:2205
+msgid "Configure Keyboard Shortcuts"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:2227
+msgid "&Search:"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:2241
+msgid "Restore Defaults "
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:2245
+msgid ""
+"To edit a shortcut key, click on the corresponding row\n"
+"and type a new accelerator, or press backspace to clear."
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\agw\shortcuteditor.py:2418
+msgid "Accelerators"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\colourchooser\pycolourchooser.py:120
+msgid "Basic Colours:"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\colourchooser\pycolourchooser.py:121
+msgid "Custom Colours:"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\colourchooser\pycolourchooser.py:122
+msgid "Add to Custom Colours"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\colourchooser\pycolourchooser.py:188
+msgid "Solid Colour"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\colourchooser\pycolourchooser.py:194
+msgid "H:"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\colourchooser\pycolourchooser.py:197
+msgid "S:"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\colourchooser\pycolourchooser.py:200
+msgid "V:"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\colourchooser\pycolourchooser.py:210
+msgid "R:"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\colourchooser\pycolourchooser.py:213
+msgid "G:"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\colourchooser\pycolourchooser.py:216
+msgid "B:"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:385
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:383
+msgid "Application"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:386
+#: ¸±±¾.py:641
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:384
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:634
+msgid ""
+"'%s' has been modified outside of %s.  Overwrite '%s' with current changes?"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:411
+#: ¸±±¾.py:2177
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:409
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:2170
+msgid " ("
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:411
+#: ¸±±¾.py:2177
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:409
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:2170
+msgid ") |"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:412
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:410
+msgid "Save As"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:453
+#: ¸±±¾.py:526 ¸±±¾.py:2452 ¸±±¾.py:2708
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:451
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:524
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:2445
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:2701
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:1073
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2212
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2388
+msgid "File Error"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:602
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:595
+msgid "Untitled"
+msgstr "未命名"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:640
+#: ¸±±¾.py:656 ¸±±¾.py:1898
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:633
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:649
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:1891
+msgid "Warning"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:658
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:651
+msgid "Save changes to '%s'?"
+msgstr "保存修改至 '%s'?"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:891
+#: ¸±±¾.py:2024
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:884
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:2017
+msgid " - "
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:1571
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:1564
+msgid "Unable to display print preview."
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:1575
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:1568
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:179
+msgid "Print Preview"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:1577
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:1570
+msgid "%s - %s - Preview"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:1663
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:1656
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:109
+msgid "&Undo\tCtrl+Z"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:1675
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:1668
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:110
+msgid "&Redo\tCtrl+Y"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:1900
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:1893
+msgid "'%s' has been modified outside of %s.  Reload '%s' from file system?"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:1906
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:1899
+msgid "Couldn't reload '%s'.  Unable to close current '%s'."
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:2009
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:2002
+msgid "Untitled %d"
+msgstr "未命名 %d"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:2176
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:2169
+msgid "|"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:2178
+msgid "All|*.*|%s"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:2180
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:2173
+msgid "*.*"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:2183
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:2176
+msgid "Select a File"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:2246
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:2239
+msgid "Select a document type:"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:2247
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:2240
+msgid "Documents"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:2277
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:2270
+msgid "Select a document view:"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:2278
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:2271
+msgid "Views"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:3052
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:3045
+msgid "Ctrl+Z"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:3053
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:3046
+msgid "Ctrl+Y"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:3160
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:3153
+msgid "&Undo "
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:3166
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:3159
+msgid "&Redo "
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview - ¸±±¾.py:3168
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:3161
+msgid "&Redo"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\docview.py:2171
+msgid "All(*.*)|*.*|%s"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:84
+msgid "&New...\tCtrl+N"
+msgstr "新建...\tCtrl+N"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:84
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:173
+msgid "Creates a new document"
+msgstr "新建一个文档"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:85
+msgid "&Open...\tCtrl+O"
+msgstr "打开...\tCtrl+O"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:85
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:174
+msgid "Opens an existing document"
+msgstr "打开一个已存在文档"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:86
+msgid "Closes the active document"
+msgstr "关闭当前文档"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:88
+msgid "Close A&ll"
+msgstr "关闭所有"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:88
+msgid "Closes all open documents"
+msgstr "关闭所有打开文档"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:90
+msgid "&Save\tCtrl+S"
+msgstr "保存\tCtrl+S"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:90
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:175
+msgid "Saves the active document"
+msgstr "保存当前文档"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:91
+msgid "Save &As..."
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:91
+msgid "Saves the active document with a new name"
+msgstr "使用新的文件名保存当前文档"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:92
+msgid "Save All\tCtrl+Shift+A"
+msgstr "保存所有\tCtrl+Shift+A"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:92
+msgid "Saves the all active documents"
+msgstr "保存所有打开文档"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:96
+msgid "&Print\tCtrl+P"
+msgstr "打印\tCtrl+P"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:96
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:179
+msgid "Prints the active document"
+msgstr "打印当前文档"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:97
+msgid "Print Pre&view"
+msgstr "打印预览"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:97
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:178
+msgid "Displays full pages"
+msgstr "预览打印页面"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:98
+msgid "Changes page layout settings"
+msgstr "显示并修改打印设置"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:98
+msgid "Page Set&up"
+msgstr "页面设置"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:101
+msgid "&Quit"
+msgstr "退出(&X)"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:101
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:103
+msgid "Closes this program"
+msgstr "关闭并退出程序"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:103
+msgid "E&xit"
+msgstr "退出(&X)"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:106
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2558
+msgid "&File"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:109
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:184
+msgid "Reverses the last action"
+msgstr "撤销上一个动作"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:110
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:185
+msgid "Reverses the last undo"
+msgstr "撤销上一个撤销动作"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:115
+msgid "Cu&t\tCtrl+X"
+msgstr "剪切\tCtrl+X"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:115
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:181
+msgid "Cuts the selection and puts it on the Clipboard"
+msgstr "剪切选中文本并放进剪贴板中"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:118
+msgid "&Copy\tCtrl+C"
+msgstr "复制\tCtrl+C"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:118
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:182
+msgid "Copies the selection and puts it on the Clipboard"
+msgstr "复制选中文本并放进剪贴板中"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:121
+msgid "&Paste\tCtrl+V"
+msgstr "粘贴\tCtrl+V"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:121
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:183
+msgid "Inserts Clipboard contents"
+msgstr "插入剪贴板内容"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:124
+msgid "&Delete"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:124
+msgid "Erases the selection"
+msgstr "删除选中文本"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:128
+msgid "Select A&ll\tCtrl+A"
+msgstr "选择所有\tCtrl+A"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:128
+msgid "Selects all available data"
+msgstr "选择所有文本"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:131
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:1922
+msgid "&Edit"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:137
+msgid "&Toolbar"
+msgstr "工具栏"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:137
+msgid "Shows or hides the toolbar"
+msgstr "显示或隐藏工具栏"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:140
+msgid "&Status Bar"
+msgstr "状态栏"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:140
+msgid "Shows or hides the status bar"
+msgstr "显示或隐藏状态栏"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:143
+msgid "&View"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:146
+msgid "Displays program information, version number, and copyright"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:147
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2911
+msgid "&Help"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:173
+msgid "New"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:174
+msgid "Open"
+msgstr "打开"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:176
+msgid "Save All"
+msgstr "保存所有"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:176
+msgid "Saves all the active documents"
+msgstr "保存所有打开文档"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:181
+msgid "Cut"
+msgstr "剪切"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:182
+msgid "Copy"
+msgstr "复制"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:183
+msgid "Paste"
+msgstr "粘贴"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:184
+msgid "Undo"
+msgstr "撤销"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:185
+msgid "Redo"
+msgstr "重做"
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:248
+msgid "Ready"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:902
+msgid "Close"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:918
+msgid "Select Tab"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:1405
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:1412
+msgid "&Tools"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:1411
+msgid "&Format"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:1416
+msgid "&Options..."
+msgstr "首选项..."
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:1416
+msgid "Sets options"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:1589
+msgid "Show tips at start up"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:1594
+msgid "Show each document in its own window"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:1595
+msgid "Show all documents in a single window with tabs"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:1596
+msgid "Show all documents in a single window with child windows"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:1602
+msgid "Document Display Style"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:1616
+msgid "Document Options"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:1617
+msgid ""
+"Document interface changes will not appear until the application is "
+"restarted."
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:1632
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2719
+msgid "General"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2522
+msgid "About "
+msgstr "关于 "
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2561
+msgid "&Properties"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2561
+msgid "Show file properties"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2675
+msgid "File Properties"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2689
+msgid "Filename:"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2692
+msgid "Location:"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2695
+msgid "Size:"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2697
+msgid "bytes"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2703
+msgid "Created:"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2707
+msgid "Modified:"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2711
+msgid "Accessed:"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2887
+msgid "&Arrange All"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2887
+msgid "Arrange the open windows"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2896
+msgid "Previous"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2896
+msgid "Previous Tab"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2899
+msgid "Next"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2899
+msgid "Next Tab"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2902
+msgid "Close Current\tCtrl+F4"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2902
+msgid "Close Current Tab"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:3034
+msgid "&More Windows..."
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:3160
+msgid "Select a window to show:"
+msgstr ""
+
+#: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:3161
+msgid "Select Window"
+msgstr ""

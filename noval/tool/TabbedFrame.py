@@ -115,7 +115,7 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame):
             if not msgTitle:
                 msgTitle = _("File Error")
             if filename:
-                wx.MessageBox("The file '%s' doesn't exist and couldn't be opened!" % filename,
+                wx.MessageBox(_("The file '%s' doesn't exist and couldn't be opened!") % filename,
                               msgTitle,
                               wx.OK | wx.ICON_ERROR,
                               self)

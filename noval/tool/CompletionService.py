@@ -52,7 +52,7 @@ class MutipleDefinitionDialog(wx.Dialog):
 class CompletionService(Service.BaseService):
     GO_TO_DEFINITION = wx.NewId()
     COMPLETE_WORD_LIST = wx.NewId()
-    AUTO_COMPLETE_WORD = wx.NewId()
+    AUTO_COMPLETE_ID = wx.NewId()
     LIST_CURRENT_MEMBERS = wx.NewId()
 
     def __init__(self):
@@ -66,16 +66,16 @@ class CompletionService(Service.BaseService):
 
         editMenu = menuBar.GetMenu(menuBar.FindMenu(_("&Edit")))
         editMenu.AppendSeparator()
-        editMenu.Append(CompletionService.GO_TO_DEFINITION, _("Goto Definition\tF12"), _("Goto Definition of text"))
+        editMenu.Append(CompletionService.GO_TO_DEFINITION, _("Goto Definition\tF12"), _("Goto Definition of current statement"))
         wx.EVT_MENU(frame, CompletionService.GO_TO_DEFINITION, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, CompletionService.GO_TO_DEFINITION, frame.ProcessUpdateUIEvent)
-        editMenu.Append(CompletionService.COMPLETE_WORD_LIST, _("Completion Word List\tCtrl+Shit+K"), _("List Completion Word List"))
+        editMenu.Append(CompletionService.COMPLETE_WORD_LIST, _("Completion Word List\tCtrl+Shit+K"), _("List All Completion Word of suggestions"))
         wx.EVT_MENU(frame, CompletionService.COMPLETE_WORD_LIST, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, CompletionService.COMPLETE_WORD_LIST, frame.ProcessUpdateUIEvent)
-        editMenu.Append(CompletionService.AUTO_COMPLETE_WORD, _("Auto Complete Word\tCtrl+K"), _("Auto Complete the correct Word"))
-        wx.EVT_MENU(frame, CompletionService.AUTO_COMPLETE_WORD, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, CompletionService.AUTO_COMPLETE_WORD, frame.ProcessUpdateUIEvent)
-        editMenu.Append(CompletionService.LIST_CURRENT_MEMBERS, _("List Members\tCtrl+J"), _("List Members In Current Scope"))
+        editMenu.Append(CompletionService.AUTO_COMPLETE_ID, _("&Auto Complete\tCtrl+Shift+Space"), _("Provides suggestions on how to complete the current statement"))
+        wx.EVT_MENU(frame, CompletionService.AUTO_COMPLETE_ID, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, CompletionService.AUTO_COMPLETE_ID, frame.ProcessUpdateUIEvent)
+        editMenu.Append(CompletionService.LIST_CURRENT_MEMBERS, _("List Members\tCtrl+J"), _("List Members of Current statement"))
         wx.EVT_MENU(frame, CompletionService.LIST_CURRENT_MEMBERS, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, CompletionService.LIST_CURRENT_MEMBERS, frame.ProcessUpdateUIEvent)
 
@@ -87,7 +87,8 @@ class CompletionService(Service.BaseService):
             return True
         elif id == CompletionService.COMPLETE_WORD_LIST:
             return True
-        elif id == CompletionService.AUTO_COMPLETE_WORD:
+        elif id == CompletionService.AUTO_COMPLETE_ID:
+            text_view.OnAutoComplete()
             return True
         elif id == CompletionService.LIST_CURRENT_MEMBERS:
             text_view.GetCtrl().ListMembers(text_view.GetCtrl().GetCurrentPos()-1)
@@ -98,7 +99,7 @@ class CompletionService(Service.BaseService):
     def ProcessUpdateUIEvent(self, event):
         id = event.GetId()
         if id == CompletionService.GO_TO_DEFINITION or id == CompletionService.COMPLETE_WORD_LIST\
-                or id == CompletionService.AUTO_COMPLETE_WORD or id == CompletionService.LIST_CURRENT_MEMBERS:
+                or id == CompletionService.AUTO_COMPLETE_ID or id == CompletionService.LIST_CURRENT_MEMBERS:
             event.Enable(False)
             return True
         else:

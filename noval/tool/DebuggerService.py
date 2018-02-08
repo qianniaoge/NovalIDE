@@ -2790,7 +2790,7 @@ class DebuggerService(Service.Service):
         doc_view = self.GetActiveView()
         if not doc_view:
             return
-        dlg = CommandPropertiesDialog(doc_view.GetFrame(), _('Set Parameter And Environment'), projectService, None)
+        dlg = CommandPropertiesDialog(doc_view.GetFrame(), _('Set Parameter And Environment'), projectService, None,okButtonName=_("&OK"))
         dlg.CenterOnParent()
         if dlg.ShowModal() == wx.ID_OK:
             projectPath, fileToRun, initialArgs, startIn, isPython, environment = dlg.GetSettings()
@@ -3031,7 +3031,7 @@ class DebuggerOptionsPanel(wx.Panel):
 
 
 class CommandPropertiesDialog(wx.Dialog):
-    def __init__(self, parent, title, projectService, currentProjectDocument, okButtonName="OK", debugging=False):
+    def __init__(self, parent, title, projectService, currentProjectDocument, okButtonName=_("&OK"), debugging=False):
         self._projService = projectService
         self._pmext = None
         self._pyext = '.py'
@@ -3215,7 +3215,7 @@ class CommandPropertiesDialog(wx.Dialog):
 
 
     def OnFindDirClick(self, event):
-        dlg = wx.DirDialog(self, "Choose a starting directory:", self._startEntry.GetValue(),
+        dlg = wx.DirDialog(self, _("Choose a starting directory:"), self._startEntry.GetValue(),
                           style=wx.DD_DEFAULT_STYLE|wx.DD_NEW_DIR_BUTTON)
 
         dlg.CenterOnParent()

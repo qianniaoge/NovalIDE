@@ -6,6 +6,7 @@ import wx
 import locale
 import noval.util.sysutils as sysutils
 import pickle
+_ = wx.GetTranslation
 
 class Interpreter(object):
     
@@ -87,6 +88,18 @@ class PythonInterpreter(Interpreter):
                 return
         self._version = output.replace(version_flag,"").strip()
         self._is_valid_interpreter = True
+
+    def IsV27(self):
+        versions = self.Version.split('.')
+        if int(versions[0]) == 2 and int(versions[1]) == 7:
+            return True
+        return False
+
+    def IsV26(self):
+        versions = self.Version.split('.')
+        if int(versions[0]) == 2 and int(versions[1]) == 6:
+            return True
+        return False
         
     def CheckSyntax(self,script_path):
         check_cmd ="%s -c \"import py_compile;py_compile.compile(r'%s')\"" % (self.Path,script_path)
@@ -107,10 +120,25 @@ class PythonInterpreter(Interpreter):
         elif fileBegin != -1 and fileEnd != -1:
             lineNum = int(lines[0][fileEnd + 8:].strip())
             return False,lineNum,'\n'.join(lines[1:])
-        i = lines[0].find('(')
-        j = lines[0].find(')')
-        msg = lines[0][0:i].strip()
-        lineNum = int(lines[0][i+1:j].split()[-1])
+
+        if self.IsV26():
+            '''
+            parse such error text:
+            Sorry: IndentationError: ('unexpected indent', ('D:\\env\\Noval\\noval\\test\\run_test_input.py', 106, 16, '                ddd\n'))
+            '''
+            i = lines[0].find(", ('")
+            j = lines[0].find(')')
+            msg = lines[0][0:i].strip()
+            lineNum = int(lines[0][i+1:j].split(',')[1].strip())
+        else:
+            '''
+            parse such error text:
+            Sorry: IndentationError: unexpected indent (run_test_input.py, line 106)
+            '''
+            i = lines[0].find('(')
+            j = lines[0].find(')')
+            msg = lines[0][0:i].strip()
+            lineNum = int(lines[0][i+1:j].split()[-1])
         return False,lineNum,msg
         
     @property
@@ -205,7 +233,7 @@ class InterpreterManager(Singleton):
             return
         self.LoadPythonInterpreters()
         if 0 == len(self.interpreters):
-             dlg = wx.MessageDialog(None, "No Default Python Interpreter Found!", "No Interpreter", wx.OK | wx.ICON_WARNING)  
+             dlg = wx.MessageDialog(None, _("No Python Interpreter Found!"), _("No Interpreter"), wx.OK | wx.ICON_WARNING)  
              dlg.ShowModal()
              dlg.Destroy()  
         elif 1 == len(self.interpreters):
@@ -219,15 +247,15 @@ class InterpreterManager(Singleton):
         choices = []
         for interpreter in self.interpreters:
             choices.append(interpreter.Name)
-        dlg = wx.SingleChoiceDialog(None, u"Please Choose Default Interpreter:", "Choose",choices)  
+        dlg = wx.SingleChoiceDialog(None, _("Please Choose Default Interpreter:"), _("Choose Interpreter"),choices)  
         if dlg.ShowModal() == wx.ID_OK:  
             name = dlg.GetStringSelection()
             interpreter = self.GetInterpreterByName(name)
             self.SetDefaultInterpreter(interpreter)
         else:
-            wx.MessageBox("No Default Interpreter Selected, Application May not run normal!",\
-                          "Choose Interpreter",wx.OK | wx.ICON_WARNING)
-            self.interpreters = []
+            wx.MessageBox(_("No Default Interpreter Selected, Application May not run normal!"),\
+                          _("Choose Interpreter"),wx.OK | wx.ICON_WARNING)
+            del self.interpreters[:]
         dlg.Destroy()
         
     def GetInterpreterByName(self,name):
@@ -341,6 +369,9 @@ class InterpreterManager(Singleton):
         if self.CheckInterpreterExist(interpreter):
             raise InterpreterAddError("interpreter have already exist")
         self.interpreters.append(interpreter)
+        #first interpreter should be the default interpreter by default
+        if 1 == len(self.interpreters):
+            self.MakeDefaultInterpreter()
         return interpreter
         
     def RemovePythonInterpreter(self,interpreter):

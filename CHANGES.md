@@ -92,7 +92,9 @@ Version 1.0.4 -------------2018-02-04
 5.smart anlalyse class base inherited classes members
 6.analyse from import members
 7.update install instructions on linux system of readme
-8.enable user choose line eol mode
+8.allow user choose line eol mode
 9.add icon to Python Interpreter and Search Result,Debug View
 10.enable click plus button of dir tree to expand child item in resource view
 11.supplement chinese translation of wx stock id items
+12.repair bug when load interpreters and set first add interpreter as default interpreter
+13.repair check syntax bug in python2.6

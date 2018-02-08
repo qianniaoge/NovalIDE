@@ -79,7 +79,7 @@ class TextDocument(wx.lib.docview.Document):
 
                 # Check if read-only.
                 if not os.access(filename, os.W_OK):
-                    wx.MessageBox("Could not save '%s'.  No write permission to overwrite existing file." % \
+                    wx.MessageBox(_("Could not save '%s':  No write permission to overwrite existing file.") % \
                                   wx.lib.docview.FileNameFromPath(filename),
                                   msgTitle,
                                   wx.OK | wx.ICON_EXCLAMATION,
@@ -109,7 +109,7 @@ class TextDocument(wx.lib.docview.Document):
                 shutil.copy(backupFilename,filename)
                 os.remove(backupFilename)
 
-            wx.MessageBox(_("Could not save '%s'.  %s") % (wx.lib.docview.FileNameFromPath(filename), sys.exc_value),
+            wx.MessageBox(_("Could not save '%s':  %s") % (wx.lib.docview.FileNameFromPath(filename), sys.exc_value),
                           msgTitle,
                           wx.OK | wx.ICON_ERROR,
                           self.GetDocumentWindow())
@@ -172,7 +172,7 @@ class TextDocument(wx.lib.docview.Document):
             if fileObject:
                 fileObject.close()  # file is still open, close it 
 
-            wx.MessageBox(_("Could not open '%s'.  %s") % (wx.lib.docview.FileNameFromPath(filename), sys.exc_value),
+            wx.MessageBox(_("Could not open '%s':  %s") % (wx.lib.docview.FileNameFromPath(filename), sys.exc_value),
                           msgTitle,
                           wx.OK | wx.ICON_ERROR,
                           self.GetDocumentWindow())

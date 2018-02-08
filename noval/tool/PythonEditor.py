@@ -918,21 +918,13 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         line = self.GetCurrentLine()
         pos = self.GetCurrentPos()
         text = self.GetTypeWord(pos)
-        scope = Service.Service.GetActiveView().ModuleScope.FindScope(line)
-        scope_found = scope.FindDefinitionMember(text)
         open_new_doc = False
-    #    if scope_found != None:
-     #       if scope_found.Node.Type == parserconfig.NODE_IMPORT_TYPE or \
-      #                      isinstance(scope_found.Node,nodeast.AssignDef):
-       #         new_scope_found = scope_found.GetMember(text)
-        #        if new_scope_found != scope_found:
-         #           open_new_doc = True
-          #          scope_found = new_scope_found
-            #else:
-             #   cur_view = wx.GetApp().GetDocumentManager().GetCurrentView()
-              #  scope_module_path = scope_found.Root.Module.Path
-               # if scope_module_path != cur_view.GetDocument().GetFilename():
-                #    open_new_doc = True
+        module_scope = Service.Service.GetActiveView().ModuleScope
+        if module_scope is None:
+            scope_found = None
+        else:
+            scope = module_scope.FindScope(line)
+            scope_found = scope.FindDefinitionMember(text)
         if scope_found is None:
             wx.MessageBox(_("Cannot find definition") + "\"" + text + "\"",_("Goto Definition"),wx.OK|wx.ICON_EXCLAMATION,wx.GetApp().GetTopWindow())
         else:
@@ -984,8 +976,8 @@ class PythonOptionsPanel(wx.Panel):
         dlg.Destroy()
         choices,default_selection = Interpreter.InterpreterManager().GetChoices()
         self._pathTextCtrl.Clear()
-        self._pathTextCtrl.InsertItems(choices,0)
         if len(choices) > 0:
+            self._pathTextCtrl.InsertItems(choices,0)
             self._pathTextCtrl.SetSelection(default_selection)
         if status == wx.ID_OK:
             Interpreter.InterpreterManager().SavePythonInterpretersConfig()

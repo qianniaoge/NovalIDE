@@ -29,6 +29,7 @@ import DebugOutputCtrl
 import TextService
 import noval.util.sysutils as sysutilslib
 import EOLFormat
+import CompletionService
 _ = wx.GetTranslation
 
 ENABLE_FOLD_ID = wx.NewId()
@@ -39,7 +40,6 @@ COLLAPSE_TOP_ID = wx.NewId()
 EXPAND_ALL_ID = wx.NewId()
 COLLAPSE_ALL_ID = wx.NewId()
 CHECK_CODE_ID = wx.NewId()
-AUTO_COMPLETE_ID = wx.NewId()
 CLEAN_WHITESPACE = wx.NewId()
 COMMENT_LINES_ID = wx.NewId()
 UNCOMMENT_LINES_ID = wx.NewId()
@@ -112,7 +112,7 @@ class CodeView(STCTextEditor.TextView):
         elif id == CHECK_CODE_ID:
             self.OnCheckCode()
             return True
-        elif id == AUTO_COMPLETE_ID:
+        elif id == CompletionService.CompletionService.AUTO_COMPLETE_ID:
             self.OnAutoComplete()
             return True
         elif id == CLEAN_WHITESPACE:
@@ -179,7 +179,7 @@ class CodeView(STCTextEditor.TextView):
             else:
                 event.Enable(False)
             return True            
-        elif (id == AUTO_COMPLETE_ID
+        elif (id == CompletionService.CompletionService.AUTO_COMPLETE_ID
         or id == CLEAN_WHITESPACE
         or id == INDENT_LINES_ID
         or id == DEDENT_LINES_ID
@@ -583,9 +583,9 @@ class CodeService(TextService.TextService):
             formatMenu.Append(CHECK_CODE_ID, _("&Check Code"), _("Checks the document for syntax and indentation errors"))
             wx.EVT_MENU(frame, CHECK_CODE_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, CHECK_CODE_ID, frame.ProcessUpdateUIEvent)
-            formatMenu.Append(AUTO_COMPLETE_ID, _("&Auto Complete\tCtrl+Space"), _("Provides suggestions on how to complete the current statement"))
-            wx.EVT_MENU(frame, AUTO_COMPLETE_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, AUTO_COMPLETE_ID, frame.ProcessUpdateUIEvent)
+            formatMenu.Append(CompletionService.CompletionService.AUTO_COMPLETE_ID, _("&Auto Complete\tCtrl+Shift+Space"), _("Provides suggestions on how to complete the current statement"))
+            wx.EVT_MENU(frame, CompletionService.CompletionService.AUTO_COMPLETE_ID, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, CompletionService.CompletionService.AUTO_COMPLETE_ID, frame.ProcessUpdateUIEvent)
             formatMenu.Append(CLEAN_WHITESPACE, _("Clean &Whitespace"), _("Converts leading spaces to tabs or vice versa per 'use tabs' and clears trailing spaces"))
             wx.EVT_MENU(frame, CLEAN_WHITESPACE, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, CLEAN_WHITESPACE, frame.ProcessUpdateUIEvent)
@@ -650,7 +650,7 @@ class CodeService(TextService.TextService):
         or id == EXPAND_ALL_ID
         or id == COLLAPSE_ALL_ID
         or id == CHECK_CODE_ID
-        or id == AUTO_COMPLETE_ID
+        or id == CompletionService.CompletionService.AUTO_COMPLETE_ID
         or id == CLEAN_WHITESPACE
         or id == SET_INDENT_WIDTH_ID
         or id == USE_TABS_ID

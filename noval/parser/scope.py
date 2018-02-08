@@ -341,6 +341,8 @@ class NameScope(NodeScope):
             fix_name = self.MakeFixName(name)
             if fix_name == "":
                 return self
+            if self.Node.Value is None:
+                return None
             found_scope = self.FindDefinitionScope(self.Node.Value)
             if found_scope is not None:
                 if found_scope.Node.Type == config.NODE_IMPORT_TYPE:
