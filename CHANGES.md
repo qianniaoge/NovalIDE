@@ -93,3 +93,6 @@ Version 1.0.4 -------------2018-02-04
 6.analyse from import members
 7.update install instructions on linux system of readme
 8.enable user choose line eol mode
+9.add icon to Python Interpreter and Search Result,Debug View
+10.enable click plus button of dir tree to expand child item in resource view
+11.supplement chinese translation of wx stock id items

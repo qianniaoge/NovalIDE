@@ -2531,6 +2531,7 @@ class DebuggerService(Service.Service):
         page = RunCommandUI(Service.ServiceView.bottomTab, -1, fileToRun)
         count = Service.ServiceView.bottomTab.GetPageCount()
         Service.ServiceView.bottomTab.AddPage(page, _("Running: ") + shortFile)
+        Service.ServiceView.bottomTab.SetPageImage(count,self.GetIconIndex())
         Service.ServiceView.bottomTab.SetSelection(count)
         startIn = os.path.dirname(fileToRun)
         initialArgs = None
@@ -2962,6 +2963,9 @@ class DebuggerService(Service.Service):
 
     def SetPhpDbgParam(self, value = None):
         self.phpDbgParam = value
+
+    def GetIconIndex(self):
+        return Service.ServiceView.DebugRunIconIndex
 
 class DebuggerOptionsPanel(wx.Panel):
 

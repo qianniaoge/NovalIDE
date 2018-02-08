@@ -1598,7 +1598,7 @@ class ProjectView(wx.lib.docview.View):
         wx.EVT_RIGHT_DOWN(self._treeCtrl, self.OnRightClick)
         wx.EVT_KEY_DOWN(self._treeCtrl, self.OnKeyPressed)
       #  wx.EVT_TREE_ITEM_COLLAPSED(self._treeCtrl, self._treeCtrl.GetId(), self.SaveFolderState)
-       # wx.EVT_TREE_ITEM_EXPANDED(self._treeCtrl, self._treeCtrl.GetId(), self.SaveFolderState)
+        wx.EVT_TREE_ITEM_EXPANDING(self._treeCtrl, self._treeCtrl.GetId(), self.OnOpenSelection)
         wx.EVT_TREE_BEGIN_DRAG(self._treeCtrl, self._treeCtrl.GetId(), self.OnBeginDrag)
         wx.EVT_TREE_END_DRAG(self._treeCtrl, self._treeCtrl.GetId(), self.OnEndDrag)
        ## wx.EVT_LEFT_DOWN(self._treeCtrl, self.OnLeftClick)
@@ -2973,7 +2973,9 @@ class ProjectView(wx.lib.docview.View):
 
     def OnOpenSelection(self, event):
         if self.GetMode() == ProjectView.RESOURCE_VIEW:
-            ResourceView.ResourceView(self).OpenSelection()
+            item = event.GetItem()
+            ResourceView.ResourceView(self).OpenSelection(item)
+            event.Skip()
             return
         doc = None
         try:

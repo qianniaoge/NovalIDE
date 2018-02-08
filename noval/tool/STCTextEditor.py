@@ -109,7 +109,7 @@ class TextDocument(wx.lib.docview.Document):
                 shutil.copy(backupFilename,filename)
                 os.remove(backupFilename)
 
-            wx.MessageBox("Could not save '%s'.  %s" % (wx.lib.docview.FileNameFromPath(filename), sys.exc_value),
+            wx.MessageBox(_("Could not save '%s'.  %s") % (wx.lib.docview.FileNameFromPath(filename), sys.exc_value),
                           msgTitle,
                           wx.OK | wx.ICON_ERROR,
                           self.GetDocumentWindow())
@@ -172,7 +172,7 @@ class TextDocument(wx.lib.docview.Document):
             if fileObject:
                 fileObject.close()  # file is still open, close it 
 
-            wx.MessageBox("Could not open '%s'.  %s" % (wx.lib.docview.FileNameFromPath(filename), sys.exc_value),
+            wx.MessageBox(_("Could not open '%s'.  %s") % (wx.lib.docview.FileNameFromPath(filename), sys.exc_value),
                           msgTitle,
                           wx.OK | wx.ICON_ERROR,
                           self.GetDocumentWindow())

@@ -89,17 +89,15 @@ class ResourceView(object):
             if file_count == 0:
                 self._view._treeCtrl.SetItemHasChildren(item, False)
                     
-    def OpenSelection(self):
-        item = self._view._treeCtrl.GetSelection()
-        if item == None:
-            return
+    def OpenSelection(self,item):
         item_type,item_path = self._view._treeCtrl.GetPyData(item)
         if item_type == self.DIRECTORY_RES_TYPE:
             try:
                 self.LoadDir(item,item_path)
-                self._view._treeCtrl.Expand(item)
+                ##self._view._treeCtrl.Expand(item)
             except Exception,e:
                 wx.MessageBox(unicode(e),_("Open Directory Error"))
+            self._view._treeCtrl.SelectItem(item)
         else:
             ext = strutils.GetFileExt(item_path)
             if sysutils.IsExtSupportable(ext):

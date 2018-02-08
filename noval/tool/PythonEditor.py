@@ -523,6 +523,9 @@ class PythonService(Service.Service):
                     newDoc.GetFirstView().GetFrame().SetTitle(_("Python Interpreter"))
                 break
 
+    def GetIconIndex(self):
+        return Service.ServiceView.InterpreterIconIndex
+
 
 class PythonCtrl(CodeEditor.CodeCtrl):
 

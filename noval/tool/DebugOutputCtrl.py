@@ -18,15 +18,15 @@ class DebugOutputCtrl(STCTextEditor.TextCtrl):
         
     def CreatePopupMenu(self):
         menu = wx.Menu()   
-        menu.Append(wx.ID_UNDO, "Undo")
-        menu.Append(wx.ID_REDO, "Redo")
+        menu.Append(wx.ID_UNDO, _("Undo"))
+        menu.Append(wx.ID_REDO, _("Redo"))
         menu.AppendSeparator()       
-        menu.Append(wx.ID_CUT, "Cut")
-        menu.Append(wx.ID_COPY, "Copy\tCtrl+C")
-        menu.Append(wx.ID_PASTE, "Paste\tCtrl+V")
-        menu.Append(wx.ID_CLEAR, "Clear")
+        menu.Append(wx.ID_CUT, _("Cut"))
+        menu.Append(wx.ID_COPY, _("Copy\tCtrl+C"))
+        menu.Append(wx.ID_PASTE, _("Paste\tCtrl+V"))
+        menu.Append(wx.ID_CLEAR, _("Clear"))
         menu.AppendSeparator()
-        menu.Append(wx.ID_SELECTALL, "Select All\tCtrl+A")
+        menu.Append(wx.ID_SELECTALL, _("Select All\tCtrl+A"))
                     
         menu.AppendCheckItem(TextService.WORD_WRAP_ID, _("Word Wrap"))
         wx.EVT_MENU(self, wx.ID_UNDO, self.DSProcessEvent) 

@@ -14,6 +14,8 @@ import wx
 import wx.lib.docview
 import wx.lib.pydocview
 import STCTextEditor
+import noval.util.sysutils as sysutilslib
+import os
 _ = wx.GetTranslation
 
 
@@ -24,6 +26,9 @@ class ServiceView(wx.EvtHandler):
     """ Basic Service View.
     """
     bottomTab = None
+    InterpreterIconIndex = -1
+    SearchIconIndex = -1
+    DebugRunIconIndex = -1
     
     #----------------------------------------------------------------------------
     # Overridden methods
@@ -106,7 +111,20 @@ class ServiceView(wx.EvtHandler):
         if self._embeddedWindow or windowLoc == FLOATING_MINIFRAME:
             if (self._service.GetEmbeddedWindowLocation() == wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM):
                 if ServiceView.bottomTab == None:
+
+                    iconList = wx.ImageList(16, 16, 3)
+                    interpreter_icon_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "interpreter.ico")
+                    interpreter_icon = wx.Icon(interpreter_icon_path, wx.BITMAP_TYPE_ICO)
+                    ServiceView.InterpreterIconIndex = iconList.AddIcon(interpreter_icon)
+                    search_icon_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "search.ico")
+                    search_icon = wx.Icon(search_icon_path, wx.BITMAP_TYPE_ICO)
+                    ServiceView.SearchIconIndex = iconList.AddIcon(search_icon)
+                    debug_icon_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "debug.ico")
+                    debug_icon = wx.Icon(debug_icon_path, wx.BITMAP_TYPE_ICO)
+                    ServiceView.DebugRunIconIndex = iconList.AddIcon(debug_icon)
+
                     ServiceView.bottomTab = wx.Notebook(frame, wx.NewId(), (0,0), (100,100), wx.LB_DEFAULT, "Bottom Tab")
+                    ServiceView.bottomTab.AssignImageList(iconList)
                     wx.EVT_RIGHT_DOWN(ServiceView.bottomTab, self.OnNotebookRightClick)
                     wx.EVT_MIDDLE_DOWN(ServiceView.bottomTab, self.OnNotebookMiddleClick)
                     sizer.Add(ServiceView.bottomTab, 1, wx.TOP|wx.EXPAND, 4)
@@ -117,6 +135,9 @@ class ServiceView(wx.EvtHandler):
                 self._control = self._CreateControl(ServiceView.bottomTab, wx.NewId())
                 if self._control != None:
                     ServiceView.bottomTab.AddPage(self._control, self._service.GetServiceName())
+                    if self._service.GetIconIndex() != -1:
+                        index = ServiceView.bottomTab.GetPageCount() - 1
+                        ServiceView.bottomTab.SetPageImage(index,self._service.GetIconIndex())
                 ServiceView.bottomTab.Layout()
             else:
                 # Factor this out.
@@ -355,4 +376,7 @@ class Service(BaseService):
         elif self._view == event.GetEventObject().GetView():
             self.SetView(None)
         return True
+
+    def GetIconIndex(self):
+        return -1
 

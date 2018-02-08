@@ -169,6 +169,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 self.my_locale.AddCatalogLookupPathPrefix(os.path.join(sysutilslib.mainModuleDir,'noval','locale'))
                 ibRet = self.my_locale.AddCatalog(self.GetAppName().lower())
                 ibRet = self.my_locale.AddCatalog("wxstd")
+                self.my_locale.AddCatalog("wxstock")
 
         docManager = IDEDocManager(flags = self.GetDefaultDocManagerFlags())
         self.SetDocumentManager(docManager)

@@ -170,3 +170,6 @@ class MessageService(Service.Service):
 
     def _CreateView(self):
         return MessageView(self)
+
+    def GetIconIndex(self):
+        return Service.ServiceView.SearchIconIndex
