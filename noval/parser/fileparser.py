@@ -7,6 +7,7 @@ import sys
 import utils
 import pickle
 
+#below tow codes will cause redirect output problem when use py2exe to transfer into windows exe
 #reload(sys)
 #sys.setdefaultencoding("utf-8")
 
