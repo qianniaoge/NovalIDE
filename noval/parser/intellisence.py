@@ -348,14 +348,15 @@ class IntellisenceManager(object):
     def GetMemberList(self,name):
         names = name.split(".")
         name_count = len(names)
-        i = 0
+        i = 1
         module_name = ""
-        while i < name_count:
+        while i <= name_count:
             fit_name = ".".join(names[:i])
             if self.HasModule(fit_name):
                 module_name = fit_name
             else:
                 break
+            i += 1
         if not self.HasModule(module_name):
             return []
         module = self.GetModule(module_name)

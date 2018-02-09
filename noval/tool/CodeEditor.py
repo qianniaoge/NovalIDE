@@ -335,7 +335,7 @@ class CodeView(STCTextEditor.TextView):
         self.GetCtrl().AutoCompSetChooseSingle(True)
         self.GetCtrl().AutoCompSetIgnoreCase(True)
         context, hint = self.GetAutoCompleteHint()
-        replaceList, replaceLen = self.GetAutoCompleteKeywordList(context, hint)
+        replaceList, replaceLen = self.GetAutoCompleteKeywordList(context, hint,self.GetCtrl().GetCurrentLine())
         if replaceList and len(replaceList) != 0: 
             self.GetCtrl().AutoCompShow(replaceLen, replaceList)
 
@@ -377,7 +377,7 @@ class CodeView(STCTextEditor.TextView):
         return ['Put', 'Editor Specific', 'Keywords', 'Here']
 
 
-    def GetAutoCompleteKeywordList(self, context, hint):            
+    def GetAutoCompleteKeywordList(self, context, hint,line):            
         """ Replace this method with Editor specific keywords """
         kw = self.GetAutoCompleteDefaultKeywords()
         

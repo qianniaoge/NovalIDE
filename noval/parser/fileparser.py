@@ -7,8 +7,8 @@ import sys
 import utils
 import pickle
 
-reload(sys)
-sys.setdefaultencoding("utf-8")
+#reload(sys)
+#sys.setdefaultencoding("utf-8")
 
 CLASS_METHOD_NAME = "classmethod"
 STATIC_METHOD_NAME = "staticmethod"
@@ -66,7 +66,7 @@ def fix_ref_module_name(module_dir,ref_module_name):
         return utils.get_top_modulename(ref_module_path)[0]
     elif os.path.exists(ref_module_package_file_path):
         return utils.get_top_modulename(ref_module_package_file_path)[0]
-    elif sys.modules.has_key(ref_module_name):
+    elif ref_module_name in sys.modules:
         return sys.modules[ref_module_name].__name__
     else:
         return ref_module_name
@@ -77,13 +77,17 @@ def fix_refs(module_dir,refs):
         ref['module'] = ref_module_name
 
 def dump(module_path,output_name,dest_path,is_package):
-    with open(module_path) as f:
+    if utils.IsPython3():
+        f = open(module_path,encoding="utf-8")
+    else:
+        f = open(module_path)
+    with f:
         content = f.read()
         try:
             node = ast.parse(content,module_path)
             childs,refs = walk(node)
-        except Exception,e:
-            print e
+        except:
+            ###print e
             return
         module_name = os.path.basename(module_path).split(".")[0]
         if is_package:
@@ -104,7 +108,7 @@ def dump(module_path,output_name,dest_path,is_package):
         dest_file_name = os.path.join(dest_path,output_name )
         with open(dest_file_name + ".$members", 'wb') as o1:
             # Pickle dictionary using protocol 0.
-            pickle.dump(module_dict, o1)
+            pickle.dump(module_dict, o1,protocol=0)
         with open(dest_file_name + ".$memberlist", 'w') as o2:
             name_sets = set()
             for data in childs:
@@ -127,12 +131,24 @@ def make_module_dict(name,path,is_builtin,childs,refs=[]):
     return module_data
                    
 def parse(module_path):
-    with open(module_path) as f:
-        content = f.read()
-        node = ast.parse(content,module_path)
+    try:
+        with open(module_path) as f:
+            content = f.read()
+            node = ast.parse(content,module_path)
+            module = nodeast.Module(os.path.basename(module_path).split('.')[0],module_path)
+            deep_walk(node,module)
+            return module
+    except:
+        return None
+
+def parse_content(content,module_path):
+    try:
+        node = ast.parse(content.encode("utf-8"),module_path)
         module = nodeast.Module(os.path.basename(module_path).split('.')[0],module_path)
         deep_walk(node,module)
-        return module 
+        return module
+    except:
+        return None
 
 def get_attribute_name(node):
     value = node.value
@@ -382,5 +398,5 @@ if __name__ == "__main__":
         datas = pickle.load(f)
    ### print datas['name'],datas['path'],datas['is_builtin']
     import json
-    print json.dumps(datas,indent=4)
+    print (json.dumps(datas,indent=4))
     

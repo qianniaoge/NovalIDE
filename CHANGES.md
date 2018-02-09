@@ -98,3 +98,7 @@ Version 1.0.4 -------------2018-02-04
 11.supplement chinese translation of wx stock id items
 12.repair bug when load interpreters and set first add interpreter as default interpreter
 13.repair check syntax bug in python2.6
+14.partly support smart analyse interpreter data of python3 version
+15.optimise outline load parse data mechanism and repair load file bug
+17.implement new auto completion function of menu item
+18.repair package install bug on linux os

@@ -33,9 +33,9 @@ elif sys.platform.find('linux') != -1:
             test_suite='noval.tests',
             package_data={
                 'noval': [
-                        'tool/bmp_source/*',
-                        'tool/data/*',
                         'tool/data/intellisence/builtins/*',
+                        'tool/data/*.txt',
+                        'tool/bmp_source/*', 
                         'locale/en_US/LC_MESSAGES/*.mo',
                         'locale/zh_CN/LC_MESSAGES/*.mo'
                         ],

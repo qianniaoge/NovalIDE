@@ -82,3 +82,8 @@ def IsNoneOrEmpty(value):
     elif value == "":
         return True
     return False
+
+def IsPython3():
+    if sys.version_info[0] >= 3:
+        return True
+    return False

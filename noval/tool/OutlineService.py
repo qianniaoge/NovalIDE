@@ -503,7 +503,7 @@ class OutlineService(Service.Service):
             if view.DoLoadOutlineCallback(force=force):
                 self.GetView().OnSort(wx.ConfigBase_Get().ReadInt("OutlineSort", SORT_BY_NONE))
                 self.LoadExpansionState()
-            if lineNum >= 0:
+            if lineNum >= 0 and view.ModuleScope is not None:
                 scope = view.ModuleScope.FindScope(lineNum)
                 if scope.Parent is None:
                     return

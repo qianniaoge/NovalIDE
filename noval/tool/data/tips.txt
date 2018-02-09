@@ -1,13 +1,14 @@
 Middle-Mouse-Click on the tab for an open file will close the file.
 Ctrl+Shit+Space in any editor does code completion.
 Right-Mouse-Click in Outline window allows you to change display sorting.
-Ctrl+Mouse roll will zoom in/out the editor text
-You can delete the current line via Ctrl+l
-Press F12 will go to definition of current statement
-Press F5 you can run the python script in terminator
-You can debug the python script in editor via Ctrl+F5
-Ctrl+J will list members of current statement
+Ctrl+Mouse roll will zoom in/out the editor text.
+You can delete the current line via Ctrl+l.
+Press F12 will go to definition of current statement.
+Press F5 you can run the python script in terminator.
+You can debug the python script in editor via Ctrl+F5.
+Ctrl+J will list members of current statement.
 In an editor, you can add line markers via Ctrl-M and jump to the next marker with F4 or previous marker with Shift-F4.
 In an editor. you can use the numpad + and - keys to toggle folding.
-Breakpoints for the debugger can be set while the process is running.
 A split window can be closed by dragging the sash to one of its borders.
+You can use Ctrl+Tab to switch the document tab.
+You can use Tab to increase the indent of line and use Shift+Tab to decrease the indent of line

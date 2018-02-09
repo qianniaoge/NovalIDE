@@ -26,7 +26,6 @@ import sys # for GetAutoCompleteKeywordList
 import MessageService # for OnCheckCode
 import OutlineService
 import FindInDirService
-from UICommon import CaseInsensitiveCompare
 import codecs
 import noval.parser.config as parserconfig
 import Service
@@ -39,6 +38,7 @@ import noval.parser.nodeast as nodeast
 import noval.util.strutils as strutils
 import CompletionService
 import DebuggerService
+from noval.parser.utils import CmpMember
 try:
     import checker # for pychecker
     _CHECKER_INSTALLED = True
@@ -87,7 +87,7 @@ class PythonDocument(CodeEditor.CodeDocument):
             self.file_encoding = declare_encoding
     
     def DoSaveBehind(self):
-        self.LoadViewModule(self.GetFilename())
+        pass
         
     def GetDocEncoding(self,encoding):
         lower_encoding = encoding.lower() 
@@ -107,21 +107,6 @@ class PythonDocument(CodeEditor.CodeDocument):
         if self.GetDocEncoding(encoding) != self.GetDocEncoding(self.file_encoding):
             return True
         return False
-        
-    def OnOpenDocument(self, filename):
-        if not CodeEditor.CodeDocument.OnOpenDocument(self,filename):
-            return False
-            
-        self.LoadViewModule(filename)
-        return True
-        
-    def LoadViewModule(self,filename):
-        view = self.GetFirstView()
-        module = parser.parse(filename)
-        module_scope = scope.ModuleScope(module,view.GetCtrl().GetLineCount())
-        module_scope.MakeModuleScopes()
-        module_scope.RouteChildScopes()
-        view.ModuleScope = module_scope
 
 class PythonView(CodeEditor.CodeView):
 
@@ -129,6 +114,8 @@ class PythonView(CodeEditor.CodeView):
         super(PythonView,self).__init__()
         self._module_scope = None
         self._run_parameter = None
+        #document checksum to check document is updated
+        self._checkSum = -1
 
     def SetRunParameter(self,arg,start_up,env):
         self._run_parameter = RunParameter(arg,env,start_up)
@@ -140,6 +127,18 @@ class PythonView(CodeEditor.CodeView):
     @property
     def ModuleScope(self):
         return self._module_scope
+
+    def LoadModule(self,filename,doc_update):
+        if not doc_update:
+            return
+
+        module = parser.parse_content(self.GetCtrl().GetValue(),filename)
+        if module is None:
+            return
+        module_scope = scope.ModuleScope(module,self.GetCtrl().GetLineCount())
+        module_scope.MakeModuleScopes()
+        module_scope.RouteChildScopes()
+        self.ModuleScope = module_scope
         
     @ModuleScope.setter
     def ModuleScope(self,module_scope):
@@ -180,7 +179,7 @@ class PythonView(CodeEditor.CodeView):
         return status
        
 
-    def GetAutoCompleteKeywordList(self, context, hint):
+    def GetAutoCompleteKeywordList(self, context, hint,line):
         obj = None
         try:
             if context and len(context):
@@ -191,6 +190,20 @@ class PythonView(CodeEditor.CodeView):
             
         if obj is None:
             kw = keyword.kwlist[:]
+            module_scope = self.ModuleScope
+            members = []
+            if module_scope is not None:
+                scope = module_scope.FindScope(line)
+                parent = scope
+                while parent is not None:
+                    if parent.Parent is None:
+                        members.extend(parent.GetMembers())
+                    else:
+                        members.extend(parent.GetMemberList(False))
+                    parent = parent.Parent
+                kw.extend(members)
+                builtin_members = intellisence.IntellisenceManager().GetModuleMembers("__builtin__","")
+                kw.extend(builtin_members)
         else:
             symTbl = dir(obj)
             kw = filter(lambda item: item[0] != '_', symTbl)  # remove local variables and methods
@@ -200,7 +213,7 @@ class PythonView(CodeEditor.CodeView):
             filterkw = filter(lambda item: item.lower().startswith(lowerHint), kw)  # remove variables and methods that don't match hint
             kw = filterkw
 
-        kw.sort(CaseInsensitiveCompare)
+        kw.sort(CmpMember)
         if hint:
             replaceLen = len(hint)
         else:
@@ -299,29 +312,31 @@ class PythonView(CodeEditor.CodeView):
 
         view = treeCtrl.GetCallbackView()
         newCheckSum = self.GenCheckSum()
+        doc_update = self._checkSum != newCheckSum
         if not force:
             if view and view is self:
                 if self._checkSum == newCheckSum:
                     return False
         self._checkSum = newCheckSum
-        treeCtrl.DeleteAllItems()
         document = self.GetDocument()
         if not document:
             return True
-        if self.ModuleScope == None:
-            return
         filename = document.GetFilename()
-        if filename:
-            rootItem = treeCtrl.AddRoot(self.ModuleScope.Module.Name)
-            treeCtrl.SetItemImage(rootItem,treeCtrl.moduleidx,wx.TreeItemIcon_Normal)
-            treeCtrl.SetDoSelectCallback(rootItem, self, self.ModuleScope.Module)
-        else:
+        self.LoadModule(filename,doc_update)
+        if self.ModuleScope == None:
+            if view is None or filename != view.GetDocument().GetFilename():
+                treeCtrl.DeleteAllItems()
             return True
-        text = self.GetValue()
-        if not text:
-            return True
+        #should freeze control to prevent update and treectrl flick
+        treeCtrl.Freeze()
+        treeCtrl.DeleteAllItems()
+        rootItem = treeCtrl.AddRoot(self.ModuleScope.Module.Name)
+        treeCtrl.SetItemImage(rootItem,treeCtrl.moduleidx,wx.TreeItemIcon_Normal)
+        treeCtrl.SetDoSelectCallback(rootItem, self, self.ModuleScope.Module)
         self.TranverseItem(treeCtrl,self.ModuleScope.Module,rootItem)
         treeCtrl.Expand(rootItem)
+        #use thaw to update freezw control
+        treeCtrl.Thaw()
         return True
            
     def TranverseItem(self,treeCtrl,node,parent):
@@ -529,7 +544,7 @@ class PythonService(Service.Service):
 
 class PythonCtrl(CodeEditor.CodeCtrl):
 
-    TypeKeyWords = "complex list tuple dict int long float True False None"
+    TypeKeyWords = "complex list tuple dict bool int long float True False None"
 
     def __init__(self, parent, id=-1, style=wx.NO_FULL_REPAINT_ON_RESIZE):
         CodeEditor.CodeCtrl.__init__(self, parent, id, style)
@@ -893,7 +908,7 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         member_list = []
         if None != scope_found:
             if scope_found.Parent is not None and isinstance(scope_found.Node,nodeast.ImportNode):
-                member_list = scope_found.GetMemberList(text)
+                member_list = scope_found.GetImportMemberList(text)
             else:
                 member_list = scope_found.GetMemberList()
         if member_list == []:

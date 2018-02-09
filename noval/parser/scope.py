@@ -204,6 +204,9 @@ class ModuleScope(Scope):
 
         def EqualName(self,name):
             return self.Module.Name == name
+
+        def GetMembers(self):
+            return self.Module.GetMemberList(False)
                                   
 class NodeScope(Scope):
         def __init__(self,node,parent,root):
@@ -299,9 +302,9 @@ class ClassDefScope(NodeScope):
                 base_scope = self.Parent.FindDefinitionScope(base)
                 if base_scope is not None:
                     if base_scope.Node.Type == config.NODE_IMPORT_TYPE:
-                        member_list.extend(base_scope.GetMemberList(base))
+                        member_list.extend(base_scope.GetImportMemberList(base))
                     else:
-                        member_list.extend(base_scope.GetMemberList(base))
+                        member_list.extend(base_scope.GetMemberList())
             self.UniqueInitMember(member_list)
             if sort:
                 member_list.sort(CmpMember)
@@ -327,7 +330,7 @@ class NameScope(NodeScope):
                 found_scope = self.FindDefinitionScope(self.Node.Value)
                 if found_scope is not None:
                     if found_scope.Node.Type == config.NODE_IMPORT_TYPE:
-                        member_list = found_scope.GetMemberList(self.Node.Value)
+                        member_list = found_scope.GetImportMemberList(self.Node.Value)
                     else:
                         member_list = found_scope.GetMemberList()
             else:
@@ -382,7 +385,7 @@ class ImportScope(NodeScope):
                 fix_name = fix_name[1:]
             return fix_name
 
-        def GetMemberList(self,name):
+        def GetImportMemberList(self,name):
             fix_name = self.MakeFixName(name)
             member_list = intellisence.IntellisenceManager().GetModuleMembers(self.Node.Name,fix_name)
             member_list.sort(CmpMember)

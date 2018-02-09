@@ -178,7 +178,7 @@ def is_test_dir(dir_path):
 
 
 def process_sys_modules(dest_path):
-    for name in sys.modules:
+    for name in list(sys.modules.keys()):
         module_members_file = os.path.join(dest_path,name+ ".$members")
         if os.path.exists(module_members_file):
             ###print 'sys module',name,'has been already analyzed'

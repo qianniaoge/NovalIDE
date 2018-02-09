@@ -52,9 +52,28 @@ class BuiltinNode(AbstractAst):
     @property
     def IsBuiltIn(self):
         return self._is_built_in
+
+    def IsValidMember(self,child):
+        if child.Type == config.NODE_UNKNOWN_TYPE:
+            return False
+        return True
         
     def GetMemberList(self,sort=True):
-        member_list = [child.Name for child in self.Childs if child.Type != config.NODE_UNKNOWN_TYPE]
+        ###member_list = [child.Name for child in self.Childs if child.Type != config.NODE_UNKNOWN_TYPE]
+        member_list = []
+        for child in self.Childs:
+            if self.IsValidMember(child):
+                if child.Type == config.NODE_FROMIMPORT_TYPE:
+                    member_list.extend(child.GetMemberList(sort))
+                elif child.Type == config.NODE_IMPORT_TYPE:
+                    if child.AsName is not None:
+                        member_list.append(child.AsName)
+                    else:
+                        if child.Name.find('.') == -1:
+                            member_list.append(child.Name)
+                else:
+                    if child.Name.find('.') == -1:
+                        member_list.append(child.Name)
         if sort:
             member_list.sort(CmpMember)
         return member_list
@@ -75,9 +94,9 @@ class Module(BuiltinNode):
         self._path = path
         
     def __str__(self):
-        print 'module name is',self.Name,'path is',self.Path
-        for child in self.Childs:
-            print 'module child:', child
+        #print 'module name is',self.Name,'path is',self.Path
+        #for child in self.Childs:
+         #   print 'module child:', child
         return self.Name
         
 class Node(BuiltinNode):
@@ -99,7 +118,7 @@ class ArgNode(Node):
     def __init__(self,name,line,col,parent):
         super(ArgNode,self).__init__(name,line,col,config.NODE_ARG_TYPE,parent)
     def __str__(self):
-        print 'type is arg, name is',self.Name,'line is',self.Line,'col is',self.Col
+        #print 'type is arg, name is',self.Name,'line is',self.Line,'col is',self.Col
         return self.Name
 
 class FuncDef(Node):
@@ -128,9 +147,9 @@ class FuncDef(Node):
         return self._args
         
     def __str__(self):
-        print 'type is func, name is',self.Name,'args is',self.Args,'line is',self.Line,'col is',self.Col
-        for child in self.Childs:
-            print 'func child:', child
+        #print 'type is func, name is',self.Name,'args is',self.Args,'line is',self.Line,'col is',self.Col
+        #for child in self.Childs:
+         #   print 'func child:', child
         return self.Name
 
     @property
@@ -146,9 +165,9 @@ class ClassDef(Node):
         self._bases = bases
         
     def __str__(self):
-        print 'type is class, name is',self.Name,'line is',self.Line,'col is',self.Col
-        for child in self.Childs:
-            print 'class child:', child
+        #print 'type is class, name is',self.Name,'line is',self.Line,'col is',self.Col
+        #for child in self.Childs:
+         #   print 'class child:', child
         return self.Name
         
     @property        
@@ -169,7 +188,7 @@ class AssignDef(Node):
         return self._value
         
     def __str__(self):
-        print 'type is assign, name is',self.Name,'line is',self.Line,'col is',self.Col
+        #print 'type is assign, name is',self.Name,'line is',self.Line,'col is',self.Col
         return self.Name
         
 class PropertyDef(AssignDef):
@@ -186,7 +205,7 @@ class PropertyDef(AssignDef):
             self.Parent.Parent.AppendChild(self)
 
     def __str__(self):
-        print 'type is property, name is',self.Name,'line is',self.Line,'col is',self.Col
+        #print 'type is property, name is',self.Name,'line is',self.Line,'col is',self.Col
         return self.Name
         
 class ImportNode(Node):
@@ -200,6 +219,17 @@ class ImportNode(Node):
 class FromImportNode(Node):
      def __init__(self,name,line,col,parent):
         super(FromImportNode,self).__init__(name,line,col,config.NODE_FROMIMPORT_TYPE,parent)
+
+     def GetMemberList(self,sort=True):
+        member_list = []
+        for child in self.Childs:
+            if child.AsName is None:
+                member_list.append(child.Name)
+            else:
+                member_list.append(child.AsName)
+        if sort:
+            member_list.sort(CmpMember)
+        return member_list
         
 class UnknownNode(Node):
      def __init__(self,line,col,parent):
