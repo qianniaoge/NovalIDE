@@ -72,7 +72,8 @@ if not _WINDOWS or _PYWIN32_INSTALLED:
 
 _ = wx.GetTranslation
 
-_VERBOSE = True
+#VERBOSE mode will invoke threading.Thread _VERBOSE,which will print a lot of thread debug text on screen
+_VERBOSE = False
 _WATCHES_ON = False
 
 import  wx.lib.newevent

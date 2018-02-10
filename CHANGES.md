@@ -107,3 +107,4 @@ Version 1.0.4 -------------2018-02-04
 21.prevent pop warn dialog when the windows exe program exit which is converted by py2exe
 22.fix 'cannot import name Publisher' error when use py2exe convert to windows exe
 23.fix run python script which path has chinese character on linux os
+24.close threading.Thread VERBOSE mode in debugger service
