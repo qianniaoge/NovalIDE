@@ -11,12 +11,18 @@
 #----------------------------------------------------------------------------
 import wx.lib.pydocview
 from tool import IDE
+from util import sysutils
 
 import os
 import sys
 sys.stdout = sys.stderr
 
+if sysutils.isWindows():
+    def exitfunc():
+        pass
 
+    #register exit func to prevent pop warn dialog when windows exe program exit which is converted by py2exe
+    sys.exitfunc = exitfunc
 
 def main():
     # This is here as the base IDE entry point.  Only difference is that -baseide is passed.

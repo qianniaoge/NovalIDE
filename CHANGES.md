@@ -101,4 +101,9 @@ Version 1.0.4 -------------2018-02-04
 14.partly support smart analyse interpreter data of python3 version
 15.optimise outline load parse data mechanism and repair load file bug
 17.implement new auto completion function of menu item
-18.repair package install bug on linux os
+18.fix package install bug on linux os
+19.fix serious bug when load python3 interprter and smart analyse its data when convert to windows exe with py2exe
+20.add debug mode which will be convert to console exe with py2exe
+21.prevent pop warn dialog when the windows exe program exit which is converted by py2exe
+22.fix 'cannot import name Publisher' error when use py2exe convert to windows exe
+23.fix run python script which path has chinese character on linux os

@@ -2585,7 +2585,7 @@ class DebuggerService(Service.Service):
                 environment[key] = str(environment[key])
             subprocess.Popen(command,shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE,cwd=startIn.encode(sys_encoding),env=environment)
         else:
-            python_cmd = "%s \"%s\"" % (python_executable_path,fileToRun.encode(sys_encoding))
+            python_cmd = u"%s \"%s\"" % (python_executable_path,fileToRun)
             if initialArgs is not None:
                 python_cmd += " " + initialArgs
             python_cmd += ";echo 'Please enter any to continue';read"

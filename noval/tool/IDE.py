@@ -83,6 +83,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
 
         # Suppress non-fatal errors that might prompt the user even in cases
         # when the error does not impact them.
+        #the log will redirect to NovalIDE.exe.log when convert into windows exe with py2exe
         wx.Log_SetActiveTarget(AppLog())
         if "-h" in args or "-help" in args or "--help" in args\
             or (wx.Platform == "__WXMSW__" and "/help" in args):

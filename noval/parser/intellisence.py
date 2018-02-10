@@ -311,7 +311,7 @@ class IntellisenceManager(object):
             startupinfo = None
         interpreter.Analysing = True
         self._is_running = interpreter.Analysing
-        self._process_obj = subprocess.Popen(cmd_list,startupinfo=startupinfo)
+        self._process_obj = subprocess.Popen(cmd_list,startupinfo=startupinfo,cwd=os.path.join(sysutilslib.mainModuleDir, "noval", "parser"))
         self.Wait(interpreter,progress_dlg,load_data_end)
         
     def Wait(self,interpreter,progress_dlg,load_data_end):

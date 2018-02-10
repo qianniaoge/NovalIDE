@@ -3,14 +3,30 @@ if sys.platform == "win32":
     from distutils.core import setup
     import py2exe
     import glob
+    is_debug = False
+    for i,argv in enumerate(sys.argv):
+        if argv == "debug" or argv == "-debug":
+            is_debug = True
+            del sys.argv[i]
 
-    setup(windows=[{"script":"NovalIDE.py","icon_resources":[(1, u"noval.ico")]}],
-          options = { "py2exe":{"dll_excludes":["MSVCP90.dll"]}},
-            data_files=[("noval/tool/bmp_source", glob.glob("noval/tool/bmp_source/*.ico") + glob.glob("noval/tool/bmp_source/*.jpg") + glob.glob("noval/tool/bmp_source/*.png")),
-                ("noval/tool/data",["noval/tool/data/tips.txt"]),
-                 ("noval/parser",glob.glob("noval/parser/*.py")),
-                  ("noval/locale/en_US/LC_MESSAGES",['noval/locale/en_US/LC_MESSAGES/novalide.mo']),
-                   ("noval/locale/zh_CN/LC_MESSAGES",['noval/locale/zh_CN/LC_MESSAGES/novalide.mo']),],)
+    if is_debug:
+        print 'executable run in console mode'
+        setup(console=[{"script":"NovalIDE.py","icon_resources":[(1, u"noval.ico")]}],
+              options = { "py2exe":{"dll_excludes":["MSVCP90.dll"],"packages": ['wx.lib.pubsub']}},
+                data_files=[("noval/tool/bmp_source", glob.glob("noval/tool/bmp_source/*.ico") + glob.glob("noval/tool/bmp_source/*.jpg") + glob.glob("noval/tool/bmp_source/*.png")),
+                    ("noval/tool/data",["noval/tool/data/tips.txt"]),
+                     ("noval/parser",glob.glob("noval/parser/*.py")),
+                      ("noval/locale/en_US/LC_MESSAGES",['noval/locale/en_US/LC_MESSAGES/novalide.mo']),
+                       ("noval/locale/zh_CN/LC_MESSAGES",['noval/locale/zh_CN/LC_MESSAGES/novalide.mo']),],)
+    else:
+        print 'executable run in windows mode'
+        setup(windows=[{"script":"NovalIDE.py","icon_resources":[(1, u"noval.ico")]}],
+              options = { "py2exe":{"dll_excludes":["MSVCP90.dll"],"packages": ['wx.lib.pubsub']}},
+                data_files=[("noval/tool/bmp_source", glob.glob("noval/tool/bmp_source/*.ico") + glob.glob("noval/tool/bmp_source/*.jpg") + glob.glob("noval/tool/bmp_source/*.png")),
+                    ("noval/tool/data",["noval/tool/data/tips.txt"]),
+                     ("noval/parser",glob.glob("noval/parser/*.py")),
+                      ("noval/locale/en_US/LC_MESSAGES",['noval/locale/en_US/LC_MESSAGES/novalide.mo']),
+                       ("noval/locale/zh_CN/LC_MESSAGES",['noval/locale/zh_CN/LC_MESSAGES/novalide.mo']),],)
 
 elif sys.platform.find('linux') != -1:
     from distutils.core import setup
