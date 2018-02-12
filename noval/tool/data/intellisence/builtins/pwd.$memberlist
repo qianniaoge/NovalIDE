@@ -1,0 +1,8 @@
+__doc__
+__name__
+__package__
+getpwall
+getpwnam
+getpwuid
+struct_passwd
+struct_pwent
