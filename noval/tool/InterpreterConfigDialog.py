@@ -168,7 +168,7 @@ class InterpreterConfigDialog(wx.Dialog):
         passedCheck = False
         while status == wx.ID_OK and not passedCheck:
             if 0 == len(dlg.name_ctrl.GetValue()):
-                wx.MessageBox("Interpreter Name is empty",_("Error"),wx.OK|wx.ICON_ERROR,self)
+                wx.MessageBox(_("Interpreter Name is empty"),_("Error"),wx.OK|wx.ICON_ERROR,self)
                 status = dlg.ShowModal()
             else:
                 name = dlg.name_ctrl.GetValue()
@@ -184,13 +184,13 @@ class InterpreterConfigDialog(wx.Dialog):
         passedCheck = False
         while status == wx.ID_OK and not passedCheck:
             if 0 == len(dlg.path_ctrl.GetValue()):
-                wx.MessageBox("Interpreter Path is empty",_("Error"),wx.OK|wx.ICON_ERROR,self)
+                wx.MessageBox(_("Interpreter Path is empty"),_("Error"),wx.OK|wx.ICON_ERROR,self)
                 status = dlg.ShowModal()
             elif 0 == len(dlg.name_ctrl.GetValue()):
-                wx.MessageBox("Interpreter Name is empty",_("Error"),wx.OK|wx.ICON_ERROR,self)
+                wx.MessageBox(_("Interpreter Name is empty"),_("Error"),wx.OK|wx.ICON_ERROR,self)
                 status = dlg.ShowModal()
             elif not os.path.exists(dlg.path_ctrl.GetValue()):
-                wx.MessageBox("Interpreter Path is not exist",_("Error"),wx.OK|wx.ICON_ERROR,self)
+                wx.MessageBox(_("Interpreter Path is not exist"),_("Error"),wx.OK|wx.ICON_ERROR,self)
                 status = dlg.ShowModal()
             else:
                 try:

@@ -201,7 +201,7 @@ class ModuleLoader(object):
                     return self.MakeDefinitionScope(child)
                 else:
                     if child[self.TYPE_KEY] != config.NODE_MODULE_TYPE:
-                        child_definition = self.FindChildDefinition(child[self.CHILD_KEY],names[1:])
+                        child_definition = self.FindChildDefinition(child.get(self.CHILD_KEY,[]),names[1:])
                         if child_definition is None and child[self.TYPE_KEY] == config.NODE_CLASSDEF_TYPE:
                             bases = child.get('bases',[])
                             #search member definition in parent inherited classes

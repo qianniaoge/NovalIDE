@@ -57,6 +57,10 @@ import DebugOutputCtrl
 import InterpreterConfigDialog
 import noval.parser.intellisence as intellisence
 
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
 if wx.Platform == '__WXMSW__':
     try:
         import win32api
@@ -2578,13 +2582,13 @@ class DebuggerService(Service.Service):
             initialArgs = doc_view.RunParameter.Arg
             environment = doc_view.RunParameter.Environment
         if sysutilslib.isWindows():
-            command = "cmd.exe /c %s \"%s\""  % (python_executable_path,fileToRun.encode(sys_encoding))
+            command = u"cmd.exe /c %s \"%s\""  % (python_executable_path,fileToRun)
             if initialArgs is not None:
                 command += " " + initialArgs
             command += " &pause"
             for key in environment.keys():
                 environment[key] = str(environment[key])
-            subprocess.Popen(command,shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE,cwd=startIn.encode(sys_encoding),env=environment)
+            subprocess.Popen(command.encode(sys_encoding),shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE,cwd=startIn.encode(sys_encoding),env=environment)
         else:
             python_cmd = u"%s \"%s\"" % (python_executable_path,fileToRun)
             if initialArgs is not None:

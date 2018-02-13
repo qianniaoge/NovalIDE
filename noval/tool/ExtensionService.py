@@ -21,6 +21,7 @@ import subprocess
 import sys
 import UnitTestDialog
 import noval.util.sysutils as sysutilslib
+import noval.util.fileutils as fileutils
 import Service
 _ = wx.GetTranslation
 
@@ -129,6 +130,10 @@ class ExtensionService(Service.BaseService):
             id = wx.NewId()
             toolsMenu.Append(id,_("&UnitTest"))
             wx.EVT_MENU(frame, id, self.RunUnitTest)
+
+            id = wx.NewId()
+            toolsMenu.Append(id,_("&Interpreter"))
+            wx.EVT_MENU(frame, id, self.OpenInterpreter)
         
         helpMenuIndex = menuBar.FindMenu(_("&Help"))
         helpMenu = menuBar.GetMenu(helpMenuIndex)
@@ -176,6 +181,12 @@ class ExtensionService(Service.BaseService):
             return
         dlg = UnitTestDialog.UnitTestDialog(wx.GetApp().GetTopWindow(),-1,"UnitTest",cur_view)
         dlg.ShowModal()
+
+    def OpenInterpreter(self,event):
+        interpreter = wx.GetApp().GetCurrentInterpreter()
+        if interpreter is None:
+            return
+        fileutils.start_file(interpreter.Path)
         
     def ProcessEvent(self, event):
         id = event.GetId()

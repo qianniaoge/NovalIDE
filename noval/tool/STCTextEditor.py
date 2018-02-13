@@ -27,6 +27,8 @@ import noval.parser.config as parserconfig
 import MarkerService
 import TextService
 import CompletionService
+import NavigationService
+
 _ = wx.GetTranslation
 
 #----------------------------------------------------------------------------
@@ -244,8 +246,15 @@ def MultiClientSelectBGNotYellow(a):
     a.Refresh()
 
 class TextView(wx.lib.docview.View):
-    MARKER_NUM = 0
-    MARKER_MASK = 0x1
+    #book marker margin index
+    BOOK_MARKER_NUM = 0
+    BOOK_MARGIN_WIDTH = 12
+    BOOK_MARKER_MASK = 0x1
+    #line marker margin index
+    LINE_MARKER_NUM = 1
+    #fold marker margin index
+    FOLD_MARKER_NUM = 2
+    FOLD_MARGIN_WIDTH = 12
     
     #----------------------------------------------------------------------------
     # Overridden methods
@@ -830,11 +839,13 @@ class TextView(wx.lib.docview.View):
         if findService:
             line_number = self.GetCtrl().GetLineCount()
             line = findService.GetLineNumber(self.GetDocumentManager().FindSuitableParent(),line_number)
-            if line > -1:
-                line = line - 1
-                self.GetCtrl().EnsureVisible(line)
-                self.GetCtrl().GotoLine(line)
+            self.GotoLine(line)
+           # if line > -1:
+           #    line = line - 1
+           #    self.GetCtrl().EnsureVisible(line)
+           #    self.GetCtrl().GotoLine(line)
 
+    @NavigationService.jumpaction
     def GotoLine(self, lineNum):
         if lineNum > -1:
             lineNum = lineNum - 1  # line numbering for editor is 0 based, we are 1 based.
@@ -867,9 +878,9 @@ class TextView(wx.lib.docview.View):
 
     def MarkerDefine(self):
         """ This must be called after the texteditor is instantiated """
-        self.GetCtrl().MarkerDefine(TextView.MARKER_NUM, wx.stc.STC_MARK_CIRCLE, wx.BLACK, wx.BLUE)
+        self.GetCtrl().MarkerDefine(TextView.BOOK_MARKER_NUM, wx.stc.STC_MARK_CIRCLE, wx.BLACK, wx.BLUE)
 
-    def MarkerToggle(self, lineNum = -1, marker_index=MARKER_NUM, mask=MARKER_MASK):
+    def MarkerToggle(self, lineNum = -1, marker_index=BOOK_MARKER_NUM, mask=BOOK_MARKER_MASK):
         if lineNum == -1:
             lineNum = self.GetCtrl().GetCurrentLine()
         if self.GetCtrl().MarkerGet(lineNum) & mask:
@@ -879,31 +890,31 @@ class TextView(wx.lib.docview.View):
             self.GetCtrl().MarkerAdd(lineNum, marker_index)
             self._markerCount += 1
 
-    def MarkerAdd(self, lineNum = -1, marker_index=MARKER_NUM, mask=MARKER_MASK):
+    def MarkerAdd(self, lineNum = -1, marker_index=BOOK_MARKER_NUM, mask=BOOK_MARKER_MASK):
         if lineNum == -1:
             lineNum = self.GetCtrl().GetCurrentLine()
         self.GetCtrl().MarkerAdd(lineNum, marker_index)
         self._markerCount += 1
 
-    def MarkerDelete(self, lineNum = -1, marker_index=MARKER_NUM, mask=MARKER_MASK):
+    def MarkerDelete(self, lineNum = -1, marker_index=BOOK_MARKER_NUM, mask=BOOK_MARKER_MASK):
         if lineNum == -1:
             lineNum = self.GetCtrl().GetCurrentLine()
         if self.GetCtrl().MarkerGet(lineNum) & mask:
             self.GetCtrl().MarkerDelete(lineNum, marker_index)
             self._markerCount -= 1
 
-    def MarkerDeleteAll(self, marker_num=MARKER_NUM):
+    def MarkerDeleteAll(self, marker_num=BOOK_MARKER_NUM):
         self.GetCtrl().MarkerDeleteAll(marker_num)
-        if marker_num == self.MARKER_NUM:
+        if marker_num == self.BOOK_MARKER_NUM:
             self._markerCount = 0
 
     def MarkerNext(self, lineNum = -1):
         if lineNum == -1:
             lineNum = self.GetCtrl().GetCurrentLine() + 1  # start search below current line
-        foundLine = self.GetCtrl().MarkerNext(lineNum, self.MARKER_MASK)
+        foundLine = self.GetCtrl().MarkerNext(lineNum, self.BOOK_MARKER_MASK)
         if foundLine == -1:
             # wrap to top of file
-            foundLine = self.GetCtrl().MarkerNext(0, self.MARKER_MASK)
+            foundLine = self.GetCtrl().MarkerNext(0, self.BOOK_MARKER_MASK)
             if foundLine == -1:
                 wx.GetApp().GetTopWindow().PushStatusText(_("No markers"))
                 return        
@@ -915,16 +926,16 @@ class TextView(wx.lib.docview.View):
             if lineNum == -1:
                 lineNum = self.GetCtrl().GetLineCount()
 
-        foundLine = self.GetCtrl().MarkerPrevious(lineNum, self.MARKER_MASK)
+        foundLine = self.GetCtrl().MarkerPrevious(lineNum, self.BOOK_MARKER_MASK)
         if foundLine == -1:
             # wrap to bottom of file
-            foundLine = self.GetCtrl().MarkerPrevious(self.GetCtrl().GetLineCount(), self.MARKER_MASK)
+            foundLine = self.GetCtrl().MarkerPrevious(self.GetCtrl().GetLineCount(), self.BOOK_MARKER_MASK)
             if foundLine == -1:
                 wx.GetApp().GetTopWindow().PushStatusText(_("No markers"))
                 return
         self.GotoLine(foundLine + 1)
 
-    def MarkerExists(self, lineNum = -1, mask=MARKER_MASK):
+    def MarkerExists(self, lineNum = -1, mask=BOOK_MARKER_MASK):
         if lineNum == -1:
             lineNum = self.GetCtrl().GetCurrentLine()
         if self.GetCtrl().MarkerGet(lineNum) & mask:
@@ -932,7 +943,7 @@ class TextView(wx.lib.docview.View):
         else:
             return False
 
-    def GetMarkerLines(self, mask=MARKER_MASK):
+    def GetMarkerLines(self, mask=BOOK_MARKER_MASK):
         retval = []
         for lineNum in range(self.GetCtrl().GetLineCount()):
             if self.GetCtrl().MarkerGet(lineNum) & mask:
@@ -1316,11 +1327,11 @@ class TextCtrl(wx.stc.StyledTextCtrl):
             
     def UpdateLineNumberMarginWidth(self):
         if self.GetViewLineNumbers():
-            self.SetMarginWidth(1, self.EstimatedLineNumberMarginWidth())
+            self.SetMarginWidth(TextView.LINE_MARKER_NUM, self.EstimatedLineNumberMarginWidth())
         
     def MarkerDefineDefault(self):
         """ This must be called after the textcontrol is instantiated """
-        self.MarkerDefine(TextView.MARKER_NUM, wx.stc.STC_MARK_ROUNDRECT, wx.BLACK, wx.BLUE)
+        self.MarkerDefine(TextView.BOOK_MARKER_NUM, wx.stc.STC_MARK_ROUNDRECT, wx.BLACK, wx.BLUE)
 
     def OnClear(self):
         # Used when Delete key is hit.
@@ -1383,22 +1394,22 @@ class TextCtrl(wx.stc.StyledTextCtrl):
             self.SetEdgeMode(wx.stc.STC_EDGE_NONE)
 
     def GetViewLineNumbers(self):
-        return self.GetMarginWidth(1) > 0
+        return self.GetMarginWidth(TextView.LINE_MARKER_NUM) > 0
 
     def SetViewLineNumbers(self, viewLineNumbers = True):
         if viewLineNumbers:
-            self.SetMarginWidth(1, self.EstimatedLineNumberMarginWidth())
+            self.SetMarginWidth(TextView.LINE_MARKER_NUM, self.EstimatedLineNumberMarginWidth())
         else:
-            self.SetMarginWidth(1, 0)
+            self.SetMarginWidth(TextView.LINE_MARKER_NUM, 0)
 
     def GetViewFolding(self):
-        return self.GetMarginWidth(2) > 0
+        return self.GetMarginWidth(TextView.FOLD_MARKER_NUM) > 0
 
     def SetViewFolding(self, viewFolding = True):
         if viewFolding:
-            self.SetMarginWidth(2, 12)
+            self.SetMarginWidth(TextView.FOLD_MARKER_NUM, TextView.FOLD_MARGIN_WIDTH)
         else:
-            self.SetMarginWidth(2, 0)
+            self.SetMarginWidth(TextView.FOLD_MARKER_NUM, 0)
 
     def CanWordWrap(self):
         return True

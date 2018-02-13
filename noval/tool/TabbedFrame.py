@@ -4,15 +4,40 @@ import wx
 import noval.util.sysutils as sysutilslib
 import noval.util.fileutils as fileutils
 import noval.parser.config as parserconfig
+import consts
+import noval.tool.NavigationService
+from wx.lib.pubsub import pub as Publisher
 
 _ = wx.GetTranslation
 
-class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame):
+
+class MessageNotification():
+
+    def RegisterMsg(self):
+        Publisher.subscribe(self.OnUpdatePosCache,noval.tool.NavigationService.NOVAL_MSG_UI_STC_POS_JUMPED)
+
+    def OnUpdatePosCache(self, msg):
+        """Update the position cache for buffer position changes
+        @param msg: message data
+
+        """
+        data = msg
+        print data,'+++++++++++++++++++++'
+        noval.tool.NavigationService.NavigationService.DocMgr.AddNaviPosition(data['fname'], data['prepos'])
+        noval.tool.NavigationService.NavigationService.DocMgr.AddNaviPosition(data['fname'], data['pos'])
+
+class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotification):
     
     # wxBug: Need this for linux. The status bar created in pydocview is
     # replaced in IDE.py with the status bar for the code editor. On windows
     # this works just fine, but on linux the pydocview status bar shows up near
     # the top of the screen instead of disappearing. 
+
+    def __init__(self, docManager, frame, id, title, pos = wx.DefaultPosition, size = wx.DefaultSize, style = wx.DEFAULT_FRAME_STYLE, name = "DocTabbedParentFrame", embeddedWindows = 0, minSize=20):
+        wx.lib.pydocview.DocTabbedParentFrame.__init__(self,docManager,frame,id,title,pos,size,style,name,embeddedWindows,minSize)
+        wx.EVT_MENU_RANGE(self, consts.ID_MRU_FILE1, consts.ID_MRU_FILE20, self.OnMRUFile)
+        self.RegisterMsg()
+    
     def CreateDefaultStatusBar(self):
        pass
  
@@ -105,7 +130,7 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame):
         Opens the appropriate file when it is selected from the file history
         menu.
         """
-        n = event.GetId() - wx.ID_FILE1
+        n = event.GetId() - consts.ID_MRU_FILE1
         filename = self._docManager.GetHistoryFile(n)
         if filename and os.path.exists(filename):
             self._docManager.CreateDocument(filename, wx.lib.docview.DOC_SILENT)
@@ -119,3 +144,18 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame):
                               msgTitle,
                               wx.OK | wx.ICON_ERROR,
                               self)
+
+
+class IDEMDIParentFrame(wx.lib.pydocview.DocMDIParentFrame,MessageNotification):
+    
+    # wxBug: Need this for linux. The status bar created in pydocview is
+    # replaced in IDE.py with the status bar for the code editor. On windows
+    # this works just fine, but on linux the pydocview status bar shows up near
+    # the top of the screen instead of disappearing. 
+
+    def __init__(self, docManager, parent, id, title, pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.DEFAULT_FRAME_STYLE, name="DocMDIFrame", embeddedWindows=0, minSize=20):
+        wx.lib.pydocview.DocMDIParentFrame.__init__(docManager,parent,id,title,pos,size,style,name,embeddedWindows,minSize)
+        self.RegisterMsg()
+
+    def CreateDefaultStatusBar(self):
+       pass

@@ -1,5 +1,5 @@
-# Noval
-Noval is a elastic ide from python language
+# NovalIDE
+NovalIDE is a cross platfom ide for python and other language
 
 How to install NovalIDE on linux?
 steps:

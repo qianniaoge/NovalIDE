@@ -19,10 +19,10 @@ import os.path
 import noval.util.sysutils as sysutilslib
 import noval.util.appdirs as appdirs
 import shutil
-import TabbedFrame
 import Interpreter
 import noval.parser.intellisence as intellisence
 import noval.parser.config as parserconfig
+import consts
 
 # Required for Unicode support with python
 # site.py sets this, but Windows builds don't have site.py because of py2exe problems
@@ -146,6 +146,8 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         import Interpreter
         import CompletionService
         import GeneralOption
+        import NavigationService
+        import TabbedFrame
 ##        import UpdateLogIniService
                             
         _EDIT_LAYOUTS = True                        
@@ -302,6 +304,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         perlService             = self.InstallService(PerlEditor.PerlService())
         phpService              = self.InstallService(PHPEditor.PHPService())
         comletionService        = self.InstallService(CompletionService.CompletionService())
+        navigationService       = self.InstallService(NavigationService.NavigationService())
         messageService          = self.InstallService(MessageService.MessageService(_("Search Results"), embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
     ##    outputService          = self.InstallService(OutputService.OutputService("Output", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
         debuggerService         = self.InstallService(DebuggerService.DebuggerService("Debugger", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
@@ -378,7 +381,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         if self.GetUseTabbedMDI():
             self.frame = TabbedFrame.IDEDocTabbedParentFrame(docManager, None, -1, wx.GetApp().GetAppName(), embeddedWindows=embeddedWindows, minSize=150)
         else:
-            self.frame = IDEMDIParentFrame(docManager, None, -1, wx.GetApp().GetAppName(), embeddedWindows=embeddedWindows, minSize=150)
+            self.frame = TabbedFrame.IDEMDIParentFrame(docManager, None, -1, wx.GetApp().GetAppName(), embeddedWindows=embeddedWindows, minSize=150)
         self.frame.Show(True)
         self.toolbar = self.frame.GetToolBar()
         self.toolbar_combox = self.toolbar.FindControl(DebuggerService.DebuggerService.COMBO_INTERPRETERS_ID)
@@ -417,7 +420,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
     @property
     def MainFrame(self):
         return self.frame
-    @property		
+    @property       
     def ToolbarCombox(self):
         return self.toolbar_combox
         
@@ -435,33 +438,37 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 self.toolbar_combox.SetSelection(i)
                 break
                 
-    def GotoView(self,file_path,lineNum):
-		file_path = os.path.abspath(file_path)
-		foundView = None
-		openDocs = self.GetDocumentManager().GetDocuments()
-		for openDoc in openDocs:
-			if openDoc.GetFilename() == file_path:
-				foundView = openDoc.GetFirstView()
-				break
+    def GotoView(self,file_path,lineNum,pos=-1):
+        file_path = os.path.abspath(file_path)
+        foundView = None
+        openDocs = self.GetDocumentManager().GetDocuments()
+        for openDoc in openDocs:
+            if openDoc.GetFilename() == file_path:
+                foundView = openDoc.GetFirstView()
+                break
 
-		if not foundView:
-			doc = self.GetDocumentManager().CreateDocument(file_path, wx.lib.docview.DOC_SILENT)
-			if doc is None:
-			    return
-			foundView = doc.GetFirstView()
+        if not foundView:
+            doc = self.GetDocumentManager().CreateDocument(file_path, wx.lib.docview.DOC_SILENT)
+            if doc is None:
+                return
+            foundView = doc.GetFirstView()
 
-		if foundView:
-			foundView.GetFrame().SetFocus()
-			foundView.Activate()
-			if not hasattr(foundView,"GotoLine"):
-			    return
-			foundView.GotoLine(lineNum)
-			startPos = foundView.PositionFromLine(lineNum)
-			lineText = foundView.GetCtrl().GetLine(lineNum - 1)
-			foundView.SetSelection(startPos, startPos + len(lineText.rstrip("\n")))
-			if foundView.GetLangLexer() == parserconfig.LANG_PYTHON_LEXER:
-				import OutlineService
-				self.GetService(OutlineService.OutlineService).LoadOutline(foundView, lineNum=lineNum)
+        if foundView:
+            foundView.GetFrame().SetFocus()
+            foundView.Activate()
+            if not hasattr(foundView,"GotoLine"):
+                return
+            if pos == -1:
+                foundView.GotoLine(lineNum)
+                startPos = foundView.PositionFromLine(lineNum)
+                lineText = foundView.GetCtrl().GetLine(lineNum - 1)
+                foundView.SetSelection(startPos, startPos + len(lineText.rstrip("\n")))
+            else:
+                lineNum = foundView.LineFromPosition(pos)
+                foundView.GetCtrl().GotoPos(pos)
+            if foundView.GetLangLexer() == parserconfig.LANG_PYTHON_LEXER:
+                import OutlineService
+                self.GetService(OutlineService.OutlineService).LoadOutline(foundView, lineNum=lineNum)
                 
     def AddInterpreters(self):
         cb = self.ToolbarCombox
@@ -476,7 +483,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         wx.lib.pydocview.DocApp.OnExit(self)
 
 class IDEDocManager(wx.lib.docview.DocManager):
-    
+
     # Overriding default document creation.
     def OnFileNew(self, event):
         self.CreateDocument('', wx.lib.docview.DOC_NEW)
@@ -574,15 +581,16 @@ class IDEDocManager(wx.lib.docview.DocManager):
             tl = data.GetMarginTopLeft()
             br = data.GetMarginBottomRight()
         dlg.Destroy()
-       
-class IDEMDIParentFrame(wx.lib.pydocview.DocMDIParentFrame):
-    
-    # wxBug: Need this for linux. The status bar created in pydocview is
-    # replaced in IDE.py with the status bar for the code editor. On windows
-    # this works just fine, but on linux the pydocview status bar shows up near
-    # the top of the screen instead of disappearing. 
-    def CreateDefaultStatusBar(self):
-       pass
+
+    def OnCreateFileHistory(self):
+        """
+        A hook to allow a derived class to create a different type of file
+        history. Called from Initialize.
+        """
+        max_files = int(wx.ConfigBase_Get().Read("MRULength","9"))
+        enableMRU = wx.ConfigBase_Get().ReadInt("EnableMRU", True)
+        if enableMRU:
+            self._fileHistory = wx.FileHistory(maxFiles=max_files,idBase=consts.ID_MRU_FILE1)
 
 #----------------------------------------------------------------------------
 # Icon Bitmaps - generated by encode_bitmaps.py

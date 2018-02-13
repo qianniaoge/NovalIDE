@@ -128,7 +128,12 @@ class GeneralOptionsPanel(wx.Panel):
             choices.append(self._mdiChoice)
             if wx.Platform == "__WXMSW__":
                 choices.append(self._winMdiChoice)
-            self._documentRadioBox = wx.RadioBox(self, -1, _("Document Display Style"),
+            #when language is chinese,set radiobox width to fit ui
+            if GetLangId(config.Read("Language","")) == wx.LANGUAGE_ENGLISH_US:
+                size = (-1,-1)
+            else:
+                size = (400,-1)
+            self._documentRadioBox = wx.RadioBox(self, -1, _("Document Display Style"),size=size,
                                           choices = choices,
                                           majorDimension=1,
                                           )
@@ -164,12 +169,30 @@ class GeneralOptionsPanel(wx.Panel):
 
         optionsSizer.Add(lsizer, 0, wx.ALL, HALF_SPACE)
 
+        self._enableMRUCheckBox = wx.CheckBox(self, -1, _("Enable MRU Menu"))
+        self._enableMRUCheckBox.SetValue(config.ReadInt("EnableMRU", True))
+        self.Bind(wx.EVT_CHECKBOX,self.checkEnableMRU,self._enableMRUCheckBox)
+        optionsSizer.Add(self._enableMRUCheckBox, 0, wx.ALL, HALF_SPACE)
+
+        lsizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._mru_ctrl = wx.TextCtrl(self, -1, config.Read("MRULength","9"), size=(30,-1))
+        lsizer.AddMany([(wx.StaticText(self, label=_("File History length in MRU Files") + u"(1-20): "),
+                         0, wx.ALIGN_CENTER_VERTICAL), ((5, 5), 0),
+                        (self._mru_ctrl,
+                         0, wx.ALIGN_CENTER_VERTICAL)])
+        optionsSizer.Add(lsizer, 0, wx.ALL, HALF_SPACE)
+
         optionsBorderSizer.Add(optionsSizer, 0, wx.ALL, SPACE)
         self.SetSizer(optionsBorderSizer)
         self.Layout()
         self._documentInterfaceMessageShown = False
+        self.checkEnableMRU(None)
         parent.AddPage(self, _("General"))
 
+
+    def checkEnableMRU(self,event):
+        enableMRU = self._enableMRUCheckBox.GetValue()
+        self._mru_ctrl.Enable(enableMRU)
 
     def _AllowModeChanges(self):
         supportedModes = wx.GetApp().GetService(GeneralOptionsService).GetSupportedModes()
@@ -188,6 +211,8 @@ class GeneralOptionsPanel(wx.Panel):
               wx.OK | wx.ICON_INFORMATION,
               self.GetParent())
         config.Write("Language",self.language_combox.GetValue())
+        config.Write("MRULength",self._mru_ctrl.GetValue())
+        config.WriteInt("EnableMRU",self._enableMRUCheckBox.GetValue())
         if self._AllowModeChanges():
             config.WriteInt("UseMDI", (self._documentRadioBox.GetStringSelection() == self._mdiChoice))
             config.WriteInt("UseWinMDI", (self._documentRadioBox.GetStringSelection() == self._winMdiChoice))

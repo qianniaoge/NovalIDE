@@ -144,7 +144,7 @@ def parse(module_path):
 
 def parse_content(content,module_path):
     try:
-        node = ast.parse(content.encode("utf-8"),module_path)
+        node = ast.parse(content.encode("utf-8"),module_path.encode("utf-8"))
         module = nodeast.Module(os.path.basename(module_path).split('.')[0],module_path)
         deep_walk(node,module)
         return module

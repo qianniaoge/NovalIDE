@@ -11,20 +11,11 @@ Provides helper functions and classes for managing documents and their services.
 
 """
 
-__author__ = "Cody Precord <cprecord@editra.org>"
-__svnid__ = "$Id: doctools.py 70230 2012-01-01 01:47:42Z CJP $"
-__revision__ = "$Revision: 70230 $"
-
 #--------------------------------------------------------------------------#
 # Imports
 import os
 import sys
-
-# Editra Libraries
-import util
-from profiler import Profile_Get
-import ebmlib
-
+import hiscache  
 #--------------------------------------------------------------------------#
 
 class DocPositionMgr(object):
@@ -35,7 +26,7 @@ class DocPositionMgr(object):
     @note: saves config to ~/.Editra/cache/
 
     """
-    _poscache = ebmlib.HistoryCache(100)
+    _poscache = hiscache.HistoryCache(100)
 
     def __init__(self):
         """Creates the position manager object"""
@@ -54,7 +45,6 @@ class DocPositionMgr(object):
         self._init = True
         self._book = book_path
 
-        print book_path
         if Profile_Get('SAVE_POS'):
             self.LoadBook(book_path)
 
@@ -163,54 +153,6 @@ class DocPositionMgr(object):
         """
         return self._init
 
-    def LoadBook(self, book):
-        """Loads a set of records from an on disk dictionary
-        the entries are formated as key=value with one entry
-        per line in the file.
-        @param book: path to saved file
-        @return: whether book was loaded or not
-
-        """
-        # If file does not exist create it and return
-        if not os.path.exists(book):
-            try:
-                tfile = util.GetFileWriter(book)
-                tfile.close()
-            except (IOError, OSError):
-                util.Log("[docpositionmgr][err] failed to load book: %s" % book)
-                return False
-            except AttributeError:
-                util.Log("[docpositionmgr][err] Failed to create: %s" % book)
-                return False
-
-        reader = util.GetFileReader(book, sys.getfilesystemencoding())
-        if reader != -1:
-            lines = list()
-            try:
-                lines = reader.readlines()
-            except:
-                reader.close()
-                return False
-            else:
-                reader.close()
-
-            for line in lines:
-                line = line.strip()
-                vals = line.rsplit(u'=', 1)
-                if len(vals) != 2 or not os.path.exists(vals[0]):
-                    continue
-
-                try:
-                    vals[1] = int(vals[1])
-                except (TypeError, ValueError), msg:
-                    util.Log("[docpositionmgr][err] %s" % str(msg))
-                    continue
-                else:
-                    self._records[vals[0]] = vals[1]
-
-            util.Log("[docpositionmgr][info] successfully loaded book")
-            return True
-
     @classmethod
     def PeekNavi(cls, pre=False):
         """Peek into the navigation cache
@@ -226,21 +168,3 @@ class DocPositionMgr(object):
                 return cls._poscache.PeekNext()
         return None, None
 
-    def WriteBook(self):
-        """Writes the collection of files=pos to the config file
-        @postcondition: in memory doc data is written out to disk
-
-        """
-        writer = util.GetFileWriter(self.GetBook(), sys.getfilesystemencoding())
-        if writer != -1:
-            try:
-                for key, val in self._records.iteritems():
-                    try:
-                        writer.write(u"%s=%d\n" % (key, val))
-                    except UnicodeDecodeError:
-                        continue
-                writer.close()
-            except IOError, msg:
-                util.Log("[docpositionmgr][err] %s" % str(msg))
-        else:
-            util.Log("[docpositionmgr][err] Failed to open %s" % self.GetBook())

@@ -372,6 +372,7 @@ class InterpreterManager(Singleton):
         #first interpreter should be the default interpreter by default
         if 1 == len(self.interpreters):
             self.MakeDefaultInterpreter()
+            self.SetCurrentInterpreter(self.DefaultInterpreter)
         return interpreter
         
     def RemovePythonInterpreter(self,interpreter):

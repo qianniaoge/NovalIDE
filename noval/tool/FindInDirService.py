@@ -51,7 +51,7 @@ class FindTextOption():
         self.RegExpr = reg_expr
         self.FileTypes = file_type_list
 
-UPDATE_PROGRESS_SIGNAL_NAME = "UpdateProgress"
+NOVAL_MSG_UI_FINDINDIR_PROGRESS = "noval.msg.findindir.progress"
 
 class SearchProgressDialog(wx.GenericProgressDialog):
     
@@ -61,7 +61,7 @@ class SearchProgressDialog(wx.GenericProgressDialog):
                 maximum = 100, parent=parent,\
                     style = 0|wx.PD_APP_MODAL|wx.PD_CAN_ABORT)
 
-        Publisher.subscribe(self.UpdateProgress,UPDATE_PROGRESS_SIGNAL_NAME)
+        Publisher.subscribe(self.UpdateProgress,NOVAL_MSG_UI_FINDINDIR_PROGRESS)
         self.keep_going = True
         
     def UpdateProgress(self,temp,msg):
@@ -189,9 +189,9 @@ class FindInDirService(FindService.FindService):
                                     find_text_option.RegExpr,view)
             wx.MilliSleep(50)
             wx.SafeYield(self.progress_dlg,True)
-            wx.CallAfter(Publisher.sendMessage,UPDATE_PROGRESS_SIGNAL_NAME, \
+            wx.CallAfter(Publisher.sendMessage,NOVAL_MSG_UI_FINDINDIR_PROGRESS, \
                     temp=cur_pos,msg=_("search file:%s") % list_file)
-           ## Publisher.sendMessage(UPDATE_PROGRESS_SIGNAL_NAME, temp=temp,msg="search file:%s" % filename)
+           ## Publisher.sendMessage(NOVAL_MSG_UI_FINDINDIR_PROGRESS, temp=temp,msg="search file:%s" % filename)
             cur_pos += 1
         return found_line,cur_pos
 

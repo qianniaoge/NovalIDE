@@ -674,7 +674,7 @@ class CodeCtrl(STCTextEditor.TextCtrl):
     CURRENT_LINE_MARKER_NUM = 2
     BREAKPOINT_MARKER_NUM = 1
     CURRENT_LINE_MARKER_MASK = 0x4
-    BREAKPOINT_MARKER_MASK = 0x2
+    BREAKPOINT_MARKER_MASK = 0x4
     TYPE_POINT_WORD = "."
     TYPE_BLANK_WORD = " "
     TYPE_IMPORT_WORD = "import"
@@ -688,13 +688,13 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         self.UsePopUp(False)
         self.Bind(wx.EVT_RIGHT_UP, self.OnRightUp)
 
-        self.SetMarginSensitive(1, False)
-        self.SetMarginMask(1, 0x4)
+        self.SetMarginSensitive(self.BREAKPOINT_MARKER_NUM, False)
+        self.SetMarginMask(self.BREAKPOINT_MARKER_NUM, self.BREAKPOINT_MARKER_MASK)
         
-        self.SetMarginSensitive(0, True)
-        self.SetMarginType(0, wx.stc.STC_MARGIN_SYMBOL)
-        self.SetMarginMask(0, 0x3)
-        self.SetMarginWidth(0, 12)
+        self.SetMarginSensitive(CodeView.BOOK_MARKER_NUM, True)
+        self.SetMarginType(CodeView.BOOK_MARKER_NUM, wx.stc.STC_MARGIN_SYMBOL)
+        self.SetMarginMask(CodeView.BOOK_MARKER_NUM, 0x3)
+        self.SetMarginWidth(CodeView.BOOK_MARKER_NUM, CodeView.BOOK_MARGIN_WIDTH)
 
         # Define the current line marker
         self.MarkerDefine(CodeCtrl.CURRENT_LINE_MARKER_NUM, wx.stc.STC_MARK_SHORTARROW, wx.BLACK, (255,255,128))
@@ -719,8 +719,20 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         
         self.SetWordChars(self.DEFAULT_WORD_CHARS)
         self.AutoCompSetIgnoreCase(True)
+
+    def GetMarginsWidth(self):
+        margin_width = 0
+        if self.GetViewLineNumbers():
+            margin_width += self.EstimatedLineNumberMarginWidth()
+        if self.GetViewFolding():
+            margin_width += CodeView.FOLD_MARGIN_WIDTH
+        if self.GetMarginWidth(CodeView.BOOK_MARKER_NUM) > 0:
+            margin_width += CodeView.BOOK_MARGIN_WIDTH
+        return margin_width
         
     def OnRightUp(self, event):
+        if event.GetPosition().x < self.GetMarginsWidth():
+            return
         #Hold onto the current line number, no way to get it later.
         self._rightClickPosition = self.PositionFromPoint(event.GetPosition())
         self._rightClickLine = self.LineFromPosition(self._rightClickPosition)
@@ -975,9 +987,9 @@ class CodeCtrl(STCTextEditor.TextCtrl):
     def SetMarginFoldStyle(self):
         # Setup a margin to hold fold markers
         self.SetProperty("fold", "1")
-        self.SetMarginType(2, wx.stc.STC_MARGIN_SYMBOL)
-        self.SetMarginMask(2, wx.stc.STC_MASK_FOLDERS)
-        self.SetMarginSensitive(2, True)
+        self.SetMarginType(CodeView.FOLD_MARKER_NUM, wx.stc.STC_MARGIN_SYMBOL)
+        self.SetMarginMask(CodeView.FOLD_MARKER_NUM, wx.stc.STC_MASK_FOLDERS)
+        self.SetMarginSensitive(CodeView.FOLD_MARKER_NUM, True)
         self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDEREND,     wx.stc.STC_MARK_BOXPLUSCONNECTED,  "white", "black")
         self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDEROPENMID, wx.stc.STC_MARK_BOXMINUSCONNECTED, "white", "black")
         self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDERMIDTAIL, wx.stc.STC_MARK_TCORNER,  "white", "black")

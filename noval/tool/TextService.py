@@ -6,7 +6,6 @@ import datetime
 import getpass
 import os
 import noval.util.strutils as strutils
-import noval.util.sysutils as sysutilslib
 _ = wx.GetTranslation
 
 #----------------------------------------------------------------------------
@@ -21,8 +20,6 @@ VIEW_RIGHT_EDGE_ID = wx.NewId()
 VIEW_LINE_NUMBERS_ID = wx.NewId()
 ZOOM_ID = wx.NewId()
 ZOOM_NORMAL_ID = wx.NewId()
-ID_NEXT_POS = wx.NewId()
-ID_PRE_POS = wx.NewId()
 ZOOM_IN_ID = wx.NewId()
 ZOOM_OUT_ID = wx.NewId()
 CHOOSE_FONT_ID = wx.NewId()
@@ -148,12 +145,6 @@ class TextService(Service.BaseService):
         viewMenu = menuBar.GetMenu(menuBar.FindMenu(_("&View")))
 
         viewMenu.AppendSeparator()
-        viewMenu.Append(ID_NEXT_POS, _("Next Position"), _("Goto next position in history."))
-        viewMenu.Append(ID_PRE_POS, _("Previous Position"), _("Goto previous position in history."))   
-        wx.EVT_UPDATE_UI(frame, ID_NEXT_POS, frame.ProcessUpdateUIEvent)
-        wx.EVT_UPDATE_UI(frame, ID_PRE_POS, frame.ProcessUpdateUIEvent)
-
-        viewMenu.AppendSeparator()
         textMenu = wx.Menu()
         textMenu.AppendCheckItem(VIEW_WHITESPACE_ID, _("&View Whitespace"), _("Shows or hides whitespace"))
         wx.EVT_MENU(frame, VIEW_WHITESPACE_ID, frame.ProcessEvent)
@@ -253,12 +244,6 @@ class TextService(Service.BaseService):
 
         # wxBug: wxToolBar::GetToolPos doesn't exist, need it to find cut tool and then insert find in front of it.
         toolBar.AddSeparator()
-        forward_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "forward.png")
-        forward_bmp = wx.Bitmap(forward_bmp_path, wx.BITMAP_TYPE_PNG)
-        backward_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "backward.png")
-        backward_bmp = wx.Bitmap(backward_bmp_path, wx.BITMAP_TYPE_PNG)
-        toolBar.AddTool(ID_NEXT_POS, forward_bmp, shortHelpString = _("Next Position"), longHelpString = _("Goto next position in history."))
-        toolBar.AddTool(ID_PRE_POS, backward_bmp, shortHelpString = _("Previous Position"), longHelpString = _("Goto previous position in history."))
         toolBar.AddTool(ZOOM_IN_ID, getZoomInBitmap(), shortHelpString = _("Zoom In"), longHelpString = _("Zooms the document to a larger size"))
         toolBar.AddTool(ZOOM_OUT_ID, getZoomOutBitmap(), shortHelpString = _("Zoom Out"), longHelpString = _("Zooms the document to a smaller size"))
         toolBar.Realize()

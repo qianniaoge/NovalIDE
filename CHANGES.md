@@ -83,7 +83,6 @@ Version 1.0.3 -------------2018-01-16
 22.optimise memberlist sort algorithm
 
 
-
 Version 1.0.4 -------------2018-02-04
 1.repair show tip bug
 2.repair open all files bug in linux system
@@ -108,3 +107,12 @@ Version 1.0.4 -------------2018-02-04
 22.fix 'cannot import name Publisher' error when use py2exe convert to windows exe
 23.fix run python script which path has chinese character on linux os
 24.close threading.Thread VERBOSE mode in debugger service
+25.increase mru history file count from 9 to 20 and allow user to set the max MRU item count
+26.fix right up menu of document position
+27.fix bug when run script path contain chinese character on windows os
+
+
+Version 1.0.5 -------------2018-02-13
+1.enable to open current python interpreter on tools menu
+2.allow user to set use MRU menu or not
+3.add simple navigation to next or previous position function
