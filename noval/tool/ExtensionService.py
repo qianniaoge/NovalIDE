@@ -186,7 +186,12 @@ class ExtensionService(Service.BaseService):
         interpreter = wx.GetApp().GetCurrentInterpreter()
         if interpreter is None:
             return
-        fileutils.start_file(interpreter.Path)
+
+        if sysutilslib.isWindows():
+            fileutils.start_file(interpreter.Path)
+        else:
+            cmd_list = ['gnome-terminal','-x','bash','-c',interpreter.Path]
+            subprocess.Popen(cmd_list,shell = False)
         
     def ProcessEvent(self, event):
         id = event.GetId()

@@ -910,7 +910,10 @@ class PythonCtrl(CodeEditor.CodeCtrl):
             if scope_found.Parent is not None and isinstance(scope_found.Node,nodeast.ImportNode):
                 member_list = scope_found.GetImportMemberList(text)
             else:
-                member_list = scope_found.GetMemberList()
+                if scope.IsClassMethodScope() and scope.Parent == scope_found:
+                    member_list = scope_found.GetClassMemberList()
+                else:
+                    member_list = scope_found.GetMemberList()
         if member_list == []:
             return
         self.AutoCompSetIgnoreCase(True)

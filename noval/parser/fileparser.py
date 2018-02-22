@@ -25,6 +25,8 @@ def GetAstType(ast_type):
         return config.ASSIGN_TYPE_TUPLE
     elif isinstance(ast_type,ast.Dict):
         return config.ASSIGN_TYPE_DICT
+    elif isinstance(ast_type,ast.Name):
+        return config.ASSIGN_TYPE_OBJECT
     else:
         return config.ASSIGN_TYPE_UNKNOWN
 
@@ -78,6 +80,7 @@ def fix_refs(module_dir,refs):
         ref['module'] = ref_module_name
 
 def dump(module_path,output_name,dest_path,is_package):
+    doc = None
     if utils.IsPython3():
         f = open(module_path,encoding="utf-8")
     else:
@@ -86,6 +89,7 @@ def dump(module_path,output_name,dest_path,is_package):
         content = f.read()
         try:
             node = ast.parse(content,module_path)
+            doc = get_node_doc(node)
             childs,refs = walk(node)
         except:
             ###print e
@@ -104,7 +108,7 @@ def dump(module_path,output_name,dest_path,is_package):
                     childs.append(d)
                     break
                     
-        module_dict = make_module_dict(module_name,module_path,False,childs,refs)
+        module_dict = make_module_dict(module_name,module_path,False,childs,doc,refs)
         fix_refs(os.path.dirname(module_path),refs)
         dest_file_name = os.path.join(dest_path,output_name )
         with open(dest_file_name + ".$members", 'wb') as o1:
@@ -124,19 +128,29 @@ def dump(module_path,output_name,dest_path,is_package):
                     o2.write( ref['module'] + "/" + name['name'])
                     o2.write('\n')
 
-def make_module_dict(name,path,is_builtin,childs,refs=[]):
+def make_module_dict(name,path,is_builtin,childs,doc,refs=[]):
     if is_builtin:
-        module_data = dict(name=name,is_builtin=True,childs=childs)
+        module_data = dict(name=name,is_builtin=True,doc=doc,childs=childs)
     else:
-          module_data = dict(name=name,path=path,childs=childs,refs=refs)
+          module_data = dict(name=name,path=path,childs=childs,doc=doc,refs=refs)
     return module_data
+
+def get_node_doc(node):
+
+    body = node.body
+    if len(body) > 0:
+        element = body[0]
+        if isinstance(element,ast.Expr) and isinstance(element.value,ast.Str):
+            return element.value.s
+    return None
                    
 def parse(module_path):
     try:
         with open(module_path) as f:
             content = f.read()
             node = ast.parse(content,module_path)
-            module = nodeast.Module(os.path.basename(module_path).split('.')[0],module_path)
+            doc = get_node_doc(node)
+            module = nodeast.Module(os.path.basename(module_path).split('.')[0],module_path,doc)
             deep_walk(node,module)
             return module
     except:
@@ -145,7 +159,8 @@ def parse(module_path):
 def parse_content(content,module_path):
     try:
         node = ast.parse(content.encode("utf-8"),module_path.encode("utf-8"))
-        module = nodeast.Module(os.path.basename(module_path).split('.')[0],module_path)
+        doc = get_node_doc(node)
+        module = nodeast.Module(os.path.basename(module_path).split('.')[0],module_path,doc)
         deep_walk(node,module)
         return module
     except:
@@ -171,10 +186,12 @@ def GetAssignValueType(node):
         elif type(node.value.func) == ast.Attribute:
             value = get_attribute_name(node.value.func)
         value_type = config.ASSIGN_TYPE_OBJECT
-        if value is None:
-            value_type = config.ASSIGN_TYPE_UNKNOWN
+        #if value is None:
+         #   value_type = config.ASSIGN_TYPE_UNKNOWN
     else:
         value_type = GetAstType(node.value)
+        if type(node.value) == ast.Name:
+            value = node.value.id
     return value_type,value
     
 def GetBases(node):
@@ -215,7 +232,8 @@ def make_element_node(element,parent,retain_new):
                     is_method = True
                 arg_node = nodeast.ArgNode(arg.id,arg.lineno,arg.col_offset,None)
                 args.append(arg_node)
-        func_def = nodeast.FuncDef(def_name,line_no,col,parent,is_method=is_method,\
+        doc = get_node_doc(element)
+        func_def = nodeast.FuncDef(def_name,line_no,col,parent,doc,is_method=is_method,\
                             is_class_method=is_class_method,args=args)
         deep_walk(element,func_def)
     elif isinstance(element,ast.ClassDef):
@@ -223,7 +241,8 @@ def make_element_node(element,parent,retain_new):
         base_names = GetBases(element)
         line_no = element.lineno
         col = element.col_offset
-        class_def = nodeast.ClassDef(class_name,line_no,col,parent,bases=base_names)
+        doc = get_node_doc(element)
+        class_def = nodeast.ClassDef(class_name,line_no,col,parent,doc,bases=base_names)
         deep_walk(element,class_def)
     elif isinstance(element,ast.Assign):
         targets = element.targets
@@ -324,8 +343,9 @@ def make_element_data(element,parent,childs,refs):
                     is_method = True
                 arg = dict(name=arg.id)
                 args.append(arg)
+        doc = get_node_doc(element)
         data = dict(name=def_name,line=line_no,col=col,type=config.NODE_FUNCDEF_TYPE,\
-                    is_method=is_method,is_class_method=is_class_method,args=args)
+                    is_method=is_method,is_class_method=is_class_method,args=args,doc=doc)
         childs.append(data)
         ##parse self method,parent is class definition
         if is_method and isinstance(parent,ast.ClassDef):
@@ -335,9 +355,10 @@ def make_element_data(element,parent,childs,refs):
         line_no = element.lineno
         col = element.col_offset
         base_names = GetBases(element)
+        doc = get_node_doc(element)
         cls_childs,_ = walk(element)
         data = dict(name=class_name,line=line_no,col=col,type=config.NODE_CLASSDEF_TYPE,\
-                        bases=base_names,childs=cls_childs)
+                        bases=base_names,childs=cls_childs,doc=doc)
         childs.append(data)
     elif isinstance(element,ast.Assign):
         targets = element.targets
@@ -395,7 +416,7 @@ if __name__ == "__main__":
     ##print module
     dump(r"C:\Python27\lib\subprocess.py","subprocess","./",False)
     import pickle
-    with open(r"C:\Users\Administrator\AppData\Roaming\NovalIDE\intellisence\283\2.7.11\libaws.base.callback.$members",'rb') as f:
+    with open(r"D:\env\Noval\noval\parser\subprocess.$members",'rb') as f:
         datas = pickle.load(f)
    ### print datas['name'],datas['path'],datas['is_builtin']
     import json

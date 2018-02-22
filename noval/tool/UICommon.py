@@ -21,6 +21,7 @@ import noval.util.strutils as strutils
 import noval.util.sysutils as sysutils
 import noval.util.xmlutils as xmlutils
 import Interpreter
+import noval.parser.utils as dirutils
 _ = wx.GetTranslation
 
 def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Directory:"), fileExtension="*", startingName="", startingDirectory=None, choiceDirs=None, appDirDefaultStartDir=False, returnAll=False, useDirDialog=False):
@@ -147,6 +148,11 @@ def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Direc
         if os.sep == "\\" and dirName.find("/") != -1:
             wx.MessageBox(_("Wrong delimiter '/' found in directory path.  Use '%s' as delimiter.") % os.sep, _("Provide a Valid Directory"))            
             return False
+
+        #if dir not exist,create it first
+        if not os.path.exists(dirName):
+            dirutils.MakeDirs(dirName)
+
         if not os.path.exists(dirName):
             wx.MessageBox(_("That %sdirectory does not exist.  Please choose an existing directory.") % infoString, _("Provide a Valid Directory"))            
             return False

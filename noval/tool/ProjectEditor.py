@@ -374,6 +374,9 @@ class ProjectDocument(wx.lib.docview.Document):
     def OnOpenDocument(self, filePath):
         projectService = wx.GetApp().GetService(ProjectService)
         view = projectService.GetView()
+        view._physicalBtn.SetToggle(False)
+        view._logicalBtn.SetToggle(True)
+        view._projectChoice.Clear()
 
         if not os.path.exists(filePath):
             wx.GetApp().CloseSplash()
@@ -1610,6 +1613,9 @@ class ProjectView(wx.lib.docview.View):
         
         return True
 
+    def OnChangeFilename(self):
+        pass
+
 
     def OnSelectMode(self, event):
         btn = event.GetEventObject()
@@ -2361,7 +2367,7 @@ class ProjectView(wx.lib.docview.View):
         else:
             descr = _("*.*")
 
-        dialog = wx.FileDialog(self.GetFrame(), _("Add Files"), wildcard=descr, style=wx.OPEN|wx.HIDE_READONLY|wx.MULTIPLE|wx.CHANGE_DIR)
+        dialog = wx.FileDialog(self.GetFrame(), _("Add Files"), wildcard=descr, style=wx.OPEN|wx.MULTIPLE|wx.CHANGE_DIR)
         # dialog.CenterOnParent()  # wxBug: caused crash with wx.FileDialog
         if dialog.ShowModal() != wx.ID_OK:
             dialog.Destroy()

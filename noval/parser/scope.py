@@ -106,32 +106,45 @@ class Scope(object):
         names = name.split('.')
         find_scope = None
         is_self = False
-        if names[0] == 'self':
+        is_cls = False
+        if names[0] == 'self' and len(names) > 1:
             top_scope = self.GetTopScope(names[1:])
             is_self = True
+        elif names[0] == 'cls' and len(names) > 1 and self.IsClassMethodScope():
+            top_scope = self.GetTopScope(names[1:])
+            is_cls = True
         else:
             top_scope = self.GetTopScope(names)
-        return top_scope,is_self
+        return top_scope,is_self,is_cls
 
     def FindDefinitionMember(self,name):
-        top_scope,is_self = self.FindDefinition(name)
+        top_scope,is_self,is_cls = self.FindDefinition(name)
         if top_scope is None:
             return None
         if is_self:
             find_scope_member = top_scope.GetMember(name[5:])
+        elif is_cls:
+            find_scope_member = top_scope.GetMember(name[4:])
         else:
             find_scope_member = top_scope.GetMember(name)
         return find_scope_member
         
     def FindDefinitionScope(self,name):
         names = name.split('.')
-        if names[0] == 'self':
+        #when like self. or cls., route to parent class scope
+        if names[0] == 'self' or (names[0] == 'cls' and self.IsClassMethodScope()):
             if len(names) == 1:
                 return self.Parent
             else:
                 return self.FindDefinition('.'.join(names[1:]))[0]
         else:
             return self.FindDefinition(name)[0]
+
+    def IsMethodScope(self):
+        return False
+
+    def IsClassMethodScope(self):
+        return False
             
 class ModuleScope(Scope):
         def __init__(self,module,line_count):
@@ -207,6 +220,9 @@ class ModuleScope(Scope):
 
         def GetMembers(self):
             return self.Module.GetMemberList(False)
+
+        def GetDoc(self):
+            return self.Module.Doc
                                   
 class NodeScope(Scope):
         def __init__(self,node,parent,root):
@@ -237,6 +253,9 @@ class NodeScope(Scope):
                 fix_name = fix_name[1:]
             return fix_name
 
+        def GetDoc(self):
+            return self.Node.Doc
+
 class ArgScope(NodeScope):
     def __init__(self,arg_node,parent,root):
         super(ArgScope,self).__init__(arg_node,parent,root)
@@ -264,6 +283,15 @@ class FuncDefScope(NodeScope):
             if fix_name == "":
                 return self
             return None
+
+        def IsMethodScope(self):
+            return self.Node.IsMethod
+
+        def IsClassMethodScope(self):
+            return self.Node.IsClassMethod
+
+        def GetMemberList(self,sort=True):
+            return []
 
 class ClassDefScope(NodeScope):
         INIT_METHOD_NAME = "__init__"
@@ -305,6 +333,23 @@ class ClassDefScope(NodeScope):
                         member_list.extend(base_scope.GetImportMemberList(base))
                     else:
                         member_list.extend(base_scope.GetMemberList())
+            self.UniqueInitMember(member_list)
+            if sort:
+                member_list.sort(CmpMember)
+            return member_list
+
+        def GetClassMembers(self,sort=True):
+            return self.Node.GetClassMembers(sort)
+
+        def GetClassMemberList(self,sort=True):
+            member_list = self.GetClassMembers(False)
+            for base in self.Node.Bases:
+                base_scope = self.Parent.FindDefinitionScope(base)
+                if base_scope is not None:
+                    if base_scope.Node.Type == config.NODE_IMPORT_TYPE:
+                        member_list.extend(base_scope.GetImportMemberList(base))
+                    else:
+                        member_list.extend(base_scope.GetClassMembers(False))
             self.UniqueInitMember(member_list)
             if sort:
                 member_list.sort(CmpMember)

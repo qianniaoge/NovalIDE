@@ -40,10 +40,11 @@ class AbstractAst(object):
         
 class BuiltinNode(AbstractAst):
     
-    def __init__(self,name,type,parent,is_built_in=True):
+    def __init__(self,name,type,parent,doc=None,is_built_in=True):
         super(BuiltinNode,self).__init__(parent,type)
         self._is_built_in = is_built_in
         self._name = name
+        self._doc = doc
         
     @property
     def Name(self):
@@ -77,11 +78,14 @@ class BuiltinNode(AbstractAst):
         if sort:
             member_list.sort(CmpMember)
         return member_list
+    @property
+    def Doc(self):
+        return self._doc
             
 class Module(BuiltinNode):
     
-    def __init__(self,name,path,is_built_in = False):
-        super(Module,self).__init__(name,config.NODE_MODULE_TYPE,None,is_built_in)
+    def __init__(self,name,path,doc,is_built_in = False):
+        super(Module,self).__init__(name,config.NODE_MODULE_TYPE,None,doc,is_built_in)
         self._path = path
         
     @property
@@ -101,8 +105,8 @@ class Module(BuiltinNode):
         
 class Node(BuiltinNode):
     
-    def __init__(self,name,line,col,type,parent,is_built_in = False):
-        super(Node,self).__init__(name,type,parent,is_built_in)
+    def __init__(self,name,line,col,type,parent,doc=None,is_built_in = False):
+        super(Node,self).__init__(name,type,parent,doc,is_built_in)
         self._line = line
         self._col = col
         
@@ -122,8 +126,8 @@ class ArgNode(Node):
         return self.Name
 
 class FuncDef(Node):
-    def __init__(self,name,line,col,parent,args = [],is_decorated = False,is_method = False,is_class_method = False,is_built_in = False):
-        super(FuncDef,self).__init__(name,line,col,config.NODE_FUNCDEF_TYPE,parent,is_built_in)
+    def __init__(self,name,line,col,parent,doc,args = [],is_decorated = False,is_method = False,is_class_method = False,is_built_in = False):
+        super(FuncDef,self).__init__(name,line,col,config.NODE_FUNCDEF_TYPE,parent,doc,is_built_in)
         self._is_decorated = is_decorated
         self._is_method = is_method
         self._is_class_method = is_class_method
@@ -158,8 +162,8 @@ class FuncDef(Node):
 
 class ClassDef(Node):
     
-    def __init__(self,name,line,col,parent,is_decorated = False,is_built_in = False,bases = []):
-        super(ClassDef,self).__init__(name,line,col,config.NODE_CLASSDEF_TYPE,parent,is_built_in)
+    def __init__(self,name,line,col,parent,doc,is_decorated = False,is_built_in = False,bases = []):
+        super(ClassDef,self).__init__(name,line,col,config.NODE_CLASSDEF_TYPE,parent,doc,is_built_in)
         self._is_decorated = is_decorated
         self._child_defs = []
         self._bases = bases
@@ -173,6 +177,17 @@ class ClassDef(Node):
     @property        
     def Bases(self):
         return self._bases
+
+    def GetClassMembers(self,sort=True):
+        member_list = []
+        for child in self.Childs:
+            if (child.Type == config.NODE_FUNCDEF_TYPE and child.IsClassMethod) or \
+                child.Type == config.NODE_ASSIGN_TYPE:
+                member_list.append(child.Name)
+        if sort:
+            member_list.sort(CmpMember)
+        return member_list
+    
         
 class AssignDef(Node):
     def __init__(self,name,line,col,value,value_type,parent,node_type = config.NODE_ASSIGN_TYPE,is_built_in = False):

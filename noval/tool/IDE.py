@@ -249,7 +249,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 _("Project View"),
                 ProjectEditor.ProjectDocument,
                 ProjectEditor.ProjectView,
-                wx.lib.docview.TEMPLATE_NO_CREATE,
+             ###   wx.lib.docview.TEMPLATE_NO_CREATE,
                 icon = ProjectEditor.getProjectIcon())
         docManager.AssociateTemplate(projectTemplate)
 

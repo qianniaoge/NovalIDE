@@ -57,7 +57,7 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
         def OnCloseDoc(event):
             doc.DeleteAllViews()
         def OnCloseAllDocs(event):
-            self.GetDocumentManager().CloseDocuments(False)
+            OnCloseAllWithoutDoc(event,closeall=True)
         def OnOpenPathInExplorer(event):
             fileutils.open_file_directory(doc.GetFilename())
         def OnOpenPathInTerminator(event):
@@ -72,9 +72,9 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
             self.GetDocumentManager().SaveAsDocument(doc)
         def OnCopyModuleName(event):
             sysutilslib.CopyToClipboard(os.path.basename(doc.GetFilename()).split('.')[0])
-        def OnCloseAllWithoutDoc(event):
+        def OnCloseAllWithoutDoc(event,closeall=False):
             for i in range(self._notebook.GetPageCount()-1, -1, -1): # Go from len-1 to 0
-                if i != index:
+                if i != index or closeall:
                     doc = self._notebook.GetPage(i).GetView().GetDocument()
                     if not self.GetDocumentManager().CloseDocument(doc, False):
                         return

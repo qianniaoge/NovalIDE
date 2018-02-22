@@ -34,6 +34,7 @@ class ModuleLoader(object):
         self._path = None
         self._is_builtin = False
         self._data = None
+        self._doc = None
     @property
     def Name(self):
         return self._name
@@ -44,6 +45,7 @@ class ModuleLoader(object):
                 self._data = pickle.load(f)
                 self._is_builtin = self._data.get(self._is_builtin,False)
                 self._path = self._data.get(self.PATH_KEY)
+                self._doc = self._data.get('doc',None)
         return self._data
 
     def LoadMembeList(self):
@@ -160,7 +162,7 @@ class ModuleLoader(object):
         return None
 
     def MakeModuleScope(self):
-        module = nodeast.Module(self._name,self._path)
+        module = nodeast.Module(self._name,self._path,self._doc)
         module_scope = scope.ModuleScope(module,-1)
         return module_scope
 
@@ -178,14 +180,15 @@ class ModuleLoader(object):
         name = child[self.NAME_KEY]
         line_no = child.get(self.LINE_KEY,-1)
         col = child.get(self.COL_KEY,-1)
+        doc = child.get('doc',None)
         if child[self.TYPE_KEY] == config.NODE_FUNCDEF_TYPE:
-            node = nodeast.FuncDef(name,line_no,col,parent)
+            node = nodeast.FuncDef(name,line_no,col,parent,doc)
         elif child[self.TYPE_KEY] == config.NODE_CLASSDEF_TYPE:
             bases = child.get('bases',[])
             for i,base in enumerate(bases):
                 bases[i] = parent.Name + "." + base
             print bases
-            node = nodeast.ClassDef(name,line_no,col,parent,bases=bases)
+            node = nodeast.ClassDef(name,line_no,col,parent,doc,bases=bases)
             for class_child in child.get(self.CHILD_KEY,[]):
                 self.MakeChildScope(class_child,node)
         elif child[self.TYPE_KEY] == config.NODE_OBJECT_PROPERTY or \
