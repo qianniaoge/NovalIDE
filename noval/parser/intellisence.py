@@ -48,6 +48,10 @@ class ModuleLoader(object):
                 self._doc = self._data.get('doc',None)
         return self._data
 
+    def GetDoc(self):
+        self.LoadMembers()
+        return self._doc
+
     def LoadMembeList(self):
         member_list = []
         with open(self._member_list_file) as f:
@@ -170,6 +174,7 @@ class ModuleLoader(object):
         if child.get(self.TYPE_KEY) == config.NODE_MODULE_TYPE:
             child_module = self._manager.GetModule(child[self.FULL_NAME_KEY])
             child_module._path = child[self.PATH_KEY]
+            child_module.GetDoc()
             return child_module.MakeModuleScope()
         module_scope = self.MakeModuleScope()
         self.MakeChildScope(child,module_scope.Module)

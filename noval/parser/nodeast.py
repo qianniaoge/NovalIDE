@@ -190,8 +190,8 @@ class ClassDef(Node):
     
         
 class AssignDef(Node):
-    def __init__(self,name,line,col,value,value_type,parent,node_type = config.NODE_ASSIGN_TYPE,is_built_in = False):
-        super(AssignDef,self).__init__(name,line,col,node_type,parent,is_built_in)
+    def __init__(self,name,line,col,value,value_type,parent,doc=None,node_type = config.NODE_ASSIGN_TYPE,is_built_in = False):
+        super(AssignDef,self).__init__(name,line,col,node_type,parent,doc,is_built_in)
         self._value_type = value_type
         self._value = value
     @property
@@ -208,12 +208,12 @@ class AssignDef(Node):
         
 class PropertyDef(AssignDef):
     
-    def __init__(self,name,line,col,value,value_type,parent,is_class_property = False,is_built_in = False):
+    def __init__(self,name,line,col,value,value_type,parent,doc=None,is_class_property = False,is_built_in = False):
         if is_class_property:
-            super(PropertyDef,self).__init__(name,line,col,value,value_type,parent,\
+            super(PropertyDef,self).__init__(name,line,col,value,value_type,parent,doc,\
                                 config.NODE_CLASS_PROPERTY,is_built_in)
         else:
-            super(PropertyDef,self).__init__(name,line,col,value,value_type,parent,\
+            super(PropertyDef,self).__init__(name,line,col,value,value_type,parent,doc,\
                                 config.NODE_OBJECT_PROPERTY,is_built_in)
         ###self property is the child of method and method's class
         if self.Parent.Type == config.NODE_FUNCDEF_TYPE and self.Parent.IsMethod:

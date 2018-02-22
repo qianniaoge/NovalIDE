@@ -27,11 +27,11 @@ def generate_builtin_data(dest_path):
                 if not recursive:
                     continue
                 builtin_attr_childs = work_builtin_type(builtin_attr_intance,False)
-                node = dict(name = name,is_builtin=True,type = config.NODE_CLASSDEF_TYPE,childs=builtin_attr_childs)
+                node = dict(name = name,is_builtin=True,type = config.NODE_CLASSDEF_TYPE,childs=builtin_attr_childs,doc=builtin_attr_intance.__doc__)
                 childs.append(node)
             elif builtin_attr_type == types.BuiltinFunctionType or builtin_attr_type == types.BuiltinMethodType \
                         or str(builtin_attr_type).find("method_descriptor") != -1:
-                node = dict(name = name,is_builtin=True,type = config.NODE_FUNCDEF_TYPE)
+                node = dict(name = name,is_builtin=True,type = config.NODE_FUNCDEF_TYPE,doc=builtin_attr_intance.__doc__)
                 childs.append(node)
             else:
                 node = dict(name = name,is_builtin=True,type = config.NODE_OBJECT_PROPERTY)
@@ -47,7 +47,7 @@ def generate_builtin_data(dest_path):
             for node in childs:
                 f.write(node['name'])
                 f.write('\n')
-        module_dict = fileparser.make_module_dict(built_module,'',True,childs)
+        module_dict = fileparser.make_module_dict(built_module,'',True,childs,doc=module_instance.__doc__)
         with open(dest_path + "/" + built_module + ".$members", 'wb') as j:
             # Pickle dictionary using protocol 0.
             pickle.dump(module_dict, j)
@@ -194,7 +194,7 @@ if __name__ == "__main__":
     start_time = time.time()
     root_path = sys.argv[1]
     new_database_version = sys.argv[2]
-  ###  generate_builtin_data('./')
+    ##generate_builtin_data('./')
     ##generate_intelligent_data(root_path,new_database_version)
     ###quick_generate_intelligent_data("interlicense")
     generate_intelligent_data_by_pool(root_path,new_database_version)

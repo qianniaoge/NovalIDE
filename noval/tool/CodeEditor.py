@@ -684,7 +684,7 @@ class CodeCtrl(STCTextEditor.TextCtrl):
             
     def __init__(self, parent, id=-1, style = wx.NO_FULL_REPAINT_ON_RESIZE, clearTab=True):
         STCTextEditor.TextCtrl.__init__(self, parent, id, style)
-        
+        self.SetMouseDwellTime(900)
         self.UsePopUp(False)
         self.Bind(wx.EVT_RIGHT_UP, self.OnRightUp)
 
@@ -706,6 +706,8 @@ class CodeCtrl(STCTextEditor.TextCtrl):
 
         wx.stc.EVT_STC_MARGINCLICK(self, self.GetId(), self.OnMarginClick)
         wx.EVT_KEY_DOWN(self, self.OnKeyPressed)
+        wx.stc.EVT_STC_DWELLSTART(self,self.GetId(), self.OnDwellStart)
+        wx.stc.EVT_STC_DWELLEND(self, self.GetId(),self.OnDwellEnd)
         if self.GetMatchingBraces(): 
             wx.stc.EVT_STC_UPDATEUI(self, self.GetId(), self.OnUpdateUI)
 
@@ -854,6 +856,12 @@ class CodeCtrl(STCTextEditor.TextCtrl):
 
     def OnKeyPressed(self, event):
         self.HandleKeyPressEvent(event)
+
+    def OnDwellStart(self, evt):
+        evt.Skip()
+
+    def OnDwellEnd(self, evt):
+        evt.Skip()
 
     def DoIndent(self):
         self.AddText('\n')

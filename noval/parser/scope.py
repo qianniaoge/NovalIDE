@@ -14,7 +14,7 @@ class Scope(object):
             self.Parent.AppendChildScope(self)
     @property
     def Parent(self):
-        return self._parent       
+        return self._parent
     @property
     def LineStart(self):
         return self._line_start
@@ -145,6 +145,43 @@ class Scope(object):
 
     def IsClassMethodScope(self):
         return False
+
+    def MakeBeautyDoc(self,alltext):
+        """Returns the formatted calltip string for the document.
+        """
+        if alltext is None:
+            return None
+        # split the text into natural paragraphs (a blank line separated)
+        paratext = alltext.split("\n\n")
+       
+        # add text by paragraph until text limit or all paragraphs
+        textlimit = 800
+        if len(paratext[0]) < textlimit:
+            numpara = len(paratext)
+            calltiptext = paratext[0]
+            ii = 1
+            while ii < numpara and \
+                  (len(calltiptext) + len(paratext[ii])) < textlimit:
+                calltiptext = calltiptext + "\n\n" + paratext[ii]
+                ii = ii + 1
+
+            # if not all texts are added, add "[...]"
+            if ii < numpara:
+                calltiptext = calltiptext + "\n[...]"
+        # present the function signature only (first newline)
+        else:
+            calltiptext = alltext.split("\n")[0]
+
+##        if type(calltiptext) != types.UnicodeType:
+##            # Ensure it is unicode
+##            try:
+##                stcbuff = self.GetBuffer()
+##                encoding = stcbuff.GetEncoding()
+##                calltiptext = calltiptext.decode(encoding)
+##            except Exception, msg:
+##                dbg("%s" % msg)
+
+        return calltiptext
             
 class ModuleScope(Scope):
         def __init__(self,module,line_count):
@@ -222,7 +259,7 @@ class ModuleScope(Scope):
             return self.Module.GetMemberList(False)
 
         def GetDoc(self):
-            return self.Module.Doc
+            return self.MakeBeautyDoc(self.Module.Doc)
                                   
 class NodeScope(Scope):
         def __init__(self,node,parent,root):
@@ -254,7 +291,7 @@ class NodeScope(Scope):
             return fix_name
 
         def GetDoc(self):
-            return self.Node.Doc
+            return self.MakeBeautyDoc(self.Node.Doc)
 
 class ArgScope(NodeScope):
     def __init__(self,arg_node,parent,root):
@@ -441,6 +478,10 @@ class ImportScope(NodeScope):
             if fix_name == "":
                 return self
             return intellisence.IntellisenceManager().GetModuleMember(self.Node.Name,fix_name)
+
+        def GetDoc(self):
+            doc = intellisence.IntellisenceManager().GetModule(self.Node.Name).GetDoc()
+            return self.MakeBeautyDoc(doc)
             
 class FromImportScope(NodeScope):
         def __init__(self,from_import_node,parent,root):

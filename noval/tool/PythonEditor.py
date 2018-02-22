@@ -958,6 +958,36 @@ class PythonCtrl(CodeEditor.CodeCtrl):
                         return
                     wx.GetApp().GotoView(scope_found.Root.Module.Path,scope_found.Node.Line)
 
+
+    def OnDwellStart(self, evt):
+        mpoint = wx.GetMousePosition()
+        brect = self.GetScreenRect()
+        #avoid trigger tool many times
+        if not brect.Contains(mpoint) or \
+           not self.IsShown() or \
+           not wx.GetApp().GetTopWindow().IsActive():
+            return
+        line = self.GetCurrentLine()
+        pos = self.GetCurrentPos()
+        text = self.GetTypeWord(pos)
+        open_new_doc = False
+        module_scope = Service.Service.GetActiveView().ModuleScope
+        if module_scope is None:
+            scope_found = None
+        else:
+            scope = module_scope.FindScope(line)
+            scope_found = scope.FindDefinitionMember(text)
+        if scope_found is not None:
+            doc = scope_found.GetDoc()
+            if doc is not None:
+                self.CallTipShow(pos, doc.decode('utf-8'))
+        
+        CodeEditor.CodeCtrl.OnDwellStart(self,evt)
+
+    def OnDwellEnd(self, evt):
+        self.CallTipCancel()
+        CodeEditor.CodeCtrl.OnDwellEnd(self,evt)
+
 class PythonOptionsPanel(wx.Panel):
 
     def __init__(self, parent, id):
