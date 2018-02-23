@@ -39,6 +39,7 @@ import noval.util.strutils as strutils
 import CompletionService
 import DebuggerService
 from noval.parser.utils import CmpMember
+from noval.util.logger import app_debugLogger
 try:
     import checker # for pychecker
     _CHECKER_INSTALLED = True
@@ -919,8 +920,9 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         self.AutoCompSetIgnoreCase(True)
         self.AutoCompShow(0, string.join(member_list))
 
-    def IsCaretLocateInWord(self):
-        pos = self.GetCurrentPos()
+    def IsCaretLocateInWord(self,pos=-1):
+        if pos == -1:
+            pos = self.GetCurrentPos()
         line = self.LineFromPosition(pos)
         line_text = self.GetLine(line).strip()
         if line_text == "":
@@ -967,20 +969,24 @@ class PythonCtrl(CodeEditor.CodeCtrl):
            not self.IsShown() or \
            not wx.GetApp().GetTopWindow().IsActive():
             return
-        line = self.GetCurrentLine()
-        pos = self.GetCurrentPos()
-        text = self.GetTypeWord(pos)
-        open_new_doc = False
-        module_scope = Service.Service.GetActiveView().ModuleScope
-        if module_scope is None:
-            scope_found = None
-        else:
-            scope = module_scope.FindScope(line)
-            scope_found = scope.FindDefinitionMember(text)
-        if scope_found is not None:
-            doc = scope_found.GetDoc()
-            if doc is not None:
-                self.CallTipShow(pos, doc.decode('utf-8'))
+        position = evt.Position
+        if position >= 0 and self.IsCaretLocateInWord(position):
+            line = self.LineFromPosition(position) + 1
+            dwellword = self.GetTypeWord(position)
+            doc_view = Service.Service.GetActiveView()
+            if doc_view.GetLangLexer() == parserconfig.LANG_PYTHON_LEXER:
+                module_scope = doc_view.ModuleScope
+                if module_scope is None:
+                    scope_found = None
+                else:
+                    scope = module_scope.FindScope(line)
+                    scope_found = scope.FindDefinitionMember(dwellword)
+                if scope_found is not None:
+                    doc = scope_found.GetDoc()
+                    if doc is not None:
+                        self.CallTipShow(position, doc.decode('utf-8'))
+            else:
+                app_debugLogger.debug('active view is not python code view')
         
         CodeEditor.CodeCtrl.OnDwellStart(self,evt)
 
