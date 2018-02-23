@@ -494,7 +494,7 @@ class ImportScope(NodeScope):
             return intellisence.IntellisenceManager().GetModuleMember(self.Node.Name,fix_name)
 
         def GetDoc(self):
-            doc = intellisence.IntellisenceManager().GetModule(self.Node.Name).GetDoc()
+            doc = intellisence.IntellisenceManager().GetModuleDoc(self.Node.Name)
             return self.MakeBeautyDoc(doc)
             
 class FromImportScope(NodeScope):

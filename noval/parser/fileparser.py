@@ -342,11 +342,18 @@ def make_element_data(element,parent,childs,refs):
                     break
         is_method = False
         for arg in element.args.args:
-            if type(arg) == ast.Name:
-                if arg.id == 'self':
-                    is_method = True
-                arg = dict(name=arg.id)
-                args.append(arg)
+            if utils.IsPython2():
+                if type(arg) == ast.Name:
+                    if arg.id == 'self':
+                        is_method = True
+                    arg = dict(name=arg.id)
+                    args.append(arg)
+            elif utils.IsPython3():
+                if type(arg) == ast.arg:
+                    if arg.arg == 'self':
+                        is_method = True
+                    arg = dict(name=arg.arg)
+                    args.append(arg)
         doc = get_node_doc(element)
         data = dict(name=def_name,line=line_no,col=col,type=config.NODE_FUNCDEF_TYPE,\
                     is_method=is_method,is_class_method=is_class_method,args=args,doc=doc)
@@ -418,9 +425,9 @@ if __name__ == "__main__":
   ##  module = parse(r"D:\env\Noval\noval\parser\nodeast.py")
    ## module = parse(r"D:\env\Noval\noval\test\run_test_input.py")
     ##print module
-    dump(r"C:\Python27\lib\subprocess.py","subprocess","./",False)
+    dump(r"G:\work\Noval\noval\test\ast_test_file.py","ast_test_file","./",False)
     import pickle
-    with open(r"D:\env\Noval\noval\parser\subprocess.$members",'rb') as f:
+    with open(r"G:\work\Noval\noval\parser\ast_test_file.$members",'rb') as f:
         datas = pickle.load(f)
    ### print datas['name'],datas['path'],datas['is_builtin']
     import json

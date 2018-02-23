@@ -411,4 +411,9 @@ class IntellisenceManager(object):
     def GetBuiltinModuleMembers(self):
         app_debugLogger.debug('get builtin module name is:%s',self.GetBuiltinModule().Name)
         return self.GetModuleMembers(self.GetBuiltinModule().Name,"")
-        
+
+    def GetModuleDoc(self,module_name):
+        module = self.GetModule(module_name)
+        if module is None:
+            return None
+        return module.GetDoc()

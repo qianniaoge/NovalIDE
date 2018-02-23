@@ -119,3 +119,6 @@ Version 1.0.5 -------------2018-02-13
 4.analyse class static members intellisense data
 5.analyse class and function doc declaration
 6.simple implement project creation
+7.analyse builtin member doc declaration and show its calltip information
+8.separate builtin intellisense data to python 2 and 3
+9.repair python3 parse function args bug
