@@ -17,7 +17,7 @@ import shutil
 import sys
 import zipfile
 
-import noval.util.aglogging as aglogging
+import noval.util.logger as logger
 import noval.util.sysutils as sysutils
 import noval.util.utillang as utillang
 from noval.util.lang import *
@@ -30,7 +30,7 @@ fileutilsLogger = logging.getLogger("activegrid.util.fileutils")
 # WARN  : No logging
 # INFO  : No logging
 # DEBUG : debugging
-aglogging.setLevelFatal(fileutilsLogger)
+logger.setLevelFatal(fileutilsLogger)
 #logging.getLogger().addHandler(logging.StreamHandler(sys.stderr))
 
 def addRef(varname):
@@ -305,7 +305,7 @@ def zip(zipfilepath, basedir=None, files=None):
         raise AssertionError("Either 'basedir' or 'files' must be set")
             
     if not files:
-        aglogging.debug(fileutilsLogger,\
+        logger.debug(fileutilsLogger,\
                         "Looking for files to zip in %s" % basedir)
         files = getAllExistingFiles(basedir)
     else:
@@ -313,7 +313,7 @@ def zip(zipfilepath, basedir=None, files=None):
         files = getAllExistingFiles(files) 
 
     if len(files) == 0:
-        aglogging.debug(fileutilsLogger, "No files to zip, nothing to do")
+        logger.debug(fileutilsLogger, "No files to zip, nothing to do")
         return
     
     z = zipfile.ZipFile(zipfilepath, mode="w", compression=zipfile.ZIP_DEFLATED)
@@ -325,7 +325,7 @@ def zip(zipfilepath, basedir=None, files=None):
                 arcname = getRelativePath(file, basedir)
             if not arcname:
                 arcname = file
-                aglogging.debug(fileutilsLogger,\
+                logger.debug(fileutilsLogger,\
                                 "%s: adding %s with arcname %s" %\
                                 (zipfilepath, file, arcname))
             z.write(file, arcname)
@@ -342,13 +342,13 @@ def unzip(zipfilepath, extractdir):
         filename = os.path.join(extractdir, info.filename)
         try:
             dir = os.path.dirname(filename)
-            aglogging.debug(fileutilsLogger, "Creating dir %s" % dir)
+            logger.debug(fileutilsLogger, "Creating dir %s" % dir)
             os.makedirs(dir) # do we have to worry about permissions?
         except:
             pass
         if os.path.isdir(filename):
             continue
-        aglogging.debug(fileutilsLogger,\
+        logger.debug(fileutilsLogger,\
                        ("Writing arcfile %s to %s" % (info.filename, filename)))
         f = open(filename, "w")
         f.write(z.read(info.filename))

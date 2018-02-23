@@ -202,7 +202,7 @@ class PythonView(CodeEditor.CodeView):
                         members.extend(parent.GetMemberList(False))
                     parent = parent.Parent
                 kw.extend(members)
-                builtin_members = intellisence.IntellisenceManager().GetModuleMembers("__builtin__","")
+                builtin_members = intellisence.IntellisenceManager().GetBuiltinModuleMembers()
                 kw.extend(builtin_members)
         else:
             symTbl = dir(obj)

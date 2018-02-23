@@ -1,12 +1,12 @@
 #----------------------------------------------------------------------------
-# Name:         aglogging.py
+# Name:         logger.py
 # Purpose:      Utilities to help with logging
 #
 # Author:       Jeff Norton
 #
 # Created:      01/04/05
 # CVS-ID:       $Id$
-# Copyright:    (c) 2005 ActiveGrid, Inc.
+# Copyright:    (c) 2005 novalide, Inc.
 # License:      wxWindows License
 #----------------------------------------------------------------------------
 
@@ -33,8 +33,8 @@ loggingInitialized = False
 LOG_MODE_IDE = 1
 LOG_MODE_TESTRUN = 2
 LOG_MODE_RUN = 3
-def initLogging(mode, force=False):
-    global ag_debugLogger, loggingInitialized
+def initLogging(mode=LOG_MODE_TESTRUN, force=False):
+    global app_debugLogger, loggingInitialized
     if (force or not loggingInitialized):
         loggingInitialized = True
         configFile = None
@@ -56,7 +56,7 @@ def initLogging(mode, force=False):
             print "Using logging configuration file: %s" % configFile
             fileConfig(configFile)
         else:
-            print "*** Cannot find logging configuration file (%s) -- setting default logging level to WARN ***" % (configFile)
+            print "*** Cannot find logging configuration file (%s) -- setting default logging level to DEBUG ***" % (configFile)
             defaultStream = sys.stderr
             if (mode == LOG_MODE_RUN):
                 defaultStream = sys.stdout
@@ -64,16 +64,16 @@ def initLogging(mode, force=False):
             handler.setLevel(logging.DEBUG)
             handler.setFormatter(logging.Formatter("%(asctime)s %(name)s %(levelname)s: %(message)s"))
             logging.getLogger().addHandler(handler)
-            logging.getLogger().setLevel(logging.WARN)
-        ag_debugLogger = logging.getLogger("activegrid.debug")
-        ag_debugLogger.setLevel(logging.DEBUG)
+            logging.getLogger().setLevel(logging.DEBUG)
+        app_debugLogger = logging.getLogger("novalide.debug")
+        app_debugLogger.setLevel(logging.DEBUG)
         return configFile
     
-ag_debugLogger = logging.getLogger("activegrid.debug")
+app_debugLogger = logging.getLogger("novalide.debug")
 
 def log(logger, level, msg, *params):
     if (logger == None):
-        logger = ag_debugLogger
+        logger = app_debugLogger
     apply(logger.log, (level, msg) + params)
 
 def fatal(logger, msg, *params):
@@ -90,7 +90,7 @@ def info(logger, msg, *params):
 
 def debug(logger, msg, *params):
     if (logger == None):
-        logger = ag_debugLogger
+        logger = app_debugLogger
     apply(logger.debug, (msg,) + params)
     
 def setLevelFatal(logger):

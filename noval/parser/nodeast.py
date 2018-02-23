@@ -230,6 +230,12 @@ class ImportNode(Node):
      @property
      def AsName(self):
          return self._as_name
+
+class BuiltinImportNode(ImportNode):
+     BUILTIN_MODULE_NAME = '__builtin__'
+     def __init__(self,parent):
+        super(BuiltinImportNode,self).__init__(self.BUILTIN_MODULE_NAME,0,0,parent)
+        self._type = config.NODE_BUILTIN_IMPORT_TYPE
          
 class FromImportNode(Node):
      def __init__(self,name,line,col,parent):

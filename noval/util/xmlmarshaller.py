@@ -22,7 +22,7 @@ endIfDef()
 import noval.util.utillang as utillang
 import noval.util.objutils as objutils
 import noval.util.sysutils as sysutils
-import noval.util.aglogging as aglogging
+import noval.util.logger as logger
 
 MODULE_PATH = "__main__"
 
@@ -752,7 +752,7 @@ def marshal(obj, elementName=None, prettyPrint=False, marshalType=True, indent=0
     if obj != None and hasattr(obj, '__xmldeepexclude__'):
         worker.xmldeepexclude = obj.__xmldeepexclude__
     xmlstr = "".join(worker._marshal(obj, elementName, indent=indent))
-    aglogging.info(xmlMarshallerLogger, "marshal produced string of type %s", type(xmlstr))
+    logger.info(xmlMarshallerLogger, "marshal produced string of type %s", type(xmlstr))
     if (encoding == None):
         return xmlstr
     if (not isinstance(encoding, basestring)):
@@ -898,9 +898,9 @@ class XMLMarshalWorker(object):
             
     def _marshal(self, obj, elementName=None, nameSpacePrefix="", indent=0):
         if (obj != None):
-            aglogging.debug(xmlMarshallerLogger, "--> _marshal: elementName=%s%s, type=%s, obj=%s, indent=%d", nameSpacePrefix, elementName, type(obj), str(obj), indent)
+            logger.debug(xmlMarshallerLogger, "--> _marshal: elementName=%s%s, type=%s, obj=%s, indent=%d", nameSpacePrefix, elementName, type(obj), str(obj), indent)
         else:
-            aglogging.debug(xmlMarshallerLogger, "--> _marshal: elementName=%s%s, obj is None, indent=%d", nameSpacePrefix, elementName, indent)
+            logger.debug(xmlMarshallerLogger, "--> _marshal: elementName=%s%s, obj is None, indent=%d", nameSpacePrefix, elementName, indent)
         if ((obj != None) and (hasattr(obj, 'preMarshal'))):
             obj.preMarshal()
         excludeAttrs = []
@@ -1178,8 +1178,8 @@ class XMLMarshalWorker(object):
                     xmlString.append("><![CDATA[%s]]></%s>%s" % (cdataContent, elementName, newline))
                 else:
                     xmlString.append("/>%s" % newline)
-        if aglogging.isEnabledForDebug(xmlMarshallerLogger):
-            aglogging.debug(xmlMarshallerLogger, "<-- _marshal: %s", objutils.toDiffableString(xmlString))
+        if logger.isEnabledForDebug(xmlMarshallerLogger):
+            logger.debug(xmlMarshallerLogger, "<-- _marshal: %s", objutils.toDiffableString(xmlString))
         #print "<-- _marshal: %s" % str(xmlString)
         self.popNSStack()
         return xmlString

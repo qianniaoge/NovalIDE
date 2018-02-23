@@ -24,7 +24,7 @@ import time
 import types
 import noval.util.appdirs as appdirs
 import noval.util.fileutils as fileutils
-import noval.util.aglogging as aglogging
+import noval.util.logger as logger
 import UICommon
 import Wizard
 import SVNService
@@ -125,7 +125,7 @@ def GetDocCallback(filepath):
                     break
     except Exception,e:
         doc = None            
-        aglogging.reportException(e, stacktrace=True)
+        logger.reportException(e, stacktrace=True)
             
     if doc and doc.GetDocumentTemplate().GetDocumentType() == WsdlAgEditor.WsdlAgDocument:
         # get referenced wsdl doc instead
@@ -150,7 +150,7 @@ def GetDocCallback(filepath):
                 doc = docMgr.CreateDocument(filepath, docMgr.GetFlags()|wx.lib.docview.DOC_SILENT|wx.lib.docview.DOC_OPEN_ONCE|wx.lib.docview.DOC_NO_VIEW)
             except Exception,e:
                 doc = None
-                aglogging.reportException(e, stacktrace=True)
+                logger.reportException(e, stacktrace=True)
                 
             if doc: 
                 AddProjectMapping(doc)

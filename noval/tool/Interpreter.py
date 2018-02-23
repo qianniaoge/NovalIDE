@@ -6,6 +6,7 @@ import wx
 import locale
 import noval.util.sysutils as sysutils
 import pickle
+import noval.parser.nodeast as nodeast
 _ = wx.GetTranslation
 
 class Interpreter(object):
@@ -49,6 +50,7 @@ class PythonInterpreter(Interpreter):
     
     CONSOLE_EXECUTABLE_NAME = "python.exe"
     WINDOW_EXECUTABLE_NAME = "pythonw.exe"
+    PYTHON3_BUILTIN_MODULE_NAME = 'builtins'
     def __init__(self,name,executable_path,id=None,is_valid_interpreter = False):
         if sysutils.isWindows():
             if os.path.basename(executable_path) == PythonInterpreter.WINDOW_EXECUTABLE_NAME:
@@ -73,6 +75,8 @@ class PythonInterpreter(Interpreter):
         self._builtins = []
         self._help_path = ""
         self._is_analysed = False
+        #builtin module name which python2 is __builtin__ and python3 is builtins
+        self._builtin_module_name = "__builtin__"
         if not is_valid_interpreter:
             self.GetVersion()
         if not is_valid_interpreter and self._is_valid_interpreter:
@@ -88,6 +92,8 @@ class PythonInterpreter(Interpreter):
                 return
         self._version = output.replace(version_flag,"").strip()
         self._is_valid_interpreter = True
+        if self.IsV3():
+            self._builtin_module_name = self.PYTHON3_BUILTIN_MODULE_NAME
 
     def IsV27(self):
         versions = self.Version.split('.')
@@ -98,6 +104,18 @@ class PythonInterpreter(Interpreter):
     def IsV26(self):
         versions = self.Version.split('.')
         if int(versions[0]) == 2 and int(versions[1]) == 6:
+            return True
+        return False
+
+    def IsV2(self):
+        versions = self.Version.split('.')
+        if int(versions[0]) == 2:
+            return True
+        return False
+
+    def IsV3(self):
+        versions = self.Version.split('.')
+        if int(versions[0]) >= 3:
             return True
         return False
         
@@ -196,6 +214,8 @@ class PythonInterpreter(Interpreter):
         
     def SetInterpreterInfo(self,version,builtins,sys_path_list):
         self._version = version
+        if self.IsV3():
+            self._builtin_module_name = self.PYTHON3_BUILTIN_MODULE_NAME
         assert(0 == len(self._builtins))
         self._builtins = builtins
         assert(0 == len(self._sys_path_list))
@@ -219,6 +239,9 @@ class PythonInterpreter(Interpreter):
     @property
     def Id(self):
         return self._id
+    @property
+    def BuiltinModuleName(self):
+        return self._builtin_module_name
          
 class InterpreterManager(Singleton):
     
@@ -439,6 +462,8 @@ class InterpreterManager(Singleton):
     @classmethod    
     def SetCurrentInterpreter(cls,interpreter):
         cls.CurrentInterpreter = interpreter
+        #change builtin module name of BuiltinImportNode
+        nodeast.BuiltinImportNode.BUILTIN_MODULE_NAME = interpreter.BuiltinModuleName
         
     @classmethod    
     def GetCurrentInterpreter(cls):

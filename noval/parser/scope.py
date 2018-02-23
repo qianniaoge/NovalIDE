@@ -12,6 +12,7 @@ class Scope(object):
         self._child_scopes = []
         if self._parent != None:
             self.Parent.AppendChildScope(self)
+
     @property
     def Parent(self):
         return self._parent
@@ -103,6 +104,8 @@ class Scope(object):
         return find_scope
         
     def FindDefinition(self,name):
+        if str(name.strip()) == '':
+            return None,False,False
         names = name.split('.')
         find_scope = None
         is_self = False
@@ -115,6 +118,11 @@ class Scope(object):
             is_cls = True
         else:
             top_scope = self.GetTopScope(names)
+            #search for __builtin__ member at last
+            if top_scope is None and len(names) == 1:
+                #get builtin module name from module scope,which python2 is __builtin__ and python3 is builtins
+                top_scope = self.GetTopScope([self.Root._builtin_module_name] + names)
+            
         return top_scope,is_self,is_cls
 
     def FindDefinitionMember(self,name):
@@ -187,6 +195,7 @@ class ModuleScope(Scope):
         def __init__(self,module,line_count):
             super(ModuleScope,self).__init__(0,line_count)
             self._module = module
+            self._builtin_module_name = "__builtin__"
         @property
         def Module(self):
             return self._module
@@ -225,8 +234,13 @@ class ModuleScope(Scope):
                     NameScope(child,parent_scope,self)
                 elif child.Type == config.NODE_IMPORT_TYPE:
                     ImportScope(child,parent_scope,self)
+                    #from xx import x
                     if child.Parent.Type == config.NODE_FROMIMPORT_TYPE:
-                        self.MakeImportScope(parent_scope,parent_scope.Parent)                        
+                        self.MakeImportScope(parent_scope,parent_scope.Parent)    
+                elif child.Type == config.NODE_BUILTIN_IMPORT_TYPE:
+                    ImportScope(child,parent_scope,self)
+                    #get currenet interpreter builtin module name
+                    self._builtin_module_name = child.Name
                 elif child.Type == config.NODE_FROMIMPORT_TYPE:
                     from_import_scope = FromImportScope(child,parent_scope,self)
                     self.MakeScopes(child,from_import_scope)

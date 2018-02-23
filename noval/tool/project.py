@@ -14,7 +14,7 @@ import copy
 import os
 import os.path
 import noval.util.xmlutils as xmlutils
-import noval.util.aglogging as aglogging
+import noval.util.logger as logger
 
 # REVIEW 07-Mar-06 stoens@activegrid.com -- Ideally move the pieces required
 # to generate the .dpl file out of this module so there's no dependency on wx,
@@ -403,7 +403,7 @@ class ProjectFile(object):
                             break
                 self._doc = doc
             except Exception,e:
-                aglogging.reportException(e, stacktrace=True)
+                logger.reportException(e, stacktrace=True)
                 
         return self._doc
 

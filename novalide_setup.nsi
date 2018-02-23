@@ -122,7 +122,7 @@ Section "MainSection" SEC01
   File /r "dist\noval\*.*"
   SetOutPath "$INSTDIR\tcl"
   File /r "dist\tcl\*.*"
-  SetOutPath "$APPDATA\NovalIDE\intellisence"
+  SetOutPath "$APPDATA\NovalIDE\intellisence\builtins"
   File /r "dist\builtins\*.*"
 SectionEnd
 
@@ -226,6 +226,11 @@ Section Uninstall
   RMDir /r "$INSTDIR\noval"
 
   RMDir "$INSTDIR"
+  Delete "$APPDATA\NovalIDE\intellisence\*.*"
+  RMDir "$APPDATA\NovalIDE\intellisence\builtins\2"
+  RMDir "$APPDATA\NovalIDE\intellisence\builtins\3"
+  RMDir "$APPDATA\NovalIDE\intellisence\builtins"
+  RMDir /r "$APPDATA\NovalIDE\intellisence"
 
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
   DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"

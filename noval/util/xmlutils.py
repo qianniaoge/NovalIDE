@@ -18,7 +18,7 @@ import logging
 from noval.util.lang import *
 import noval.util.objutils as objutils
 import noval.util.xmlmarshaller as xmlmarshaller
-import noval.util.aglogging as aglogging
+import noval.util.logger as logger
 
 xmlLogger = logging.getLogger("activegrid.util.xml")
     
@@ -35,9 +35,9 @@ def load(fileName, knownTypes=None, knownNamespaces=None, createGenerics=False):
             loadedObject.initialize()
     finally:
         fileObject.close()
-        if xmlLogger.isEnabledFor(aglogging.LEVEL_INFO):
+        if xmlLogger.isEnabledFor(logger.LEVEL_INFO):
             timeDone = time.time()
-            aglogging.info(xmlLogger, ('Load statistics for file %s (%d bytes): elapsed time = %f secs' % (fileName, len(xml), timeDone-timeStart)))
+            logger.info(xmlLogger, ('Load statistics for file %s (%d bytes): elapsed time = %f secs' % (fileName, len(xml), timeDone-timeStart)))
     return loadedObject
 
 def loadURI(uri, knownTypes=None, knownNamespaces=None, xmlSource=None, createGenerics=False):
@@ -51,9 +51,9 @@ def loadURI(uri, knownTypes=None, knownNamespaces=None, xmlSource=None, createGe
         if hasattr(loadedObject, 'initialize'):
             loadedObject.initialize()
     finally:
-        if xmlLogger.isEnabledFor(aglogging.LEVEL_INFO):
+        if xmlLogger.isEnabledFor(logger.LEVEL_INFO):
             timeDone = time.time()
-            aglogging.info(xmlLogger, ('Load statistics for URI %s (%d bytes): elapsed time = %f secs' % (uri, len(xml), timeDone-timeStart)))
+            logger.info(xmlLogger, ('Load statistics for URI %s (%d bytes): elapsed time = %f secs' % (uri, len(xml), timeDone-timeStart)))
     return loadedObject
 
 def unmarshal(xml, knownTypes=None, knownNamespaces=None, xmlSource=None, createGenerics=False):
@@ -75,7 +75,7 @@ def save(fileName, objectToSave, prettyPrint=True, marshalType=True, knownTypes=
         raise xmlmarshaller.MarshallerException('Error marshalling object to file "%s": %s' % (fileName, str(errorData)))
     fileObject.close()
     timeDone = time.time()
-    aglogging.info(xmlLogger, ('Save statistics for file %s: elapsed time = %f secs' % (fileName, timeDone-timeStart)))
+    logger.info(xmlLogger, ('Save statistics for file %s: elapsed time = %f secs' % (fileName, timeDone-timeStart)))
     
 def marshal(objectToSave, prettyPrint=True, marshalType=True, knownTypes=None, knownNamespaces=None, encoding='utf-8'):
     if (knownTypes == None): 

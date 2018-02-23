@@ -18,6 +18,7 @@ import wx.grid
 import os.path
 import noval.util.sysutils as sysutilslib
 import noval.util.appdirs as appdirs
+import noval.util.logger as logger
 import shutil
 import Interpreter
 import noval.parser.intellisence as intellisence
@@ -80,6 +81,9 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         global ACTIVEGRID_BASE_IDE
         global USE_OLD_PROJECTS
         args = sys.argv
+
+        #init ide logger
+        logger.initLogging()
 
         # Suppress non-fatal errors that might prompt the user even in cases
         # when the error does not impact them.
