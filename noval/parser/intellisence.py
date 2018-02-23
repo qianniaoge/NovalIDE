@@ -14,6 +14,7 @@ import glob
 import nodeast
 import scope
 import pickle
+from noval.util.logger import app_debugLogger
 
 class ModuleLoader(object):
     CHILD_KEY = "childs"
@@ -230,8 +231,13 @@ class IntellisenceDataLoader(object):
         self._builtin_module = None
         self._manager = manager
       
-    def LodBuiltInData(self):
-        builtin_data_path = self.__builtin_data_location
+    def LodBuiltInData(self,interpreter):
+        if interpreter.IsV2():
+            builtin_data_path = os.path.join(self.__builtin_data_location,"2")
+        else:
+            builtin_data_path = os.path.join(self.__builtin_data_location,"3")
+
+        app_debugLogger.debug('builtin data path:%s',builtin_data_path)
         if not os.path.exists(builtin_data_path):
             return
         self.LoadIntellisenceDirData(builtin_data_path)
@@ -259,9 +265,9 @@ class IntellisenceDataLoader(object):
         if not os.path.exists(intellisence_data_path):
             return
         self.LoadIntellisenceDirData(intellisence_data_path)
-        self.LodBuiltInData()
+        self.LodBuiltInData(interpreter)
         self.LoadImportList()
-        self.LoadBuiltinModule()
+        self.LoadBuiltinModule(interpreter)
         
     def LoadImportList(self):
         for key in self.module_dicts.keys():
@@ -273,8 +279,9 @@ class IntellisenceDataLoader(object):
     def ImportList(self):
         return self.import_list
         
-    def LoadBuiltinModule(self):
-        builtin_module_loader = self._manager.GetModule("__builtin__")
+    def LoadBuiltinModule(self,interpreter):
+        app_debugLogger.debug('current interpreter builtin module name is:%s',interpreter.BuiltinModuleName)
+        builtin_module_loader = self._manager.GetModule(interpreter.BuiltinModuleName)
         data = builtin_module_loader.LoadMembers()
         self._builtin_module = BuiltinModule.BuiltinModule(builtin_module_loader.Name)
         self._builtin_module.load(data)
@@ -288,7 +295,7 @@ class IntellisenceManager(object):
     def __init__(self):
         self.data_root_path = os.path.join(appdirs.getAppDataFolder(),"intellisence")
         if sysutilslib.isWindows():
-            self._builtin_data_path = self.data_root_path
+            self._builtin_data_path = os.path.join(self.data_root_path,"builtins")
         else:
             self._builtin_data_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "data","intellisence","builtins")
         self.module_dicts = {}
@@ -400,4 +407,8 @@ class IntellisenceManager(object):
         if module is None:
             return None
         return module.FindDefinitionWithName(child_name)
+
+    def GetBuiltinModuleMembers(self):
+        app_debugLogger.debug('get builtin module name is:%s',self.GetBuiltinModule().Name)
+        return self.GetModuleMembers(self.GetBuiltinModule().Name,"")
         

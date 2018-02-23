@@ -291,8 +291,8 @@ def typeToString(obj, options=0):
     else:
         ds = str(type(obj))
     if (options == 0):
-        import activegrid.util.aglogging
-        options = activegrid.util.aglogging.testMode(0, PRINT_OBJ_DIFFABLE)
+        import activegrid.util.logger
+        options = activegrid.util.logger.testMode(0, PRINT_OBJ_DIFFABLE)
     if ((options & PRINT_OBJ_DIFFABLE) > 0):
         if (ds.startswith("<class ")):
             ix = ds.rfind(".")

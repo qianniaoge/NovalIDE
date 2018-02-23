@@ -15,7 +15,7 @@ import utils
 DATABASE_FILE = "version"
 
 def generate_builtin_data(dest_path):
-    def work_builtin_type(builtin_type,recursive=True):
+    def make_python2_builtin_types(builtin_type,recursive=True):
         childs = []
         for name in dir(builtin_type):
             try:
@@ -26,7 +26,7 @@ def generate_builtin_data(dest_path):
             if builtin_attr_type == types.TypeType:
                 if not recursive:
                     continue
-                builtin_attr_childs = work_builtin_type(builtin_attr_intance,False)
+                builtin_attr_childs = make_python2_builtin_types(builtin_attr_intance,False)
                 node = dict(name = name,is_builtin=True,type = config.NODE_CLASSDEF_TYPE,childs=builtin_attr_childs,doc=builtin_attr_intance.__doc__)
                 childs.append(node)
             elif builtin_attr_type == types.BuiltinFunctionType or builtin_attr_type == types.BuiltinMethodType \
@@ -37,12 +37,41 @@ def generate_builtin_data(dest_path):
                 node = dict(name = name,is_builtin=True,type = config.NODE_OBJECT_PROPERTY)
                 childs.append(node)
         return childs
+
+    def make_python3_builtin_types(builtin_type,recursive=True):
+        childs = []
+        for name in dir(builtin_type):
+            try:
+                builtin_attr_intance = getattr(builtin_type,name)
+            except:
+                continue
+            builtin_attr_type = type(builtin_attr_intance)
+            if builtin_attr_type == type(type):
+                if not recursive:
+                    continue
+                builtin_attr_childs = make_python3_builtin_types(builtin_attr_intance,False)
+                node = dict(name = name,is_builtin=True,type = config.NODE_CLASSDEF_TYPE,childs=builtin_attr_childs,doc=builtin_attr_intance.__doc__)
+                childs.append(node)
+            elif builtin_attr_type == types.BuiltinFunctionType or builtin_attr_type == types.BuiltinMethodType \
+                        or str(builtin_attr_type).find("method_descriptor") != -1:
+                node = dict(name = name,is_builtin=True,type = config.NODE_FUNCDEF_TYPE,doc=builtin_attr_intance.__doc__)
+                childs.append(node)
+            else:
+                node = dict(name = name,is_builtin=True,type = config.NODE_OBJECT_PROPERTY)
+                childs.append(node)
+        return childs
+
+    def make_builtin_types(builtin_type):
+        if utils.IsPython2():
+            return make_python2_builtin_types(builtin_type)
+        else:
+            return make_python3_builtin_types(builtin_type)
         
     dest_path = os.path.join(dest_path,"builtins")
     utils.MakeDirs(dest_path)
     for built_module in sys.builtin_module_names:
         module_instance = __import__(built_module)
-        childs = work_builtin_type(module_instance)
+        childs = make_builtin_types(module_instance)
         with open(dest_path + "/" + built_module + ".$memberlist", 'w') as f:
             for node in childs:
                 f.write(node['name'])
@@ -50,7 +79,7 @@ def generate_builtin_data(dest_path):
         module_dict = fileparser.make_module_dict(built_module,'',True,childs,doc=module_instance.__doc__)
         with open(dest_path + "/" + built_module + ".$members", 'wb') as j:
             # Pickle dictionary using protocol 0.
-            pickle.dump(module_dict, j)
+            pickle.dump(module_dict, j,protocol=0)
             
 def LoadDatabaseVersion(database_location):
     with open(os.path.join(database_location,DATABASE_FILE)) as f:

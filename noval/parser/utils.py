@@ -87,3 +87,8 @@ def IsPython3():
     if sys.version_info[0] >= 3:
         return True
     return False
+
+def IsPython2():
+    if sys.version_info[0] == 2:
+        return True
+    return False

@@ -152,6 +152,8 @@ def parse(module_path):
             doc = get_node_doc(node)
             module = nodeast.Module(os.path.basename(module_path).split('.')[0],module_path,doc)
             deep_walk(node,module)
+            #add a builtin import node to all file to make search builtin types convenient,which is hidden in outline view
+            nodeast.BuiltinImportNode(module)
             return module
     except:
         return None
@@ -162,6 +164,8 @@ def parse_content(content,module_path):
         doc = get_node_doc(node)
         module = nodeast.Module(os.path.basename(module_path).split('.')[0],module_path,doc)
         deep_walk(node,module)
+        #add a builtin import node to all file to make search builtin types convenient,which is hidden in outline view
+        nodeast.BuiltinImportNode(module)
         return module
     except:
         return None
