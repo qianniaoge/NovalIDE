@@ -147,8 +147,12 @@ class HistoryCache(object):
         @param item: object
 
         """
+        #when jump to pos break position action ,we should only record current pos and jump to pos.
+        #and truncate old end positions
         if self.cpos != len(self._list) - 1:
-            self._list = self._list[:self.cpos]
+            if self.cpos < 0:
+                self.cpos = 0
+            self._list = self._list[:self.cpos+1]
         self._list.append(item)
         self.cpos += 1
         self._Resize()

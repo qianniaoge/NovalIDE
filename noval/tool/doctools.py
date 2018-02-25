@@ -18,6 +18,9 @@ import sys
 import hiscache  
 #--------------------------------------------------------------------------#
 
+GOTO_PREV_POS = 0
+GOTO_NEXT_POS = 1
+
 class DocPositionMgr(object):
     """Object for managing the saving and setting of a collection of
     documents positions between sessions. Through the use of an in memory
@@ -27,6 +30,7 @@ class DocPositionMgr(object):
 
     """
     _poscache = hiscache.HistoryCache(100)
+    _pos_action = -1
 
     def __init__(self):
         """Creates the position manager object"""
@@ -60,7 +64,10 @@ class DocPositionMgr(object):
         next = cls._poscache.PeekNext()
         if (fname, pos) in (pre, next):
             return
-
+        #when last action is goto previous position,we shoud increase current pos 1.
+        if cls._pos_action == GOTO_PREV_POS:
+            cls._poscache.cpos += 1
+            cls._pos_action = -1
         cls._poscache.PutItem((fname, pos))
 
     def AddRecord(self, vals):
@@ -121,6 +128,8 @@ class DocPositionMgr(object):
 
         """
         item = cls._poscache.GetNextItem()
+        #record last position action
+        cls._pos_action = GOTO_NEXT_POS
         return item
 
     @classmethod
@@ -135,6 +144,8 @@ class DocPositionMgr(object):
 
         """
         item = cls._poscache.GetPreviousItem()
+        #record last position action
+        cls._pos_action = GOTO_PREV_POS
         return item
 
     def GetPos(self, name):
@@ -153,6 +164,54 @@ class DocPositionMgr(object):
         """
         return self._init
 
+    def LoadBook(self, book):
+        """Loads a set of records from an on disk dictionary
+        the entries are formated as key=value with one entry
+        per line in the file.
+        @param book: path to saved file
+        @return: whether book was loaded or not
+
+        """
+        # If file does not exist create it and return
+        if not os.path.exists(book):
+            try:
+                tfile = util.GetFileWriter(book)
+                tfile.close()
+            except (IOError, OSError):
+                util.Log("[docpositionmgr][err] failed to load book: %s" % book)
+                return False
+            except AttributeError:
+                util.Log("[docpositionmgr][err] Failed to create: %s" % book)
+                return False
+
+        reader = util.GetFileReader(book, sys.getfilesystemencoding())
+        if reader != -1:
+            lines = list()
+            try:
+                lines = reader.readlines()
+            except:
+                reader.close()
+                return False
+            else:
+                reader.close()
+
+            for line in lines:
+                line = line.strip()
+                vals = line.rsplit(u'=', 1)
+                if len(vals) != 2 or not os.path.exists(vals[0]):
+                    continue
+
+                try:
+                    vals[1] = int(vals[1])
+                except (TypeError, ValueError), msg:
+                    util.Log("[docpositionmgr][err] %s" % str(msg))
+                    continue
+                else:
+                    self._records[vals[0]] = vals[1]
+
+            util.Log("[docpositionmgr][info] successfully loaded book")
+            return True
+
     @classmethod
     def PeekNavi(cls, pre=False):
         """Peek into the navigation cache
@@ -168,3 +227,21 @@ class DocPositionMgr(object):
                 return cls._poscache.PeekNext()
         return None, None
 
+    def WriteBook(self):
+        """Writes the collection of files=pos to the config file
+        @postcondition: in memory doc data is written out to disk
+
+        """
+        writer = util.GetFileWriter(self.GetBook(), sys.getfilesystemencoding())
+        if writer != -1:
+            try:
+                for key, val in self._records.iteritems():
+                    try:
+                        writer.write(u"%s=%d\n" % (key, val))
+                    except UnicodeDecodeError:
+                        continue
+                writer.close()
+            except IOError, msg:
+                util.Log("[docpositionmgr][err] %s" % str(msg))
+        else:
+            util.Log("[docpositionmgr][err] Failed to open %s" % self.GetBook())

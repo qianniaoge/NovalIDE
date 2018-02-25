@@ -54,7 +54,7 @@ class MessageView(Service.ServiceView):
     #----------------------------------------------------------------------------
 
     def _CreateControl(self, parent, id):
-        txtCtrl = STCTextEditor.TextCtrl(parent, id)
+        txtCtrl = STCTextEditor.TextCtrl(parent, id, bind_left_up_event = False)
         txtCtrl.SetMarginWidth(1, 0)  # hide line numbers
         txtCtrl.SetReadOnly(True)
         txtCtrl.SetEdgeMode(wx.stc.STC_EDGE_NONE)

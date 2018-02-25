@@ -115,7 +115,7 @@ Version 1.0.4 -------------2018-02-04
 Version 1.0.5 -------------2018-02-13
 1.enable to open current python interpreter on tools menu
 2.allow user to set use MRU menu or not
-3.add simple navigation to next or previous position function
+3.implement navigation to next or previous position
 4.analyse class static members intellisense data
 5.analyse class and function doc declaration
 6.simple implement project creation

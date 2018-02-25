@@ -140,7 +140,7 @@ class Scope(object):
     def FindDefinitionScope(self,name):
         names = name.split('.')
         #when like self. or cls., route to parent class scope
-        if names[0] == 'self' or (names[0] == 'cls' and self.IsClassMethodScope()):
+        if (names[0] == 'self' and self.IsMethodScope())  or (names[0] == 'cls' and self.IsClassMethodScope()):
             if len(names) == 1:
                 return self.Parent
             else:
@@ -397,7 +397,8 @@ class ClassDefScope(NodeScope):
             for base in self.Node.Bases:
                 base_scope = self.Parent.FindDefinitionScope(base)
                 if base_scope is not None:
-                    if base_scope.Node.Type == config.NODE_IMPORT_TYPE:
+                    if base_scope.Node.Type == config.NODE_IMPORT_TYPE or\
+                        base_scope.Node.Type == config.NODE_BUILTIN_IMPORT_TYPE:
                         member_list.extend(base_scope.GetImportMemberList(base))
                     else:
                         member_list.extend(base_scope.GetClassMembers(False))

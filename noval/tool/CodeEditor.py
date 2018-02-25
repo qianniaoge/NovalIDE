@@ -735,6 +735,9 @@ class CodeCtrl(STCTextEditor.TextCtrl):
     def OnRightUp(self, event):
         if event.GetPosition().x < self.GetMarginsWidth():
             return
+        #cancel calltip
+        if self.CallTipActive():
+            self.CallTipCancel()
         #Hold onto the current line number, no way to get it later.
         self._rightClickPosition = self.PositionFromPoint(event.GetPosition())
         self._rightClickLine = self.LineFromPosition(self._rightClickPosition)

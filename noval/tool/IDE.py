@@ -473,6 +473,31 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             if foundView.GetLangLexer() == parserconfig.LANG_PYTHON_LEXER:
                 import OutlineService
                 self.GetService(OutlineService.OutlineService).LoadOutline(foundView, lineNum=lineNum)
+
+
+    def GotoViewPos(self,file_path,lineNum,col=0):
+        file_path = os.path.abspath(file_path)
+        foundView = None
+        openDocs = self.GetDocumentManager().GetDocuments()
+        for openDoc in openDocs:
+            if openDoc.GetFilename() == file_path:
+                foundView = openDoc.GetFirstView()
+                break
+
+        if not foundView:
+            doc = self.GetDocumentManager().CreateDocument(file_path, wx.lib.docview.DOC_SILENT)
+            if doc is None:
+                return
+            foundView = doc.GetFirstView()
+
+        if foundView:
+            foundView.GetFrame().SetFocus()
+            foundView.Activate()
+            startPos = foundView.PositionFromLine(lineNum)
+            foundView.GotoPos(startPos+col)
+            if foundView.GetLangLexer() == parserconfig.LANG_PYTHON_LEXER:
+                import OutlineService
+                self.GetService(OutlineService.OutlineService).LoadOutline(foundView, lineNum=lineNum)
                 
     def AddInterpreters(self):
         cb = self.ToolbarCombox

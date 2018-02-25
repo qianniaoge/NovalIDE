@@ -22,8 +22,8 @@ class MessageNotification():
 
         """
         data = msg
-        print data,'+++++++++++++++++++++'
-        noval.tool.NavigationService.NavigationService.DocMgr.AddNaviPosition(data['fname'], data['prepos'])
+        if data.has_key('prepos'):
+            noval.tool.NavigationService.NavigationService.DocMgr.AddNaviPosition(data['fname'], data['prepos'])
         noval.tool.NavigationService.NavigationService.DocMgr.AddNaviPosition(data['fname'], data['pos'])
 
 class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotification):

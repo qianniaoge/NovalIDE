@@ -845,12 +845,17 @@ class TextView(wx.lib.docview.View):
            #    self.GetCtrl().EnsureVisible(line)
            #    self.GetCtrl().GotoLine(line)
 
-    @NavigationService.jumpaction
+    @NavigationService.jumpto
     def GotoLine(self, lineNum):
         if lineNum > -1:
             lineNum = lineNum - 1  # line numbering for editor is 0 based, we are 1 based.
             self.GetCtrl().EnsureVisibleEnforcePolicy(lineNum)
             self.GetCtrl().GotoLine(lineNum)
+
+    @NavigationService.jumpto
+    def GotoPos(self, pos):
+        if pos > -1:
+            self.GetCtrl().GotoPos(pos)
 
     def SetSelection(self, start, end):
         self.GetCtrl().SetSelection(start, end)
@@ -1149,7 +1154,7 @@ class TextOptionsPanel(wx.Panel):
 
 class TextCtrl(wx.stc.StyledTextCtrl):
 
-    def __init__(self, parent, id=-1, style=wx.NO_FULL_REPAINT_ON_RESIZE):
+    def __init__(self, parent, id=-1, bind_left_up_event = True,style=wx.NO_FULL_REPAINT_ON_RESIZE):
         wx.stc.StyledTextCtrl.__init__(self, parent, id, style=style)
 
         if isinstance(parent, wx.gizmos.DynamicSashWindow):
@@ -1169,6 +1174,8 @@ class TextCtrl(wx.stc.StyledTextCtrl):
         self.CmdKeyAssign(wx.stc.STC_KEY_NEXT, wx.stc.STC_SCMOD_CTRL, wx.stc.STC_CMD_ZOOMOUT)
         self.Bind(wx.stc.EVT_STC_ZOOM, self.OnUpdateLineNumberMarginWidth)  # auto update line num width on zoom
         wx.EVT_KEY_DOWN(self, self.OnKeyPressed)
+        if bind_left_up_event:
+            self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
         wx.EVT_KILL_FOCUS(self, self.OnKillFocus)
         wx.EVT_SET_FOCUS(self, self.OnFocus)
         self.SetMargins(0,0)
@@ -1380,6 +1387,14 @@ class TextCtrl(wx.stc.StyledTextCtrl):
                 self.ToggleFold(self.GetCurrentLine())
         else:
             event.Skip()
+
+    @NavigationService.jumpaction
+    def OnLeftUp(self, evt):
+        """Set primary selection and inform mainwindow that cursor position
+        has changed.
+        @param evt: wx.MouseEvent()
+        """
+        evt.Skip()
 
     #----------------------------------------------------------------------------
     # View Text methods

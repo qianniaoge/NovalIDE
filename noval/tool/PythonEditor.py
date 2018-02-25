@@ -953,12 +953,14 @@ class PythonCtrl(CodeEditor.CodeCtrl):
             else:
                 open_new_doc = (scope_found.Root != scope.Root)
                 if not open_new_doc:
-                    wx.GetApp().GetDocumentManager().GetCurrentView().GotoLine(scope_found.Node.Line)
+                    doc_view = wx.GetApp().GetDocumentManager().GetCurrentView()
+                    startPos = doc_view.PositionFromLine(scope_found.Node.Line)
+                    doc_view.GotoPos(startPos + scope_found.Node.Col)
                 else:
                     if -1 == scope_found.Node.Line:
                         wx.MessageBox(_("Cannot go to definition") + "\"" + text + "\"",_("Goto Definition"),wx.OK|wx.ICON_EXCLAMATION,wx.GetApp().GetTopWindow())
                         return
-                    wx.GetApp().GotoView(scope_found.Root.Module.Path,scope_found.Node.Line)
+                    wx.GetApp().GotoViewPos(scope_found.Root.Module.Path,scope_found.Node.Line,scope_found.Node.Col)
 
 
     def OnDwellStart(self, evt):

@@ -13,13 +13,19 @@ NOVAL_MSG_UI_STC_POS_JUMPED = 'noval.msg.file.jump'
 ID_NEXT_POS = wx.NewId()
 ID_PRE_POS = wx.NewId()
 
+#record previous and current caret postion
 def jumpaction(func):
     """Decorator method to notify clients about jump actions"""
     def WrapJump(*args, **kwargs):
         """Wrapper for capturing before/after pos of a jump action"""
         try:
-            doc_view = args[0]
-            stc = doc_view.GetCtrl()
+            arg = args[0]
+            if isinstance(arg,wx.stc.StyledTextCtrl):
+                stc = arg
+                doc_view = stc._dynSash._view
+            else:
+                doc_view = arg
+                stc = doc_view.GetCtrl()
             pos = stc.GetCurrentPos()
             line = stc.GetCurrentLine()
             func(*args, **kwargs)
@@ -30,6 +36,7 @@ def jumpaction(func):
             mdata = dict(fname=fname,
                          prepos=pos, preline=line,
                          lnum=cline, pos=cpos)
+
             Publisher.sendMessage(NOVAL_MSG_UI_STC_POS_JUMPED, msg=mdata) 
         except wx.PyDeadObjectError:
             pass
@@ -38,6 +45,31 @@ def jumpaction(func):
     WrapJump.__doc__ = func.__doc__
     return WrapJump
 
+#only record current caret postion
+def jumpto(func):
+    """Decorator method to notify clients about jump actions"""
+    def WrapJumpto(*args, **kwargs):
+        """Wrapper for capturing before/after pos of a jump action"""
+        try:
+            arg = args[0]
+            if isinstance(arg,wx.stc.StyledTextCtrl):
+                stc = arg
+                doc_view = stc._dynSash._view
+            else:
+                doc_view = arg
+                stc = doc_view.GetCtrl()
+            func(*args, **kwargs)
+            cpos = stc.GetCurrentPos()
+            cline = stc.GetCurrentLine()
+            fname = doc_view.GetDocument().GetFilename()
+            mdata = dict(fname=fname,lnum=cline, pos=cpos)
+            Publisher.sendMessage(NOVAL_MSG_UI_STC_POS_JUMPED, msg=mdata) 
+        except wx.PyDeadObjectError:
+            pass
+
+    WrapJumpto.__name__ = func.__name__
+    WrapJumpto.__doc__ = func.__doc__
+    return WrapJumpto
 class NavigationService(Service.BaseService):
 
     DocMgr = doctools.DocPositionMgr()
@@ -83,6 +115,7 @@ class NavigationService(Service.BaseService):
             return False
         cname = text_view.GetDocument().GetFilename()
         cpos = text_view.GetCtrl().GetCurrentPos()
+        #when go to next position,current cache pos is current caret pos
         if e_id == ID_NEXT_POS:
             if self.DocMgr.CanNavigateNext():
                 fname, pos = self.DocMgr.GetNextNaviPos()
@@ -91,6 +124,7 @@ class NavigationService(Service.BaseService):
                     tmp = self.DocMgr.GetNextNaviPos()
                     if tmp is not None:
                         fname, pos = tmp
+        #while go to previous position,current cache pos is previous caret pos
         elif e_id == ID_PRE_POS:
             if self.DocMgr.CanNavigatePrev():
                 fname, pos = self.DocMgr.GetPreviousNaviPos()
