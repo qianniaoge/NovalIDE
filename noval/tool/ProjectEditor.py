@@ -309,7 +309,7 @@ class ProjectDocument(wx.lib.docview.Document):
         if model:
             self.SetModel(model)
         else:
-            self.SetModel(projectlib.Project())  # initial model used by "File | New... | Project"
+            self.SetModel(projectlib.PythonProject())  # initial model used by "File | New... | Project"
         self.GetModel().SetDocCallback(GetDocCallback)
 
         self._stageProjectFile = False 
@@ -1019,7 +1019,8 @@ class NewProjectWizard(Wizard.BaseWizard):
         page = Wizard.TitledWizardPage(wizard, _("Name and Location"))
 
         page.GetSizer().Add(wx.StaticText(page, -1, _("\nEnter the name and location for the project.\n")))
-        self._projectName, self._dirCtrl, sizer, self._fileValidation = UICommon.CreateDirectoryControl(page, fileExtension="agp", appDirDefaultStartDir=True, fileLabel=_("Name:"), dirLabel=_("Location:"))
+        self._projectName, self._dirCtrl, self._interpreterCombo,self._dirCheck,sizer, self._fileValidation = UICommon.CreateDirectoryControl(page, \
+                    fileExtension="agp", appDirDefaultStartDir=True, fileLabel=_("Name:"), dirLabel=_("Location:"),useDirDialog=True)
         page.GetSizer().Add(sizer, 1, flag=wx.EXPAND)
 
         wizard.Layout()
@@ -1044,6 +1045,9 @@ class NewProjectWizard(Wizard.BaseWizard):
             for template in docManager.GetTemplates():
                 if template.GetDocumentType() == ProjectDocument:
                     doc = template.CreateDocument(self._fullProjectPath, flags = wx.lib.docview.DOC_NEW)
+                    #set project name
+                    doc.GetModel().Name = self._projectName.GetValue()
+                    doc.GetModel().SetInterpreter(self._interpreterCombo.GetValue())
                     doc.OnSaveDocument(self._fullProjectPath)
                     projectService = wx.GetApp().GetService(ProjectService)
                     view = projectService.GetView()
@@ -1060,7 +1064,11 @@ class NewProjectWizard(Wizard.BaseWizard):
                 if not self._fileValidation(validClassName=True):
                     event.Veto()
                     return
-                self._fullProjectPath = os.path.join(self._dirCtrl.GetValue(),UICommon.MakeNameEndInExtension(self._projectName.GetValue(), PROJECT_EXTENSION))
+                #if project location path include project name
+                if self._dirCheck.GetValue():
+                    self._fullProjectPath = os.path.join(self._dirCtrl.GetValue(),self._projectName.GetValue(),UICommon.MakeNameEndInExtension(self._projectName.GetValue(), PROJECT_EXTENSION))
+                else:
+                    self._fullProjectPath = os.path.join(self._dirCtrl.GetValue(),UICommon.MakeNameEndInExtension(self._projectName.GetValue(), PROJECT_EXTENSION))
 
 
     def OnShowCreatePages(self):

@@ -156,7 +156,7 @@ class UnitTestDialog(wx.Dialog):
             (item, cookie) = self._treeCtrl.GetNextChild(self.root, cookie)
 
         if global_func_nodes != []:
-            global_function_node = nodeast.ClassDef("GlobalFunction",-1,-1,None)
+            global_function_node = nodeast.ClassDef("GlobalFunction",-1,-1,None,None)
             template_text += self.CreateUnitTestFromClass(global_function_node)
             for func_node in global_func_nodes:
                 template_text += self.CreateUnitTestFromFunction(func_node)

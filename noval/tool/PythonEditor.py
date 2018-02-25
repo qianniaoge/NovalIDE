@@ -1033,13 +1033,14 @@ class PythonOptionsPanel(wx.Panel):
         if len(choices) > 0:
             self._pathTextCtrl.InsertItems(choices,0)
             self._pathTextCtrl.SetSelection(default_selection)
+            wx.GetApp().AddInterpreters()
         if status == wx.ID_OK:
             Interpreter.InterpreterManager().SavePythonInterpretersConfig()
 
     def OnOK(self, optionsDialog):
         config = wx.ConfigBase_Get()
         self._otherOptions.OnOK(optionsDialog)
-        wx.GetApp().AddInterpreters()
+        Interpreter.InterpreterManager().SavePythonInterpretersConfig()
         
 
     def GetIcon(self):

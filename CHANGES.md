@@ -123,4 +123,5 @@ Version 1.0.5 -------------2018-02-13
 8.separate builtin intellisense data to python 2 and 3
 9.repair python3 parse function args bug
 10.fix autoindent bug when enter key is pressed
-11.Sets when a backspace pressed should do indentation unindents 
+11.Sets when a backspace pressed should do indentation unindents
+12.modify project document definition ,add project name and interpreter to it 

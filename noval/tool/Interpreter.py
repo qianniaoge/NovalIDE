@@ -399,6 +399,9 @@ class InterpreterManager(Singleton):
         return interpreter
         
     def RemovePythonInterpreter(self,interpreter):
+        #if current interpreter has been removed,choose default interpreter as current interpreter 
+        if interpreter == self.CurrentInterpreter:
+            self.SetCurrentInterpreter(self.GetDefaultInterpreter())
         self.interpreters.remove(interpreter)
         
     def SetDefaultInterpreter(self,interpreter):
@@ -420,7 +423,8 @@ class InterpreterManager(Singleton):
         choices = []
         default_index = -1
         for i,interpreter in enumerate(self.interpreters):
-            if interpreter.Default:
+            #set current interpreter index as default index
+            if interpreter == self.CurrentInterpreter:
                 default_index = i
             choices.append(interpreter.Name)
         return choices,default_index
@@ -462,6 +466,8 @@ class InterpreterManager(Singleton):
     @classmethod    
     def SetCurrentInterpreter(cls,interpreter):
         cls.CurrentInterpreter = interpreter
+        if interpreter is None:
+            return
         #change builtin module name of BuiltinImportNode
         nodeast.BuiltinImportNode.BUILTIN_MODULE_NAME = interpreter.BuiltinModuleName
         

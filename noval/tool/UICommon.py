@@ -22,6 +22,8 @@ import noval.util.sysutils as sysutils
 import noval.util.xmlutils as xmlutils
 import Interpreter
 import noval.parser.utils as dirutils
+import wx.lib.agw.hyperlink as hl
+import InterpreterConfigDialog
 _ = wx.GetTranslation
 
 def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Directory:"), fileExtension="*", startingName="", startingDirectory=None, choiceDirs=None, appDirDefaultStartDir=False, returnAll=False, useDirDialog=False):
@@ -77,7 +79,35 @@ def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Direc
     dirControl = wx.ComboBox(parent, -1, startingDirectory, size=(-1,-1), choices=choiceDirs)
     dirControl.SetToolTipString(startingDirectory)
     button = wx.Button(parent, -1, _("Browse..."))
+    
+    interpreterLabelText = wx.StaticText(parent, -1, _("Interpreter:"))
+    choices,default_selection = Interpreter.InterpreterManager().GetChoices()
+    interpreterCombo = wx.ComboBox(parent, -1,size=(-1,-1),choices=choices, style = wx.CB_READONLY)
+    if len(choices) > 0:
+        interpreterCombo.SetSelection(default_selection)
+        
+    hyperLinkCtrl = hl.HyperLinkCtrl(parent, wx.ID_ANY, _("Configuration"))
+    hyperLinkCtrl.SetColours("BLUE", "BLUE", "BLUE")
+    hyperLinkCtrl.AutoBrowse(False)
+    hyperLinkCtrl.SetBold(True)
+    hyperLinkCtrl.SetToolTip(wx.ToolTip(_("Click to Configure Interpreters")))
+    dirCheck = wx.CheckBox(parent, -1, _("Create Project Directory"))
     allControls = [nameControl, nameLabelText, dirLabelText, dirControl, button]
+    
+    def OnGotoLink(event):
+        dlg = InterpreterConfigDialog.InterpreterConfigDialog(parent,-1,_("Configure Interpreter"))
+        dlg.CenterOnParent()
+        status = dlg.ShowModal()
+        dlg.Destroy()
+        choices,default_selection = Interpreter.InterpreterManager().GetChoices()
+        interpreterCombo.Clear()
+        if len(choices) > 0:
+            interpreterCombo.InsertItems(choices,0)
+            interpreterCombo.SetSelection(default_selection)
+            wx.GetApp().AddInterpreters()
+        if status == wx.ID_OK:
+            Interpreter.InterpreterManager().SavePythonInterpretersConfig()
+    parent.Bind(hl.EVT_HYPERLINK_LEFT, OnGotoLink,hyperLinkCtrl)
     
     def OnFindDirClick(event): 
         name = ""  
@@ -148,6 +178,13 @@ def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Direc
         if os.sep == "\\" and dirName.find("/") != -1:
             wx.MessageBox(_("Wrong delimiter '/' found in directory path.  Use '%s' as delimiter.") % os.sep, _("Provide a Valid Directory"))            
             return False
+            
+        if -1 == interpreterCombo.GetSelection():
+            wx.MessageBox(_("You do not Choose any interpreter,Please choose a valid interpreter or click Configuration link to add new interpreter"),\
+                        _("Choose a Interpreter"))
+            return
+        if dirCheck.GetValue():
+            dirName = os.path.join(dirName,projName)
 
         #if dir not exist,create it first
         if not os.path.exists(dirName):
@@ -183,12 +220,20 @@ def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Direc
         flexGridSizer.Add(wx.StaticText(parent, -1, ""), 0)
         flexGridSizer.Add(dirLabelText, flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT)
         flexGridSizer.Add(dirControl, 2, flag=wx.ALIGN_CENTER_VERTICAL|wx.EXPAND)
-        flexGridSizer.Add(button, flag=wx.ALIGN_RIGHT|wx.LEFT, border=HALF_SPACE)        
+        flexGridSizer.Add(button, flag=wx.ALIGN_RIGHT|wx.LEFT, border=HALF_SPACE)  
+        
+        
+        flexGridSizer.Add(interpreterLabelText, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT)
+        flexGridSizer.Add(interpreterCombo, 2, flag=wx.ALIGN_CENTER_VERTICAL|wx.EXPAND)
+        flexGridSizer.Add(hyperLinkCtrl, flag=wx.ALIGN_LEFT|wx.LEFT,border=HALF_SPACE)
+        
+        flexGridSizer.Add(wx.StaticText(parent, -1, ""), 0)
+        flexGridSizer.Add(dirCheck)
         
     if returnAll:
-        return nameControl, dirControl, flexGridSizer, Validate, allControls
+        return nameControl, dirControl, interpreterCombo,dirCheck,flexGridSizer, Validate, allControls
     else:
-        return nameControl, dirControl, flexGridSizer, Validate
+        return nameControl, dirControl, interpreterCombo,dirCheck,flexGridSizer, Validate
 
 
 def CreateDirectoryOnlyControl( parent, dirLabel=_("Location:"), startingDirectory=None, choiceDirs=None, appDirDefaultStartDir=False):

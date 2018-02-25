@@ -15,6 +15,7 @@ import os
 import os.path
 import noval.util.xmlutils as xmlutils
 import noval.util.logger as logger
+import Interpreter
 
 # REVIEW 07-Mar-06 stoens@activegrid.com -- Ideally move the pieces required
 # to generate the .dpl file out of this module so there's no dependency on wx,
@@ -45,12 +46,11 @@ class BaseProject(object):
 
     __xmlname__ = "project"
     __xmlexclude__ = ('fileName', '_projectDir', '_getDocCallback', '_cacheEnabled')
-    __xmlattributes__ = ("_homeDir", "version")
+    __xmlattributes__ = ("_homeDir", "version","name")
     __xmlrename__ = { "_homeDir":"homeDir", "_appInfo":"appInfo" }
     __xmlflattensequence__ = { "_files":("file",) }
     __xmldefaultnamespace__ = xmlutils.AG_NS_URL
     __xmlattrnamespaces__ = { "ag": ["version", "_homeDir"] }
-
 
     def __init__(self):
         self.__xmlnamespaces__ = { "ag" : xmlutils.AG_NS_URL }
@@ -59,14 +59,21 @@ class BaseProject(object):
         self._projectDir = None  # default for homeDir, set on load
         self._homeDir = None         # user set homeDir for use in calculating relative path
         self._cacheEnabled = 0
+        self.name = ''
         if not ACTIVEGRID_BASE_IDE:
             self._appInfo = AppInfo.AppInfo()
-
+            
+    @property
+    def Name(self):
+        return self.name
+    
+    @Name.setter
+    def Name(self,name):
+        self.name = name
 
     def initialize(self):
         for file in self._files:
             file._parentProj = self
-
 
     def __copy__(self):
         clone = Project()
@@ -77,10 +84,8 @@ class BaseProject(object):
             clone._appInfo = copy.copy(self._appInfo)
         return clone
 
-
     def GetAppInfo(self):
         return self._appInfo
-
 
     def AddFile(self, filePath=None, logicalFolder=None, type=None, name=None, file=None):
         """ Usage: self.AddFile(filePath, logicalFolder, type, name)  # used for initial generation of object
@@ -92,30 +97,24 @@ class BaseProject(object):
         else:
             self._files.append(ProjectFile(self, filePath, logicalFolder, type, name, getDocCallback=self._getDocCallback))
 
-
     def RemoveFile(self, file):
         self._files.remove(file)
-
 
     def FindFile(self, filePath):
         if filePath:
             for file in self._files:
                 if file.filePath == filePath:
                     return file
-
         return None
-
 
     def _GetFilePaths(self):
         return [file.filePath for file in self._files]
-
 
     filePaths = property(_GetFilePaths)
 
     def _GetProjectFiles(self):
         return self._files
     projectFiles = property(_GetProjectFiles)
-
 
     def _GetLogicalFolders(self):
         folders = []
@@ -124,10 +123,7 @@ class BaseProject(object):
                 folders.append(file.logicalFolder)
         return folders
 
-
     logicalFolders = property(_GetLogicalFolders)
-
-
     def _GetPhysicalFolders(self):
         physicalFolders = []
         for file in self._files:
@@ -136,9 +132,7 @@ class BaseProject(object):
                 physicalFolders.append(physicalFolder)
         return physicalFolders
 
-
     physicalFolders = property(_GetPhysicalFolders)
-
 
     def _GetHomeDir(self):
         if self._homeDir:
@@ -146,20 +140,15 @@ class BaseProject(object):
         else:
             return self._projectDir
 
-
     def _SetHomeDir(self, parentPath):
         self._homeDir = parentPath
-
 
     def _IsDefaultHomeDir(self):
         return (self._homeDir == None)
 
 
     isDefaultHomeDir = property(_IsDefaultHomeDir)
-
-
     homeDir = property(_GetHomeDir, _SetHomeDir)
-
 
     def GetRelativeFolders(self):
         relativeFolders = []
@@ -169,16 +158,13 @@ class BaseProject(object):
                 relativeFolders.append(relFolder)
         return relativeFolders
 
-
     def AbsToRelativePath(self):
         for file in self._files:
             file.AbsToRelativePath(self.homeDir)
 
-
     def RelativeToAbsPath(self):
         for file in self._files:
             file.RelativeToAbsPath(self.homeDir)
-
 
     def _SetCache(self, enable):
         """
@@ -197,21 +183,14 @@ class BaseProject(object):
             self._cacheEnabled += 1
         else:
             self._cacheEnabled -= 1
-            
-
 
     def _GetCache(self):
         return (self._cacheEnabled > 0)
 
-
     cacheEnabled = property(_GetCache, _SetCache)
-
-
     #----------------------------------------------------------------------------
     # BaseDocumentMgr methods
     #----------------------------------------------------------------------------
-
-
     def fullPath(self, fileName):
         fileName = super(BaseProject, self).fullPath(fileName)
 
@@ -223,14 +202,11 @@ class BaseProject(object):
             absPath = os.path.abspath(fileName)
         return os.path.normpath(absPath)
 
-
     def documentRefFactory(self, name, fileType, filePath):
         return ProjectFile(self, filePath=self.fullPath(filePath), type=fileType, name=name, getDocCallback=self._getDocCallback)
 
-
     def findAllRefs(self):
         return self._files
-
 
     def GetXFormsDirectory(self):
         forms = self.findRefsByFileType(basedocmgr.FILE_TYPE_XFORM)
@@ -240,10 +216,8 @@ class BaseProject(object):
             xformdir = self.homeDir
         return xformdir
 
-
     def setRefs(self, files):
         self._files = files
-
 
     def findRefsByFileType(self, fileType):
         fileList = []
@@ -251,7 +225,6 @@ class BaseProject(object):
             if fileType == file.type:
                 fileList.append(file)
         return fileList
-
 
     def GenerateServiceRefPath(self, wsdlFilePath):
         # HACK: temporary solution to getting wsdlag path from wsdl path.
@@ -265,12 +238,10 @@ class BaseProject(object):
         wsdlAgFilePath = os.path.splitext(wsdlFilePath)[0] + ext
         return wsdlAgFilePath
 
-
     def SetDocCallback(self, getDocCallback):
         self._getDocCallback = getDocCallback
         for file in self._files:
             file._getDocCallback = getDocCallback
-
 
 if ACTIVEGRID_BASE_IDE:
     class Project(BaseProject):
@@ -279,7 +250,29 @@ else:
     class Project(BaseProject, basedocmgr.BaseDocumentMgr):
         pass
 
-
+class PythonProject(Project):
+    def __init__(self):
+        super(PythonProject,self).__init__()
+        self.interpreter = None
+        
+    def SetInterpreter(self,name):
+        self.interpreter = ProjectInterpreter(self,name)
+        
+class ProjectInterpreter(object):
+    __xmlexclude__ = ('_parentProj',)
+    __xmlname__ = "interpreter"
+    __xmlattributes__ = ["name",'version','path']
+    __xmldefaultnamespace__ = xmlutils.AG_NS_URL
+    
+    def __init__(self,parent=None,name=''):
+        self._parentProj = parent
+        self.name = name
+        interpreter = Interpreter.InterpreterManager().GetInterpreterByName(self.name)
+        if interpreter is None:
+            return
+        self.version = interpreter.Version
+        self.path = interpreter.Path
+        
 class ProjectFile(object):
     __xmlname__ = "file"
     __xmlexclude__ = ('_parentProj', '_getDocCallback', '_docCallbackCacheReturnValue', '_docModelCallbackCacheReturnValue', '_doc',)
@@ -561,7 +554,7 @@ class Project_10:
 #----------------------------------------------------------------------------
 
 if ACTIVEGRID_BASE_IDE:
-    KNOWNTYPES = {"ag:project" : Project, "ag:file" : ProjectFile}
+    KNOWNTYPES = {"ag:project" : Project, "ag:file" : ProjectFile,"ag:interpreter":ProjectInterpreter}
 else:
     KNOWNTYPES = {"ag:project" : Project, "ag:file" : ProjectFile,
                   "ag:appInfo" : AppInfo.AppInfo,
