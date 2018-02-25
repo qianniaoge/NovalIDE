@@ -874,8 +874,6 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         elif key == ord(self.TYPE_POINT_WORD):
             self.AddText(self.TYPE_POINT_WORD)
             self.ListMembers(pos)
-        elif key == wx.WXK_RETURN and not self.AutoCompActive():
-            self.DoIndent()
         elif key == ord(self.TYPE_BLANK_WORD):
             self.AddText(self.TYPE_BLANK_WORD)
             is_from_import_type,name = self.IsFromImportType(pos)

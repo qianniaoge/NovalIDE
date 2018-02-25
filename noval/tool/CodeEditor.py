@@ -703,7 +703,8 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         
         if sysutilslib.isWindows() and clearTab:  # should test to see if menu item exists, if it does, add this workaround
             self.CmdKeyClear(wx.stc.STC_KEY_TAB, 0)  # menu item "Indent Lines" from CodeService.InstallControls() generates another INDENT_LINES_ID event, so we'll explicitly disable the tab processing in the editor
-
+        #Sets whether when a backspace pressed should do indentation unindents
+        self.SetBackSpaceUnIndents(True)
         wx.stc.EVT_STC_MARGINCLICK(self, self.GetId(), self.OnMarginClick)
         wx.EVT_KEY_DOWN(self, self.OnKeyPressed)
         wx.stc.EVT_STC_DWELLSTART(self,self.GetId(), self.OnDwellStart)
@@ -854,11 +855,19 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         text = self.GetTextRange(start_pos+1,end_pos)
         return text
         
-    def HandleKeyPressEvent(self,event):
-        STCTextEditor.TextCtrl.OnKeyPressed(self, event)
-
     def OnKeyPressed(self, event):
-        self.HandleKeyPressEvent(event)
+        if self.CallTipActive():
+            self.CallTipCancel()
+        key = event.GetKeyCode()
+        #if autocomp is active,ignore enter key
+        if key == wx.WXK_RETURN and not self.AutoCompActive():
+            #if found selected text,should delete the selectd text and append a new line
+            if self.GetSelectedText():
+                self.CmdKeyExecute(wx.stc.STC_CMD_NEWLINE)
+            else:
+                self.DoIndent()
+        else:
+            STCTextEditor.TextCtrl.OnKeyPressed(self, event)
 
     def OnDwellStart(self, evt):
         evt.Skip()
