@@ -902,7 +902,10 @@ class PythonCtrl(CodeEditor.CodeCtrl):
     def ListMembers(self,pos):
         text = self.GetTypeWord(pos)
         line = self.LineFromPosition(pos)
-        scope = wx.GetApp().GetDocumentManager().GetCurrentView().ModuleScope.FindScope(line+1)
+        module_scope = wx.GetApp().GetDocumentManager().GetCurrentView().ModuleScope
+        if module_scope is None:
+            return
+        scope = module_scope.FindScope(line+1)
         scope_found = scope.FindDefinitionScope(text)
         member_list = []
         if None != scope_found:
