@@ -2545,6 +2545,20 @@ class DebuggerService(Service.Service):
             startIn = doc_view.RunParameter.StartUp
             initialArgs = doc_view.RunParameter.Arg
             environment = doc_view.RunParameter.Environment
+
+        environ = wx.GetApp().GetCurrentInterpreter().Environ.GetEnviron()
+        if len(environ) > 0:
+            if environment is None:
+                environment = environ
+            else:
+                environment.update(environ)
+            #in windows and if is python3 interpreter ,shoud add 'SYSTEMROOT' Environment Variable
+            #othersise it will raise progblem below when add a Environment Variable
+            #Fatal Python error: failed to get random numbers to initialize Python
+            if sysutilslib.isWindows() and wx.GetApp().GetCurrentInterpreter().IsV3():
+                SYSTEMROOT_KEY = 'SYSTEMROOT'
+                if not environment.has_key(SYSTEMROOT_KEY):
+                    environment[SYSTEMROOT_KEY] = os.environ[SYSTEMROOT_KEY]
         page.Execute(initialArgs, startIn, environment, onWebServer = False)
         
 ##        while True:
@@ -2576,18 +2590,34 @@ class DebuggerService(Service.Service):
         fileToRun = document.GetFilename()
         startIn = os.path.dirname(fileToRun)
         initialArgs = None
-        environment = os.environ
+        environment = None
         if doc_view.RunParameter is not None:
             startIn = doc_view.RunParameter.StartUp
             initialArgs = doc_view.RunParameter.Arg
             environment = doc_view.RunParameter.Environment
+        environ = wx.GetApp().GetCurrentInterpreter().Environ.GetEnviron()
+        if len(environ) > 0:
+            if environment is None:
+                environment = environ
+            else:
+                environment.update(environ)
+            #in windows and if is python3 interpreter ,shoud add 'SYSTEMROOT' Environment Variable
+            #othersise it will raise progblem below when add a Environment Variable
+            #Fatal Python error: failed to get random numbers to initialize Python
+            if sysutilslib.isWindows() and wx.GetApp().GetCurrentInterpreter().IsV3():
+                SYSTEMROOT_KEY = 'SYSTEMROOT'
+                if not environment.has_key(SYSTEMROOT_KEY):
+                    environment[SYSTEMROOT_KEY] = os.environ[SYSTEMROOT_KEY]
+                    
         if sysutilslib.isWindows():
             command = u"cmd.exe /c %s \"%s\""  % (python_executable_path,fileToRun)
             if initialArgs is not None:
                 command += " " + initialArgs
             command += " &pause"
-            for key in environment.keys():
-                environment[key] = str(environment[key])
+            if environment is not None:
+                #should avoid environment contain unicode string,such as u'xxx'
+                for key in environment.keys():
+                    environment[str(key)] = str(environment[key])
             subprocess.Popen(command.encode(sys_encoding),shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE,cwd=startIn.encode(sys_encoding),env=environment)
         else:
             python_cmd = u"%s \"%s\"" % (python_executable_path,fileToRun)
@@ -3183,7 +3213,7 @@ class CommandPropertiesDialog(wx.Dialog):
         args = self._argsEntry.GetValue()
         startIn = self._startEntry.GetValue()
         isPython = filename.endswith(self._pyext)
-        env = os.environ
+        env = {}
         if hasattr(self, "_postpendCheckBox"):
             postpend = self._postpendCheckBox.GetValue()
         else:

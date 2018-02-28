@@ -7,6 +7,8 @@ import locale
 import noval.util.sysutils as sysutils
 import pickle
 import noval.parser.nodeast as nodeast
+import __builtin__
+import json
 _ = wx.GetTranslation
 
 class Interpreter(object):
@@ -45,6 +47,52 @@ def GetCommandOutput(command,read_error=False):
     if read_error:
         return p.stderr.read()
     return p.stdout.read()
+    
+#this class should inherit from object class
+#otherwise the property definition will not valid
+class PythonEnvironment(object):
+    def __init__(self):
+        self._include_system_environ = True
+        self.environ = {}
+        
+    def Exist(self,key):
+        return self.environ.has_key(key)
+        
+    def GetEnviron(self):
+        environ = {}
+        environ.update(self.environ)
+        if self._include_system_environ:
+            environ.update(os.environ)
+        return environ
+        
+    def Remove(self,key):
+        if self.Exist(key):
+            self.environ.pop(key)
+            
+    def Add(self,key,value):
+        if not self.Exist(key):
+            self.environ[str(key)] = str(value)
+            
+    @property
+    def IncludeSystemEnviron(self):
+        return self._include_system_environ
+        
+    @IncludeSystemEnviron.setter
+    def IncludeSystemEnviron(self,v):
+        self._include_system_environ = v
+        
+    def __iter__(self):
+        self.iter = iter(self.environ)
+        return self
+        
+    def next(self):
+        return __builtin__.next(self.iter)
+        
+    def GetCount(self):
+        return len(self.environ)
+        
+    def __getitem__(self,name):
+        return self.environ[name]
         
 class PythonInterpreter(Interpreter):
     
@@ -73,6 +121,7 @@ class PythonInterpreter(Interpreter):
         self._is_analysing = False
         self._sys_path_list = []
         self._builtins = []
+        self.Environ = PythonEnvironment()
         self._help_path = ""
         self._is_analysed = False
         #builtin module name which python2 is __builtin__ and python3 is builtins
@@ -331,6 +380,7 @@ class InterpreterManager(Singleton):
                     self.SetDefaultInterpreter(interpreter)
                 interpreter.SetInterpreterInfo(l['version'],l['builtins'],l['path_list'])
                 interpreter.HelpPath = l.get('help_path','')
+                interpreter.Environ.environ = l.get('environ',{})
                 self.interpreters.append(interpreter)
         else:
             prefix = self.KEY_PREFIX
@@ -345,8 +395,10 @@ class InterpreterManager(Singleton):
                 version = config.Read("%s/%s/Version" % (prefix,id))
                 sys_paths = config.Read("%s/%s/SysPathList" % (prefix,id))
                 builtins = config.Read("%s/%s/Builtins" % (prefix,id))
+                environ = json.loads(config.Read("%s/%s/Environ" % (prefix,id),"{}"))
                 interpreter = PythonInterpreter(name,path,id,True)
                 interpreter.Default = is_default
+                interpreter.Environ.environ = environ
                 if interpreter.Default:
                     self.SetDefaultInterpreter(interpreter)
                 interpreter.SetInterpreterInfo(version,builtins.split(os.pathsep),sys_paths.split(os.pathsep))
@@ -360,7 +412,8 @@ class InterpreterManager(Singleton):
         lst = []
         for interpreter in self.interpreters:
             d = dict(id=interpreter.Id,name=interpreter.Name,version=interpreter.Version,path=interpreter.Path,\
-                     default=interpreter.Default,path_list=interpreter.SyspathList,builtins=interpreter.Builtins,help_path=interpreter.HelpPath)
+                     default=interpreter.Default,path_list=interpreter.SyspathList,builtins=interpreter.Builtins,help_path=interpreter.HelpPath,\
+                     environ=interpreter.Environ.environ)
             lst.append(d)
         return lst
         
@@ -383,6 +436,7 @@ class InterpreterManager(Singleton):
                 config.WriteInt("%s/%d/Default"%(prefix,kl.Id),kl.Default)
                 config.Write("%s/%d/SysPathList"%(prefix,kl.Id),os.pathsep.join(kl.SyspathList))
                 config.Write("%s/%d/Builtins"%(prefix,kl.Id),os.pathsep.join(kl.Builtins))
+                config.Write("%s/%d/Environ"%(prefix,kl.Id),json.dumps(kl.Environ.environ))
         
     def AddPythonInterpreter(self,interpreter_path,name):
         interpreter = PythonInterpreter(name,interpreter_path)

@@ -125,3 +125,6 @@ Version 1.0.5 -------------2018-02-13
 10.fix autoindent bug when enter key is pressed
 11.Sets when a backspace pressed should do indentation unindents
 12.modify project document definition ,add project name and interpreter to it 
+13.fix the error of set progress max range when search text in dir 
+14.enable set enviroment variable of interpreter when debug or run python script
+15.fix output truncated error when debug python script 

@@ -231,10 +231,11 @@ class FindInDirService(FindService.FindService):
                # if now-start > 3 and not is_progress_show:
                 #    is_progress_show = True
                  #   self.ShowSearchProgressDialog(data)
-        if self.progress_dlg.keep_going:
+        #progress max range must great than 0
+        if self.progress_dlg.keep_going and found_file_count > 0:
             wx.CallAfter(self.progress_dlg.SetRange,found_file_count)
             found_line,cur_pos = self.FindTextInFiles(find_text_option,view,list_files,cur_pos)
-        total_found_line += found_line
+            total_found_line += found_line
         time.sleep(1)
         wx.CallAfter(self.progress_dlg.Destroy)
         view.AddLines(_("Search completed,Find total %d results.") % total_found_line)

@@ -692,7 +692,7 @@ class _FileWrapper:
                     lengthBefore = len(self._lineBuf)
                     t = self.read(4092)
                     if len(t) <= lengthBefore: # no new data was read
-                        line, self._lineBuf = self._lineBuf, ""
+                        line, self._lineBuf = t, ""
                         break
                     else:
                         self._lineBuf += t

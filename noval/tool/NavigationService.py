@@ -37,7 +37,7 @@ def jumpaction(func):
                          prepos=pos, preline=line,
                          lnum=cline, pos=cpos)
 
-            Publisher.sendMessage(NOVAL_MSG_UI_STC_POS_JUMPED, msg=mdata) 
+            wx.CallAfter(Publisher.sendMessage,NOVAL_MSG_UI_STC_POS_JUMPED,msg=mdata) 
         except wx.PyDeadObjectError:
             pass
 
@@ -63,7 +63,7 @@ def jumpto(func):
             cline = stc.GetCurrentLine()
             fname = doc_view.GetDocument().GetFilename()
             mdata = dict(fname=fname,lnum=cline, pos=cpos)
-            Publisher.sendMessage(NOVAL_MSG_UI_STC_POS_JUMPED, msg=mdata) 
+            wx.CallAfter(Publisher.sendMessage,NOVAL_MSG_UI_STC_POS_JUMPED,msg=mdata) 
         except wx.PyDeadObjectError:
             pass
 
