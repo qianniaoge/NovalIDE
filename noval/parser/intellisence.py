@@ -358,6 +358,8 @@ class IntellisenceManager(object):
         try:
             self.generate_intellisence_data(default_interpreter,load_data_end=True)
         except Exception as e:
+            default_interpreter.Analysing = False
+            self._is_running = default_interpreter.Analysing
             app_debugLogger.error('load interpreter path %s intellisence data error: %s',default_interpreter.Path,e)
         
     def load_intellisence_data(self,interpreter):

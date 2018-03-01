@@ -441,7 +441,11 @@ class InterpreterConfigDialog(wx.Dialog):
         self.smart_analyse_btn.Enable(False)
 
         dlg = AnalyseProgressDialog(self)
-        intellisence.IntellisenceManager().generate_intellisence_data(interpreter,dlg)
+        try:
+            intellisence.IntellisenceManager().generate_intellisence_data(interpreter,dlg)
+        except:
+            interpreter.Analysing = False
+            intellisence.IntellisenceManager()._is_running = interpreter.Analysing
         while True:
             if not dlg.KeepGoing:
                 break

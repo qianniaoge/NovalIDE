@@ -557,6 +557,9 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         self.SetKeyWords(0, string.join(keyword.kwlist))
         self.SetKeyWords(1, self.TypeKeyWords)
         self.Bind(wx.EVT_CHAR, self.OnChar)
+        ###self.CallTipSetBackground("yellow")
+        self.CallTipSetBackground("#FFFFB8")
+        self.CallTipSetForeground('#404040')
         CodeEditor.CodeCtrl.SetMarginFoldStyle(self)
 
     def CreatePopupMenu(self):
@@ -908,9 +911,6 @@ class PythonCtrl(CodeEditor.CodeCtrl):
                 tip = scope_found.GetArgTip()
         if tip == '':
             return
-        ###self.CallTipSetBackground("yellow")
-        self.CallTipSetBackground("#FFFFB8")
-        self.CallTipSetForeground('#404040')
         self.CallTipShow(pos,tip)    
 
     def IsListMemberFlag(self,pos):
