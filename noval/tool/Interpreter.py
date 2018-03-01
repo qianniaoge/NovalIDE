@@ -9,6 +9,7 @@ import pickle
 import noval.parser.nodeast as nodeast
 import __builtin__
 import json
+from noval.util.logger import app_debugLogger
 _ = wx.GetTranslation
 
 class Interpreter(object):
@@ -43,10 +44,14 @@ class Interpreter(object):
         pass   
 
 def GetCommandOutput(command,read_error=False):
-    p = subprocess.Popen(command,shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    if read_error:
-        return p.stderr.read()
-    return p.stdout.read()
+    try:
+        p = subprocess.Popen(command,shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        if read_error:
+            return p.stderr.read()
+        return p.stdout.read()
+    except Exception as e:
+        app_debugLogger.error("get command %s output error:%s",command,e)
+        return ''
     
 #this class should inherit from object class
 #otherwise the property definition will not valid
@@ -120,6 +125,7 @@ class PythonInterpreter(Interpreter):
         self._is_default = False
         self._is_analysing = False
         self._sys_path_list = []
+        self._version = "Unknown Version"
         self._builtins = []
         self.Environ = PythonEnvironment()
         self._help_path = ""

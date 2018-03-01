@@ -119,11 +119,35 @@ class Node(BuiltinNode):
         return self._col
         
 class ArgNode(Node):
-    def __init__(self,name,line,col,parent):
+    def __init__(self,name,line,col,is_default=False,is_var=False,is_kw=False,parent=None):
         super(ArgNode,self).__init__(name,line,col,config.NODE_ARG_TYPE,parent)
+        #default argment ,like x=12
+        self._is_default = is_default
+        #var argment,like *args
+        self._is_var = is_var
+        #keyword argment,like **kw
+        self._is_kw = is_kw
+        #default value of default argment
+        self._default_value = None
+    
+    @property
+    def IsDefault(self):
+        return self._is_default
+    
+    @property
+    def IsVar(self):
+        return self._is_var
+    
+    @property
+    def IsKeyWord(self):
+        return self._is_kw 
+        
     def __str__(self):
         #print 'type is arg, name is',self.Name,'line is',self.Line,'col is',self.Col
         return self.Name
+        
+    def SetDefaultValue(self,default_value):
+        self._default_value = default_value
 
 class FuncDef(Node):
     def __init__(self,name,line,col,parent,doc,args = [],is_decorated = False,is_method = False,is_class_method = False,is_built_in = False):

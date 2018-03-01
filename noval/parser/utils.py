@@ -23,7 +23,7 @@ def get_top_modulename(fullpath):
     recent_path = ''
     sys.path = [l.lower() for l in sys.path]
     while True:
-        if path.lower() in sys.path:
+        if path.lower() in sys.path or os.path.dirname(path) == path:
             recent_path = path
             break
         path = os.path.dirname(path)

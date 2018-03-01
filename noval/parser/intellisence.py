@@ -181,14 +181,21 @@ class ModuleLoader(object):
         self.MakeChildScope(child,module_scope.Module)
         module_scope.MakeModuleScopes()
         return module_scope.ChildScopes[0]
-            
+        
     def MakeChildScope(self,child,parent):
         name = child[self.NAME_KEY]
         line_no = child.get(self.LINE_KEY,-1)
         col = child.get(self.COL_KEY,-1)
         doc = child.get('doc',None)
         if child[self.TYPE_KEY] == config.NODE_FUNCDEF_TYPE:
-            node = nodeast.FuncDef(name,line_no,col,parent,doc)
+            datas = child.get('args',[])
+            args = []
+            for arg_data in datas:
+                arg = nodeast.ArgNode(name=arg_data.get('name'),line=arg_data.get('line'),\
+                        col=arg_data.get('col'),is_default=arg_data.get('is_default'),\
+                        is_var=arg_data.get('is_var',False),is_kw=arg_data.get('is_kw',False),parent=None)
+                args.append(arg)
+            node = nodeast.FuncDef(name,line_no,col,parent,doc,args=args)
         elif child[self.TYPE_KEY] == config.NODE_CLASSDEF_TYPE:
             bases = child.get('bases',[])
             for i,base in enumerate(bases):
@@ -347,7 +354,10 @@ class IntellisenceManager(object):
         default_interpreter = Interpreter.InterpreterManager().GetDefaultInterpreter()
         if default_interpreter is None:
             return
-        self.generate_intellisence_data(default_interpreter,load_data_end=True)
+        try:
+            self.generate_intellisence_data(default_interpreter,load_data_end=True)
+        except Exception as e:
+            app_debugLogger.error('load interpreter path %s intellisence data error: %s',default_interpreter.Path,e)
         
     def load_intellisence_data(self,interpreter):
         self._loader.Load(interpreter)
@@ -417,3 +427,12 @@ class IntellisenceManager(object):
         if module is None:
             return None
         return module.GetDoc()
+        
+    def GetModuleMemberArgmentTip(self,module_name,child_name):
+        module = self.GetModule(module_name)
+        if module is None:
+            return None
+        scope = module.FindDefinitionWithName(child_name)
+        if scope is None:
+            return ''
+        return scope.GetArgTip()

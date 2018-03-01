@@ -472,7 +472,7 @@ class InterpreterConfigDialog(wx.Dialog):
             item = self.dvlc.RowToItem(index)
             id = self.dvlc.GetItemData(item)
             interpreter = Interpreter.InterpreterManager().GetInterpreterById(id)
-            if Interpreter.InterpreterManager().IsInterpreterAnalysing():
+            if Interpreter.InterpreterManager().IsInterpreterAnalysing() or not interpreter.IsValidInterpreter:
                 self.smart_analyse_btn.Enable(False)
             else:
                 self.smart_analyse_btn.Enable(True)

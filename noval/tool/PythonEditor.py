@@ -869,8 +869,7 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         # Tips
         if key == ord("("):
             self.AddText("(")
-            self.CallTipSetBackground("yellow")
-            self.CallTipShow(pos, 'param1, param2')
+            self.GetArgTip(pos)
         elif key == ord(self.TYPE_POINT_WORD):
             self.AddText(self.TYPE_POINT_WORD)
             self.ListMembers(pos)
@@ -892,6 +891,25 @@ class PythonCtrl(CodeEditor.CodeCtrl):
                 self.AutoCompShow(0, string.join([self.TYPE_IMPORT_WORD]))
         else:
             event.Skip()
+            
+    def GetArgTip(self,pos):
+        text = self.GetTypeWord(pos)
+        line = self.LineFromPosition(pos)
+        module_scope = wx.GetApp().GetDocumentManager().GetCurrentView().ModuleScope
+        if module_scope is None:
+            return
+        scope = module_scope.FindScope(line+1)
+        scope_found = scope.FindDefinitionScope(text)
+        tip = ''
+        if None != scope_found:
+            if scope_found.Parent is not None and isinstance(scope_found.Node,nodeast.ImportNode):
+                tip = scope_found.GetImportMemberArgTip(text)
+            else:
+                tip = scope_found.GetArgTip()
+        if tip == '':
+            return
+        self.CallTipSetBackground("yellow")
+        self.CallTipShow(pos,tip)    
 
     def IsListMemberFlag(self,pos):
         at = self.GetCharAt(pos)

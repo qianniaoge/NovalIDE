@@ -65,7 +65,9 @@ class CodeDocument(STCTextEditor.TextDocument):
         if not STCTextEditor.TextDocument.OnOpenDocument(self,filename):
             return False
         view = self.GetFirstView()
-        view.GetCtrl().CheckEOL()
+        check_eol = wx.ConfigBase_Get().ReadInt("CheckEOL", False)
+        if check_eol:
+            view.GetCtrl().CheckEOL()
         return True
 
 class CodeView(STCTextEditor.TextView):

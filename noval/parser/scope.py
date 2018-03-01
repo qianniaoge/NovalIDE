@@ -306,10 +306,23 @@ class NodeScope(Scope):
 
         def GetDoc(self):
             return self.MakeBeautyDoc(self.Node.Doc)
+            
+        def GetArgTip(self):
+            return ''
 
 class ArgScope(NodeScope):
     def __init__(self,arg_node,parent,root):
         super(ArgScope,self).__init__(arg_node,parent,root)
+    
+    def GetArgName(self):
+        if self.Node.IsKeyWord:
+            return "**" + self.Node.Name
+        elif self.Node.IsVar:
+            return "*" + self.Node.Name
+        elif self.Node.IsDefault:
+            return self.Node.Name
+        else:
+            return self.Node.Name
 
 class FuncDefScope(NodeScope):
         def __init__(self,func_def_node,parent,root):
@@ -343,6 +356,18 @@ class FuncDefScope(NodeScope):
 
         def GetMemberList(self,sort=True):
             return []
+            
+        def GetArgTip(self):
+            info = ''
+            arg_names = []
+            for child_scope in self.ChildScopes:
+                if child_scope.Node.Type == config.NODE_ARG_TYPE:
+                    arg_names.append(child_scope.GetArgName())
+            if len(arg_names) > 0:
+                    info = "("
+                    info += ','.join(arg_names)
+                    info += ")"
+            return info
 
 class ClassDefScope(NodeScope):
         INIT_METHOD_NAME = "__init__"
@@ -412,6 +437,12 @@ class ClassDefScope(NodeScope):
             if fix_name == "":
                 return self
             return self.FindScopeInChildScopes(fix_name)
+        #class arg tip is the arg tip of class __init__ method
+        def GetArgTip(self):
+            for child_scope in self.ChildScopes:
+                if child_scope.Node.Type == config.NODE_FUNCDEF_TYPE and child_scope.Node.IsConstructor:
+                    return child_scope.GetArgTip()
+            return ''
  
 class NameScope(NodeScope):
         def __init__(self,name_property_node,parent,root):
@@ -497,6 +528,12 @@ class ImportScope(NodeScope):
         def GetDoc(self):
             doc = intellisence.IntellisenceManager().GetModuleDoc(self.Node.Name)
             return self.MakeBeautyDoc(doc)
+            
+        def GetImportMemberArgTip(self,name):
+            fix_name = self.MakeFixName(name)
+            if fix_name == "":
+                return ''
+            return intellisence.IntellisenceManager().GetModuleMemberArgmentTip(self.Node.Name,fix_name)
             
 class FromImportScope(NodeScope):
         def __init__(self,from_import_node,parent,root):

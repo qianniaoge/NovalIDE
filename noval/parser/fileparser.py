@@ -91,8 +91,8 @@ def dump(module_path,output_name,dest_path,is_package):
             node = ast.parse(content,module_path)
             doc = get_node_doc(node)
             childs,refs = walk(node)
-        except:
-            ###print e
+        except Exception as e:
+            print(e)
             return
         module_name = os.path.basename(module_path).split(".")[0]
         if is_package:
@@ -155,7 +155,8 @@ def parse(module_path):
             #add a builtin import node to all file to make search builtin types convenient,which is hidden in outline view
             nodeast.BuiltinImportNode(module)
             return module
-    except:
+    except Exception as e:
+        print (e)
         return None
 
 def parse_content(content,module_path):
@@ -167,7 +168,8 @@ def parse_content(content,module_path):
         #add a builtin import node to all file to make search builtin types convenient,which is hidden in outline view
         nodeast.BuiltinImportNode(module)
         return module
-    except:
+    except Exception as e:
+        print (e)
         return None
 
 def get_attribute_name(node):
@@ -230,12 +232,24 @@ def make_element_node(element,parent,retain_new):
         if is_property_def:
             return
         is_method = False
-        for arg in element.args.args:
+        default_arg_num = len(element.args.defaults)
+        arg_num = len(element.args.args)
+        for i,arg in enumerate(element.args.args):
+            is_default = False
+            #the last serveral argments are default arg if default argment number is not 0
+            if i >= arg_num - default_arg_num:
+                is_default = True
             if type(arg) == ast.Name:
                 if arg.id == 'self' and parent.Type == config.NODE_CLASSDEF_TYPE:
                     is_method = True
-                arg_node = nodeast.ArgNode(arg.id,arg.lineno,arg.col_offset,None)
+                arg_node = nodeast.ArgNode(arg.id,arg.lineno,arg.col_offset,is_default=is_default,parent=None)
                 args.append(arg_node)
+        if element.args.vararg is not None:
+            arg_node = nodeast.ArgNode(element.args.vararg,line_no,col,is_var=True,parent=None)
+            args.append(arg_node)
+        if element.args.kwarg is not None:
+            arg_node = nodeast.ArgNode(element.args.kwarg,line_no,col,is_kw=True,parent=None)
+            args.append(arg_node)
         doc = get_node_doc(element)
         func_def = nodeast.FuncDef(def_name,line_no,col,parent,doc,is_method=is_method,\
                             is_class_method=is_class_method,args=args)
@@ -341,19 +355,31 @@ def make_element_data(element,parent,childs,refs):
                     is_class_method = True
                     break
         is_method = False
-        for arg in element.args.args:
+        default_arg_num = len(element.args.defaults)
+        arg_num = len(element.args.args)
+        for i,arg in enumerate(element.args.args):
+            is_default = False
+            #the last serveral argments are default arg if default argment number is not 0
+            if i >= arg_num - default_arg_num:
+                is_default = True
             if utils.IsPython2():
                 if type(arg) == ast.Name:
                     if arg.id == 'self':
                         is_method = True
-                    arg = dict(name=arg.id)
+                    arg = dict(name=arg.id,is_default=is_default,line=arg.lineno,col=arg.col_offset)
                     args.append(arg)
             elif utils.IsPython3():
                 if type(arg) == ast.arg:
                     if arg.arg == 'self':
                         is_method = True
-                    arg = dict(name=arg.arg)
+                    arg = dict(name=arg.arg,is_default=is_default,line=arg.lineno,col=arg.col_offset)
                     args.append(arg)
+        #var arg
+        if element.args.vararg is not None:
+            args.append(dict(name=element.args.vararg,is_var=True,line=line_no,col=col))
+        #keyword arg
+        if element.args.kwarg is not None:
+            args.append(dict(name=element.args.kwarg,is_kw=True,line=line_no,col=col))
         doc = get_node_doc(element)
         data = dict(name=def_name,line=line_no,col=col,type=config.NODE_FUNCDEF_TYPE,\
                     is_method=is_method,is_class_method=is_class_method,args=args,doc=doc)
@@ -425,9 +451,9 @@ if __name__ == "__main__":
   ##  module = parse(r"D:\env\Noval\noval\parser\nodeast.py")
    ## module = parse(r"D:\env\Noval\noval\test\run_test_input.py")
     ##print module
-    dump(r"G:\work\Noval\noval\test\ast_test_file.py","ast_test_file","./",False)
+    dump(r"C:\Python27\lib\subprocess.py","subprocess","./",False)
     import pickle
-    with open(r"G:\work\Noval\noval\parser\ast_test_file.$members",'rb') as f:
+    with open(r"D:\env\Noval\noval\parser\subprocess.$members",'rb') as f:
         datas = pickle.load(f)
    ### print datas['name'],datas['path'],datas['is_builtin']
     import json
