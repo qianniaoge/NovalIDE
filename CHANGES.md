@@ -128,3 +128,7 @@ Version 1.0.5 -------------2018-02-13
 13.fix the error of set progress max range when search text in dir 
 14.enable set enviroment variable of interpreter when debug or run python script
 15.fix output truncated error when debug python script 
+16.add function and class argment show tip
+17.fix application exit bug when interpreter has been uninstalled
+18.fix the bug of subprocess.popen run error on some computer cause application cann't startup
+19.set calltip background and foreground color

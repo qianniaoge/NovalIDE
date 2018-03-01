@@ -899,7 +899,7 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         if module_scope is None:
             return
         scope = module_scope.FindScope(line+1)
-        scope_found = scope.FindDefinitionScope(text)
+        scope_found = scope.FindDefinitionMember(text)
         tip = ''
         if None != scope_found:
             if scope_found.Parent is not None and isinstance(scope_found.Node,nodeast.ImportNode):
@@ -908,7 +908,9 @@ class PythonCtrl(CodeEditor.CodeCtrl):
                 tip = scope_found.GetArgTip()
         if tip == '':
             return
-        self.CallTipSetBackground("yellow")
+        ###self.CallTipSetBackground("yellow")
+        self.CallTipSetBackground("#FFFFB8")
+        self.CallTipSetForeground('#404040')
         self.CallTipShow(pos,tip)    
 
     def IsListMemberFlag(self,pos):

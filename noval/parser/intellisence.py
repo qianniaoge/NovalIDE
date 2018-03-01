@@ -195,7 +195,8 @@ class ModuleLoader(object):
                         col=arg_data.get('col'),is_default=arg_data.get('is_default'),\
                         is_var=arg_data.get('is_var',False),is_kw=arg_data.get('is_kw',False),parent=None)
                 args.append(arg)
-            node = nodeast.FuncDef(name,line_no,col,parent,doc,args=args)
+            node = nodeast.FuncDef(name,line_no,col,parent,doc,is_method=child.get('is_method',False),\
+                    is_class_method=child.get('is_class_method',False),args=args)
         elif child[self.TYPE_KEY] == config.NODE_CLASSDEF_TYPE:
             bases = child.get('bases',[])
             for i,base in enumerate(bases):
