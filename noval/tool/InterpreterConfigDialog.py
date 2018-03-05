@@ -18,6 +18,10 @@ class AddInterpreterDialog(wx.Dialog):
         lineSizer = wx.BoxSizer(wx.HORIZONTAL)
         lineSizer.Add(wx.StaticText(self, -1, _("Interpreter Path:")), 0, wx.ALIGN_CENTER | wx.LEFT, HALF_SPACE)
         self.path_ctrl = wx.TextCtrl(self, -1, "", size=(200,-1))
+        if sysutils.isWindows():
+            self.path_ctrl.SetToolTipString(_("set the location of python.exe or pythonw.exe"))
+        else:
+            self.path_ctrl.SetToolTipString(_("set the location of python interpreter"))
         lineSizer.Add(self.path_ctrl, 0, wx.LEFT|wx.ALIGN_BOTTOM, HALF_SPACE)
         
         self.browser_btn = wx.Button(self, -1, _("Browse..."))
@@ -28,15 +32,18 @@ class AddInterpreterDialog(wx.Dialog):
         lineSizer = wx.BoxSizer(wx.HORIZONTAL)
         lineSizer.Add(wx.StaticText(self, -1, _("Interpreter Name:")), 0, wx.ALIGN_CENTER | wx.LEFT, HALF_SPACE)
         self.name_ctrl = wx.TextCtrl(self, -1, "", size=(190,-1))
+        self.name_ctrl.SetToolTipString(_("set the name of python interpreter"))
         lineSizer.Add(self.name_ctrl, 0, wx.LEFT, HALF_SPACE)
         contentSizer.Add(lineSizer, 0, wx.BOTTOM, SPACE)
         
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        bsizer = wx.StdDialogButtonSizer()
         ok_btn = wx.Button(self, wx.ID_OK, _("&OK"))
-        lineSizer.Add(ok_btn, 0, wx.LEFT, SPACE*22)
+        ok_btn.SetDefault()
+        bsizer.AddButton(ok_btn)
         cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
-        lineSizer.Add(cancel_btn, 0, wx.LEFT, SPACE)
-        contentSizer.Add(lineSizer, 0, wx.BOTTOM|wx.RIGHT, SPACE)
+        bsizer.AddButton(cancel_btn)
+        bsizer.Realize()
+        contentSizer.Add(bsizer, 1, wx.EXPAND,SPACE)
         self.SetSizer(contentSizer)
         
     def ChooseExecutablePath(self,event):
@@ -319,6 +326,15 @@ class InterpreterConfigDialog(wx.Dialog):
         
         box_sizer.Add(top_sizer, 0, wx.BOTTOM, HALF_SPACE)
         box_sizer.Add(bottom_sizer, 0, wx.BOTTOM,0)
+        
+        bsizer = wx.StdDialogButtonSizer()
+        ok_btn = wx.Button(self, wx.ID_OK, _("&OK"))
+        ok_btn.SetDefault()
+        bsizer.AddButton(ok_btn)
+        cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
+        bsizer.AddButton(cancel_btn)
+        bsizer.Realize()
+        box_sizer.Add(bsizer, 1, wx.BOTTOM|wx.EXPAND,SPACE)
 
         self.SetSizer(box_sizer) 
         self.ScanAllInterpreters()
@@ -371,7 +387,7 @@ class InterpreterConfigDialog(wx.Dialog):
             else:
                 try:
                     interpreter = Interpreter.InterpreterManager().AddPythonInterpreter(dlg.path_ctrl.GetValue(),dlg.name_ctrl.GetValue())
-                    self.AddOneInterpreter(interpreter)
+                    self.AddOneInterpreter(interpreter,len(Interpreter.InterpreterManager.interpreters)-1)
                     self.SmartAnalyse(interpreter)
                     passedCheck = True
                 except Exception,e:
@@ -380,7 +396,7 @@ class InterpreterConfigDialog(wx.Dialog):
         self.UpdateUI(None)
         dlg.Destroy()
         
-    def AddOneInterpreter(self,interpreter):
+    def AddOneInterpreter(self,interpreter,row):
         def GetDefaultFlag(is_default):
             if is_default:
                 return _("Yes")
@@ -391,7 +407,7 @@ class InterpreterConfigDialog(wx.Dialog):
         self.builtin_panel.SetBuiltiins(interpreter)
         self.environment_panel.SetVariables(interpreter)
         self.dvlc.Refresh()
-        ###self.dvlc.SelectRow(item_count)
+        self.dvlc.SelectRow(row)
     
     def RemoveInterpreter(self,event):
         index = self.dvlc.GetSelectedRow()
@@ -444,8 +460,7 @@ class InterpreterConfigDialog(wx.Dialog):
         try:
             intellisence.IntellisenceManager().generate_intellisence_data(interpreter,dlg)
         except:
-            interpreter.Analysing = False
-            intellisence.IntellisenceManager()._is_running = interpreter.Analysing
+            return
         while True:
             if not dlg.KeepGoing:
                 break
@@ -457,8 +472,8 @@ class InterpreterConfigDialog(wx.Dialog):
         self.smart_analyse_btn.Enable(True)
           
     def ScanAllInterpreters(self):
-        for interpreter in Interpreter.InterpreterManager.interpreters:
-            self.AddOneInterpreter(interpreter)
+        for i,interpreter in enumerate(Interpreter.InterpreterManager.interpreters):
+            self.AddOneInterpreter(interpreter,i)
             
     def ReloadAllInterpreters(self):
         self.dvlc.DeleteAllItems()

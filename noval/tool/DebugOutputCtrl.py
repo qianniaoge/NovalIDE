@@ -12,6 +12,24 @@ class DebugOutputCtrl(STCTextEditor.TextCtrl):
         self.Bind(wx.EVT_RIGHT_UP, self.OnRightUp)
         accelTbl = wx.AcceleratorTable([(wx.ACCEL_CTRL, ord('A'), wx.ID_SELECTALL),(wx.ACCEL_CTRL, ord('C'), wx.ID_COPY),(wx.ACCEL_CTRL, ord('V'), wx.ID_PASTE)])  
         self.SetAcceleratorTable(accelTbl)
+        self._first_input = True
+        self._input_start_pos = 0
+        
+    @property
+    def IsFirstInput(self):
+        return self._first_input
+        
+    @IsFirstInput.setter
+    def IsFirstInput(self,first_input):
+        self._first_input = first_input
+        
+    @property
+    def InputStartPos(self):
+        return self._input_start_pos
+        
+    @InputStartPos.setter
+    def InputStartPos(self,input_start_pos):
+        self._input_start_pos = input_start_pos
         
     def OnRightUp(self, event):
         self.PopupMenu(self.CreatePopupMenu(), event.GetPosition())

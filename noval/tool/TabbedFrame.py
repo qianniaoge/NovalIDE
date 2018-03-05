@@ -3,6 +3,7 @@ import wx.lib.pydocview
 import wx
 import noval.util.sysutils as sysutilslib
 import noval.util.fileutils as fileutils
+import noval.util.strutils as strutils
 import noval.parser.config as parserconfig
 import consts
 import noval.tool.NavigationService
@@ -71,7 +72,7 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
         def OnSaveFileAs(event):
             self.GetDocumentManager().SaveAsDocument(doc)
         def OnCopyModuleName(event):
-            sysutilslib.CopyToClipboard(os.path.basename(doc.GetFilename()).split('.')[0])
+            sysutilslib.CopyToClipboard(strutils.GetFilenameWithoutExt(doc.GetFilename()))
         def OnCloseAllWithoutDoc(event,closeall=False):
             for i in range(self._notebook.GetPageCount()-1, -1, -1): # Go from len-1 to 0
                 if i != index or closeall:

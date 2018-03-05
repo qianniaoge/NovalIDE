@@ -376,10 +376,16 @@ def make_element_data(element,parent,childs,refs):
                     args.append(arg)
         #var arg
         if element.args.vararg is not None:
-            args.append(dict(name=element.args.vararg,is_var=True,line=line_no,col=col))
+            if utils.IsPython3():
+                args.append(dict(name=element.args.vararg.arg,is_var=True,line=line_no,col=col))
+            elif utils.IsPython2():
+                args.append(dict(name=element.args.vararg,is_var=True,line=line_no,col=col))
         #keyword arg
         if element.args.kwarg is not None:
-            args.append(dict(name=element.args.kwarg,is_kw=True,line=line_no,col=col))
+            if utils.IsPython3():
+                args.append(dict(name=element.args.kwarg.arg,is_kw=True,line=line_no,col=col))
+            elif utils.IsPython2():
+                args.append(dict(name=element.args.kwarg,is_kw=True,line=line_no,col=col))
         doc = get_node_doc(element)
         data = dict(name=def_name,line=line_no,col=col,type=config.NODE_FUNCDEF_TYPE,\
                     is_method=is_method,is_class_method=is_class_method,args=args,doc=doc)

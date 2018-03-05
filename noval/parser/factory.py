@@ -97,15 +97,28 @@ def NeedRenewDatabase(database_location,new_database_version):
         return False
     return True
 
-
 def get_python_version():
-    if isinstance(sys.version_info,tuple):
+    #less then python 2.7 version
+    if isinstance(sys.version_info,tuple) and sys.version_info[0] == 2 and sys.version_info[2] > 0:
         version = str(sys.version_info[0]) + "." +  str(sys.version_info[1]) 
-        if sys.version_info[2] > 0:
-            version += "."
-            version += str(sys.version_info[2])
+        #if sys.verion[0] == 2 and sys.version_info[2] > 0:
+        version += "."
+        version += str(sys.version_info[2])
+    #python 2.7 or python3 version,which python3 version type is tuple,python2.7 version type is not tuple
     else:
-        version = str(sys.version_info.major) + "." +  str(sys.version_info.minor) + "."  + str(sys.version_info.micro)
+        if sys.version_info.releaselevel.find('final') != -1:
+            version = str(sys.version_info.major) + "." +  str(sys.version_info.minor) + "."  + str(sys.version_info.micro)
+        elif sys.version_info.releaselevel.find('beta') != -1:
+            version = str(sys.version_info.major) + "." +  str(sys.version_info.minor) + "."  + str(sys.version_info.micro) + \
+                        "b" + str(sys.version_info.serial)
+        elif sys.version_info.releaselevel.find('candidate') != -1:
+            version = str(sys.version_info.major) + "." +  str(sys.version_info.minor) + "."  + str(sys.version_info.micro) + \
+                    "rc" +  str(sys.version_info.serial)
+        elif sys.version_info.releaselevel.find('alpha') != -1:
+            version = str(sys.version_info.major) + "." +  str(sys.version_info.minor) + "."  + str(sys.version_info.micro) + \
+                "a" + str(sys.version_info.serial)
+        else:
+            print (sys.version_info.releaselevel)
     return version
            
 def generate_intelligent_data(root_path,new_database_version):

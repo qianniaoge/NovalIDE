@@ -132,3 +132,8 @@ Version 1.0.5 -------------2018-02-13
 17.fix application exit bug when interpreter has been uninstalled
 18.fix the bug of subprocess.popen run error on some computer cause application cann't startup
 19.set calltip background and foreground color
+20.fix the bug when debug run python window program the window interface is hidden
+21.show python interpreter pip package list in configuration
+22.disable or enable back delete key when debug output has input according to the caret pos
+23.when load interpreter configuation list,at least select one interprter in datalist view control
+24.fix get python3 release version error,which is alpha,beta,candidate and final version

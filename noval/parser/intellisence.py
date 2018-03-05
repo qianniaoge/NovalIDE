@@ -201,7 +201,7 @@ class ModuleLoader(object):
             bases = child.get('bases',[])
             for i,base in enumerate(bases):
                 bases[i] = parent.Name + "." + base
-            print bases
+            print (bases)
             node = nodeast.ClassDef(name,line_no,col,parent,doc,bases=bases)
             for class_child in child.get(self.CHILD_KEY,[]):
                 self.MakeChildScope(class_child,node)
@@ -332,9 +332,9 @@ class IntellisenceManager(object):
             startupinfo.wShowWindow = subprocess.SW_HIDE
         else:
             startupinfo = None
+        self._process_obj = subprocess.Popen(cmd_list,startupinfo=startupinfo,cwd=os.path.join(sysutilslib.mainModuleDir, "noval", "parser"))
         interpreter.Analysing = True
         self._is_running = interpreter.Analysing
-        self._process_obj = subprocess.Popen(cmd_list,startupinfo=startupinfo,cwd=os.path.join(sysutilslib.mainModuleDir, "noval", "parser"))
         self.Wait(interpreter,progress_dlg,load_data_end)
         
     def Wait(self,interpreter,progress_dlg,load_data_end):
@@ -358,8 +358,6 @@ class IntellisenceManager(object):
         try:
             self.generate_intellisence_data(default_interpreter,load_data_end=True)
         except Exception as e:
-            default_interpreter.Analysing = False
-            self._is_running = default_interpreter.Analysing
             app_debugLogger.error('load interpreter path %s intellisence data error: %s',default_interpreter.Path,e)
         
     def load_intellisence_data(self,interpreter):

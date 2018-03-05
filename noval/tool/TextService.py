@@ -55,19 +55,21 @@ class EncodingDeclareDialog(wx.Dialog):
         wx.Dialog.__init__(self,parent,dlg_id,title,size=(-1,150))
         contentSizer = wx.BoxSizer(wx.VERTICAL)
         
-        self.name_ctrl = wx.TextCtrl(self, -1, "# -*- coding: utf-8 -*-",size=(200,-1))
+        self.name_ctrl = wx.TextCtrl(self, -1, "# -*- coding: utf-8 -*-",size=(100,-1))
         self.name_ctrl.Enable(False)
         contentSizer.Add(self.name_ctrl, 0, wx.BOTTOM|wx.LEFT|wx.EXPAND , SPACE)
         self.check_box = wx.CheckBox(self, -1,_("Edit"))
         self.Bind(wx.EVT_CHECKBOX,self.onChecked) 
         contentSizer.Add(self.check_box, 0, wx.BOTTOM|wx.LEFT, SPACE)
         
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        bsizer = wx.StdDialogButtonSizer()
         ok_btn = wx.Button(self, wx.ID_OK, _("&Insert"))
-        lineSizer.Add(ok_btn, 0, wx.LEFT, SPACE*15)
+        ok_btn.SetDefault()
+        bsizer.AddButton(ok_btn)
         cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
-        lineSizer.Add(cancel_btn, 0, wx.LEFT, SPACE)
-        contentSizer.Add(lineSizer, 0, wx.BOTTOM|wx.RIGHT, SPACE)
+        bsizer.AddButton(cancel_btn)
+        bsizer.Realize()
+        contentSizer.Add(bsizer, 1, wx.EXPAND,SPACE)
         self.SetSizer(contentSizer)
 
     def onChecked(self,event):
@@ -286,7 +288,7 @@ class TextService(Service.BaseService):
                     text_view.GetCtrl().DeleteBack()
                 else:
                     return True
-            dlg = EncodingDeclareDialog(wx.GetApp().GetTopWindow(),-1,"Declare Encoding")
+            dlg = EncodingDeclareDialog(wx.GetApp().GetTopWindow(),-1,_("Declare Encoding"))
             dlg.CenterOnParent()
             if dlg.ShowModal() == wx.ID_OK:
                 text_view.GetCtrl().GotoPos(0)

@@ -297,6 +297,18 @@ class PythonInterpreter(Interpreter):
     @property
     def BuiltinModuleName(self):
         return self._builtin_module_name
+        
+    def GetPipPath(self):
+        if sysutils.isWindows():
+            pip_name = "pip.exe"
+        else:
+            pip_name = "pip"
+        python_location = os.path.dirname(self.Path)
+        pip_path_list = [os.path.join(python_location,"Scripts",pip_name),os.path.join(python_location,pip_name)]
+        for pip_path in pip_path_list:
+            if os.path.exists(pip_path):
+                return pip_path
+        return None
          
 class InterpreterManager(Singleton):
     

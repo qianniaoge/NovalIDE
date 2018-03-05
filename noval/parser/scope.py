@@ -248,9 +248,9 @@ class ModuleScope(Scope):
                     UnknownScope(child,parent_scope,self)
                     
         def __str__(self):
-            print 'module name is',self.Module.Name,'path is',self.Module.Path
-            for child_scope in self.ChildScopes:
-                print 'module child:', child_scope
+            #print 'module name is',self.Module.Name,'path is',self.Module.Path
+            #for child_scope in self.ChildScopes:
+             #   print 'module child:', child_scope
             return self.Module.Name
             
         def FindScope(self,line):
@@ -329,9 +329,9 @@ class FuncDefScope(NodeScope):
             super(FuncDefScope,self).__init__(func_def_node,parent,root)
             
         def __str__(self):
-            print 'type is func scope, name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
-            for child in self.ChildScopes:
-                print 'func scope child:', child
+            #print 'type is func scope, name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
+            #for child in self.ChildScopes:
+             #   print 'func scope child:', child
             return self.Node.Name
 
         def MakeFixName(self,name):
@@ -375,9 +375,9 @@ class ClassDefScope(NodeScope):
             super(ClassDefScope,self).__init__(class_def_node,parent,root)
             
         def __str__(self):
-            print 'type is class scope, name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
-            for child in self.ChildScopes:
-                print 'class scope child:', child
+            #print 'type is class scope, name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
+            #for child in self.ChildScopes:
+             #   print 'class scope child:', child
             return self.Node.Name
             
         def FindScopeInChildScopes(self,name):
@@ -449,7 +449,7 @@ class NameScope(NodeScope):
             super(NameScope,self).__init__(name_property_node,parent,root)
             
         def __str__(self):
-            print 'type is name scope, name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
+            #print 'type is name scope, name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
             return self.Node.Name
 
         def GetMemberList(self,sort=True):
@@ -487,7 +487,7 @@ class UnknownScope(NodeScope):
             super(UnknownScope,self).__init__(unknown_type_node,parent,root)
             
         def __str__(self):
-            print 'type is unknown scope, name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
+            #print 'type is unknown scope, name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
             return self.Node.Name
 
 class ImportScope(NodeScope):
@@ -495,7 +495,7 @@ class ImportScope(NodeScope):
             super(ImportScope,self).__init__(import_node,parent,root)
             
         def __str__(self):
-            print 'type is import scope, import name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
+            #print 'type is import scope, import name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
             return self.Node.Name
 
         def EqualName(self,name):
@@ -540,7 +540,7 @@ class FromImportScope(NodeScope):
             super(FromImportScope,self).__init__(from_import_node,parent,root)
             
         def __str__(self):
-            print 'type is from import scope, from name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
+            #print 'type is from import scope, from name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
             return self.Node.Name
             
         def EqualName(self,name):
@@ -555,4 +555,4 @@ if __name__ == "__main__":
     module_scope.MakeModuleScopes()
     module_scope.RouteChildScopes()
     func_scope = module_scope.FindDefinitionScope("FuncDef.__init__")
-    print func_scope
+    print (func_scope)

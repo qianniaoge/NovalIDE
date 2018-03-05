@@ -305,6 +305,7 @@ class RunCommandUI(wx.Panel):
         self._textCtrl.StyleClearAll()
 
         wx.stc.EVT_STC_DOUBLECLICK(self._textCtrl, self._textCtrl.GetId(), self.OnDoubleClick)        
+        wx.stc.EVT_STC_MODIFIED(self._textCtrl, self._textCtrl.GetId(), self.OnModify)    
         wx.EVT_KEY_DOWN(self._textCtrl, self.OnKeyPressed)
 
         self.SetSizer(sizer)
@@ -450,10 +451,21 @@ class RunCommandUI(wx.Panel):
                               wx.GetApp().GetTopWindow())
             return
         wx.GetApp().GotoView(filename,lineNum)
+        
+    def OnModify(self,event):
+        if self._textCtrl.GetCurrentPos() <= self._textCtrl.InputStartPos:
+            #disable back delete key
+            self._textCtrl.CmdKeyClear(wx.stc.STC_KEY_BACK ,0)
+        else:
+            #enable back delete key
+            self._textCtrl.CmdKeyAssign(wx.stc.STC_KEY_BACK ,0,wx.stc.STC_CMD_DELETEBACK)
     
     def OnKeyPressed(self, event):
         if self._textCtrl.GetReadOnly():
             return
+        if self._textCtrl.IsFirstInput:
+            self._textCtrl.InputStartPos = self._textCtrl.GetCurrentPos()
+            self._textCtrl.IsFirstInput = False
         input_color_style = 1
         self._textCtrl.StyleSetSpec(input_color_style, 'fore:#221dff, back:#FFFFFF,face:%s,size:%d' % \
                      (self._font.GetFaceName(),self._font.GetPointSize())) 
@@ -3133,7 +3145,7 @@ class CommandPropertiesDialog(wx.Dialog):
             startval = ""
         self._lastPythonPath = config.Read(self.GetKey("LastPythonPath"), startval)
         self._pythonPathEntry = wx.TextCtrl(self, -1, self._lastPythonPath)
-        self._pythonPathEntry.SetToolTipString('multiple path is seperated by %s' % os.pathsep)
+        self._pythonPathEntry.SetToolTipString(_('multiple path is seperated by %s') % os.pathsep)
         flexGridSizer.Add(self._pythonPathEntry, (4,1), (1,2), flag=wx.EXPAND)
 
         if debugging and _WINDOWS:
