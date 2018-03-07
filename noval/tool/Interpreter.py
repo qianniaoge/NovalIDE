@@ -9,6 +9,7 @@ import pickle
 import noval.parser.nodeast as nodeast
 import __builtin__
 import json
+import threading
 from noval.util.logger import app_debugLogger
 _ = wx.GetTranslation
 
@@ -130,6 +131,8 @@ class PythonInterpreter(Interpreter):
         self.Environ = PythonEnvironment()
         self._help_path = ""
         self._is_analysed = False
+        self._packages = {}
+        self._is_loading_package = False
         #builtin module name which python2 is __builtin__ and python3 is builtins
         self._builtin_module_name = "__builtin__"
         if not is_valid_interpreter:
@@ -309,6 +312,38 @@ class PythonInterpreter(Interpreter):
             if os.path.exists(pip_path):
                 return pip_path
         return None
+        
+    def LoadPackages(self,ui_panel,force):
+        if (not self._is_loading_package and 0 == len(self._packages)) or force:
+            t = threading.Thread(target=self.LoadPackageList,args=(ui_panel,))
+            t.start()
+            
+    def LoadPackageList(self,ui_panel):
+        self._is_loading_package = True
+        pip_path = self.GetPipPath()
+        if pip_path is not None:
+            command = "%s list" % pip_path
+            output = GetCommandOutput(command)
+            for line in output.split('\n'):
+                if line.strip() == "":
+                    continue
+                name,raw_version = line.split()[0:2]
+                version = raw_version.replace("(","").replace(")","")
+                self._packages[name] = version
+        self._is_loading_package = False
+        ui_panel.LoadPackageEnd(self)
+        
+    @property
+    def Packages(self):
+        return self._packages
+        
+    @Packages.setter
+    def Packages(self,packages):
+        self._packages = packages
+        
+    @property
+    def IsLoadingPackage(self):
+        return self._is_loading_package
          
 class InterpreterManager(Singleton):
     
@@ -399,6 +434,7 @@ class InterpreterManager(Singleton):
                 interpreter.SetInterpreterInfo(l['version'],l['builtins'],l['path_list'])
                 interpreter.HelpPath = l.get('help_path','')
                 interpreter.Environ.environ = l.get('environ',{})
+                interpreter.Packages = l.get('packages',{})
                 self.interpreters.append(interpreter)
         else:
             prefix = self.KEY_PREFIX
@@ -414,9 +450,11 @@ class InterpreterManager(Singleton):
                 sys_paths = config.Read("%s/%s/SysPathList" % (prefix,id))
                 builtins = config.Read("%s/%s/Builtins" % (prefix,id))
                 environ = json.loads(config.Read("%s/%s/Environ" % (prefix,id),"{}"))
+                packages = json.loads(config.Read("%s/%s/Packages" % (prefix,id),"{}"))
                 interpreter = PythonInterpreter(name,path,id,True)
                 interpreter.Default = is_default
                 interpreter.Environ.environ = environ
+                interpreter.Packages = packages
                 if interpreter.Default:
                     self.SetDefaultInterpreter(interpreter)
                 interpreter.SetInterpreterInfo(version,builtins.split(os.pathsep),sys_paths.split(os.pathsep))
@@ -431,7 +469,7 @@ class InterpreterManager(Singleton):
         for interpreter in self.interpreters:
             d = dict(id=interpreter.Id,name=interpreter.Name,version=interpreter.Version,path=interpreter.Path,\
                      default=interpreter.Default,path_list=interpreter.SyspathList,builtins=interpreter.Builtins,help_path=interpreter.HelpPath,\
-                     environ=interpreter.Environ.environ)
+                     environ=interpreter.Environ.environ,packages=interpreter.Packages)
             lst.append(d)
         return lst
         
@@ -455,6 +493,7 @@ class InterpreterManager(Singleton):
                 config.Write("%s/%d/SysPathList"%(prefix,kl.Id),os.pathsep.join(kl.SyspathList))
                 config.Write("%s/%d/Builtins"%(prefix,kl.Id),os.pathsep.join(kl.Builtins))
                 config.Write("%s/%d/Environ"%(prefix,kl.Id),json.dumps(kl.Environ.environ))
+                config.Write("%s/%d/Packages"%(prefix,kl.Id),json.dumps(kl.Packages))
         
     def AddPythonInterpreter(self,interpreter_path,name):
         interpreter = PythonInterpreter(name,interpreter_path)

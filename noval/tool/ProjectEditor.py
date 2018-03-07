@@ -1558,8 +1558,11 @@ class ProjectView(wx.lib.docview.View):
 
         butSizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        self._projectChoice = wx.Choice(panel, -1)
-        panel.Bind(wx.EVT_CHOICE, self.OnProjectSelect, self._projectChoice)
+        #self._projectChoice = wx.Choice(panel, -1)
+        #panel.Bind(wx.EVT_CHOICE, self.OnProjectSelect, self._projectChoice)
+        self._projectChoice = wx.combo.BitmapComboBox(panel, -1, "",choices=[], style=wx.CB_READONLY)
+        panel.Bind(wx.EVT_COMBOBOX,self.OnProjectSelect,self._projectChoice)
+        
         w, h = self._projectChoice.GetSize()
 
         self._logicalBtn = wx.lib.buttons.GenBitmapToggleButton(panel, -1, getLogicalModeOffBitmap(), size=(h,h))
@@ -1651,7 +1654,7 @@ class ProjectView(wx.lib.docview.View):
     def OnProjectSelect(self, event=None):
         if self.GetMode() == ProjectView.RESOURCE_VIEW:
             i = self._projectChoice.GetSelection()
-            name = self._projectChoice.GetString(i)
+            name = self._projectChoice.GetClientData(i)
             ResourceView.ResourceView(self).LoadRoot(name)
         else:
             self.LoadProject(self.GetDocument())

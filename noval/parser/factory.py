@@ -99,11 +99,12 @@ def NeedRenewDatabase(database_location,new_database_version):
 
 def get_python_version():
     #less then python 2.7 version
-    if isinstance(sys.version_info,tuple) and sys.version_info[0] == 2 and sys.version_info[2] > 0:
+    if isinstance(sys.version_info,tuple) and sys.version_info[0] == 2:
         version = str(sys.version_info[0]) + "." +  str(sys.version_info[1]) 
         #if sys.verion[0] == 2 and sys.version_info[2] > 0:
-        version += "."
-        version += str(sys.version_info[2])
+        if sys.version_info[2] > 0:
+            version += "."
+            version += str(sys.version_info[2])
     #python 2.7 or python3 version,which python3 version type is tuple,python2.7 version type is not tuple
     else:
         if sys.version_info.releaselevel.find('final') != -1:

@@ -871,9 +871,15 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         pos = self.GetCurrentPos()
         # Tips
         if key == ord("("):
+            #delete selected text
+            if self.GetSelectedText():
+                self.ReplaceSelection("")
             self.AddText("(")
             self.GetArgTip(pos)
         elif key == ord(self.TYPE_POINT_WORD):
+            #delete selected text
+            if self.GetSelectedText():
+                self.ReplaceSelection("")
             self.AddText(self.TYPE_POINT_WORD)
             self.ListMembers(pos)
         elif key == ord(self.TYPE_BLANK_WORD):

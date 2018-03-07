@@ -744,9 +744,11 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         #Hold onto the current line number, no way to get it later.
         self._rightClickPosition = self.PositionFromPoint(event.GetPosition())
         self._rightClickLine = self.LineFromPosition(self._rightClickPosition)
-        self.PopupMenu(self.CreatePopupMenu(), event.GetPosition())
+        menu = self.CreatePopupMenu()
+        self.PopupMenu(menu, event.GetPosition())
         self._rightClickLine = -1
         self._rightClickPosition = -1
+        menu.Destroy()
         
 
     def CreatePopupMenu(self):

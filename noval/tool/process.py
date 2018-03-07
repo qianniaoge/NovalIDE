@@ -1296,15 +1296,16 @@ class ProcessOpen(Process):
             # Start the child process.
             si = win32process.STARTUPINFO() 
             si.dwFlags = win32process.STARTF_USESHOWWINDOW
-            si.wShowWindow = 0 # SW_HIDE
+            #this set will show window interface
+            si.wShowWindow = True # SW_HIDE
             si.hStdInput = hChildStdinRd
             si.hStdOutput = hChildStdoutWr
             si.hStdError = hChildStderrWr
             si.dwFlags |= win32process.STARTF_USESTDHANDLES
 
             cmd = _fixupCommand(cmd, self._env)
-
-            creationFlags = win32process.CREATE_NEW_PROCESS_GROUP
+            #CREATE_NO_WINDOW flag will hide console interface,and show window interface
+            creationFlags = win32process.CREATE_NEW_PROCESS_GROUP | win32process.CREATE_NO_WINDOW
             try:
                 self._hProcess, hThread, self._processId, threadId\
                     = _SaferCreateProcess(

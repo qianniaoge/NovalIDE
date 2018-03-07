@@ -137,3 +137,7 @@ Version 1.0.5 -------------2018-02-13
 22.disable or enable back delete key when debug output has input according to the caret pos
 23.when load interpreter configuation list,at least select one interprter in datalist view control
 24.fix get python3 release version error,which is alpha,beta,candidate and final version
+
+Version 1.0.6 -------------2018-03-6
+1.add drive icon and volument name on resource view
+2.use multithread to load python pip package

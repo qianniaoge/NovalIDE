@@ -5,10 +5,42 @@ import noval.parser.intellisence as intellisence
 import noval.util.sysutils as sysutils
 import os
 import wx.lib.agw.hyperlink as hl
+import WxThreadSafe
 _ = wx.GetTranslation
 
 SPACE = 10
 HALF_SPACE = 5
+
+
+class PackagePanel(wx.Panel):
+    def __init__(self,parent):
+        wx.Panel.__init__(self, parent)
+        self.Sizer = wx.BoxSizer()
+        self.dvlc = dataview.DataViewListCtrl(self)
+        self.dvlc.AppendTextColumn(_('Name'), width=200)
+        self.dvlc.AppendTextColumn(_('Version'),width=250)
+        self.Sizer.Add(self.dvlc, 1, wx.EXPAND)
+        self.interpreter = None
+        
+    def LoadPackages(self,interpreter,force=False):
+        self.interpreter = interpreter
+        self.dvlc.DeleteAllItems()
+        interpreter.LoadPackages(self,force)
+        if interpreter.IsLoadingPackage:
+            self.dvlc.AppendItem([_("Loading Package List....."),""])
+            return
+        self.LoadPackageList(interpreter)
+            
+    def LoadPackageList(self,interpreter):
+        for name in interpreter.Packages:
+            self.dvlc.AppendItem([name,interpreter.Packages[name]])
+            
+    @WxThreadSafe.call_after
+    def LoadPackageEnd(self,interpreter):
+        if self.interpreter != interpreter:
+            return
+        self.dvlc.DeleteAllItems()
+        self.LoadPackageList(interpreter)
 
 class AddInterpreterDialog(wx.Dialog):
     def __init__(self,parent,dlg_id,title,size=(420,150)):
@@ -291,6 +323,7 @@ class InterpreterConfigDialog(wx.Dialog):
         self.dvlc.AppendTextColumn(_('Default'), width=70)
         dataview.EVT_DATAVIEW_SELECTION_CHANGED(self.dvlc, -1, self.UpdateUI)
         dataview.EVT_DATAVIEW_ITEM_ACTIVATED(self.dvlc, -1, self.ModifyInterpreterNameDlg)
+        dataview.EVT_DATAVIEW_ITEM_CONTEXT_MENU(self.dvlc, -1,self.OnContextMenu)
         contentSizer.Add(self.dvlc, 0, wx.EXPAND, 0)
         top_sizer.Add(contentSizer, 0, wx.LEFT, 0)
         
@@ -316,6 +349,8 @@ class InterpreterConfigDialog(wx.Dialog):
         
         bottom_sizer = wx.BoxSizer(wx.HORIZONTAL)
         nb = wx.Notebook(self,size=(650,330))
+        self.package_panel = PackagePanel(nb)
+        nb.AddPage(self.package_panel, _("Package"))
         self.path_panel = PythonPathPanel(nb)
         nb.AddPage(self.path_panel, _("Sys Path"))
         self.builtin_panel = PythonBuiltinsPanel(nb)
@@ -341,6 +376,40 @@ class InterpreterConfigDialog(wx.Dialog):
         self.UpdateUI(None)
         
         self.Fit()
+        
+    def OnContextMenu(self, event):
+        menu = wx.Menu()
+        x, y = event.GetPosition().x,event.GetPosition().y
+        id = wx.NewId()
+        menu.Append(id,_("Copy Name"))
+        wx.EVT_MENU(self, id, self.ProcessEvent)  
+        
+        id = wx.NewId()
+        menu.Append(id,_("Copy Version"))
+        wx.EVT_MENU(self, id, self.ProcessEvent) 
+        
+        id = wx.NewId()
+        menu.Append(id,_("Copy Path"))
+        wx.EVT_MENU(self, id, self.ProcessEvent) 
+        
+        id = wx.NewId()
+        menu.Append(id,_("Modify Name"))
+        wx.EVT_MENU(self, id, self.ProcessEvent) 
+        
+        id = wx.NewId()
+        menu.Append(id,_("Remove"))
+        wx.EVT_MENU(self, id, self.ProcessEvent) 
+        
+        id = wx.NewId()
+        menu.Append(id,_("New VirtualEnv"))
+        wx.EVT_MENU(self, id, self.ProcessEvent) 
+        
+        self.dvlc.PopupMenu(menu,wx.Point(x, y))
+        menu.Destroy()
+        
+    def ProcessEvent(self, event):        
+        id = event.GetId()
+        print id,'+++++++++++++++++++'
         
     def ModifyInterpreterNameDlg(self,event):
         index = self.dvlc.GetSelectedRow()
@@ -406,6 +475,7 @@ class InterpreterConfigDialog(wx.Dialog):
         self.path_panel.AppendSysPath(interpreter)
         self.builtin_panel.SetBuiltiins(interpreter)
         self.environment_panel.SetVariables(interpreter)
+        self.package_panel.LoadPackages(interpreter)
         self.dvlc.Refresh()
         self.dvlc.SelectRow(row)
     
@@ -452,6 +522,7 @@ class InterpreterConfigDialog(wx.Dialog):
     def SmartAnalyse(self,interpreter):
         interpreter.GetSyspathList()
         interpreter.GetBuiltins()
+        self.package_panel.LoadPackages(interpreter,True)
         self.path_panel.AppendSysPath(interpreter)
         self.builtin_panel.SetBuiltiins(interpreter)
         self.smart_analyse_btn.Enable(False)
@@ -498,6 +569,7 @@ class InterpreterConfigDialog(wx.Dialog):
             self.path_panel.AppendSysPath(interpreter)
             self.builtin_panel.SetBuiltiins(interpreter)
             self.environment_panel.SetVariables(interpreter)
+            self.package_panel.LoadPackages(interpreter)
             
         
 class AnalyseProgressDialog(wx.ProgressDialog):

@@ -6,18 +6,31 @@ import noval.util.strutils as strutils
 import noval.util.fileutils as fileutils
 _ = wx.GetTranslation
 
-def GetRoots():
-    roots = []
-    if sysutils.isWindows():
+if sysutils.isWindows():
+    from win32com.shell import shell, shellcon
+    
+    def GetDriveDisplayName(path):
+        return shell.SHGetFileInfo(path, 0, shellcon.SHGFI_DISPLAYNAME)[1][3]
+        
+    def GetRoots():
+        roots = []
         import ctypes
         import os
         for i in range(65,91):
             vol = chr(i) + ':'
             if os.path.isdir(vol):
-                roots.append(vol)
-    else:
-        roots.append("/")
-    return roots
+                roots.append([GetDriveDisplayName(vol),wx.ArtProvider.GetBitmap(wx.ART_HARDDISK,wx.ART_CMN_DIALOG,(16,16)),vol])
+        return roots
+else:
+    def GetRoots():
+        roots = []
+        home_dir = wx.GetHomeDir()
+        folder_bmp = wx.ArtProvider.GetBitmap(wx.ART_FOLDER_OPEN,wx.ART_CMN_DIALOG,(16,16))
+        roots.append([_("Home directory"),folder_bmp,home_dir])
+        desktop_dir = home_dir + "/Desktop"
+        roots.append([_("Desktop"),folder_bmp,desktop_dir])
+        roots.append(["/",wx.ArtProvider.GetBitmap(wx.ART_HARDDISK,wx.ART_CMN_DIALOG,(16,16)),"/"])
+        return roots
     
 class ResourceView(object):
     
@@ -30,10 +43,12 @@ class ResourceView(object):
     def LoadResource(self):
         roots = GetRoots()
         self._view._projectChoice.Clear()
-        self._view._projectChoice.InsertItems(roots,0)
+        for root in roots:
+            self._view._projectChoice.Append(root[0],root[1],root[2])
+        #self._view._projectChoice.InsertItems(roots,0)
         select_index = 0
         self._view._projectChoice.SetSelection(select_index)
-        name = self._view._projectChoice.GetString(select_index)
+        name = self._view._projectChoice.GetClientData(select_index)
         self.LoadRoot(name)
 
     def SetRootDir(self,directory):
