@@ -20,3 +20,7 @@ ID_MRU_FILE17 = wx.NewId()
 ID_MRU_FILE18 = wx.NewId()
 ID_MRU_FILE19 = wx.NewId()
 ID_MRU_FILE20 = wx.NewId()
+
+
+TEXT_VIEW = 1
+IMAGE_VIEW = 2

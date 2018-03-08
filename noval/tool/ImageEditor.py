@@ -12,6 +12,7 @@
 import wx
 import wx.lib.docview
 import sys
+import consts
 _ = wx.GetTranslation
 
 
@@ -29,7 +30,9 @@ class ImageView(wx.lib.docview.View):
     def __init__(self):
         wx.lib.docview.View.__init__(self)
         self._ctrl = None
-
+        
+    def GetType(self):
+        return consts.IMAGE_VIEW
 
     def OnCreate(self, doc, flags):
         if len(doc.GetFilename()) == 0:

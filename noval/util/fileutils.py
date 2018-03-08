@@ -474,6 +474,7 @@ def is_file_hiden(path):
     if sysutils.isWindows():
         import win32con
         import win32file
+        is_hidden = False
         if os.path.isfile(path):
             is_hidden = is_windows_file_hidden(path)
         ###files or dirs in hidden dir is not hidden,so we shoud rotate to hidden dir
@@ -487,6 +488,7 @@ def is_file_hiden(path):
                 path = os.path.dirname(path)
         return is_hidden
     else:
+        is_hidden = False
         if os.path.isfile(path):
             filename = os.path.basename(path)
             is_hidden = True if filename.startswith(".") else False
@@ -499,5 +501,5 @@ def is_file_hiden(path):
                 if is_hidden:
                     break
                 path = os.path.dirname(path)
-            return is_hidden
+        return is_hidden
             

@@ -11,6 +11,12 @@ _ = wx.GetTranslation
 SPACE = 10
 HALF_SPACE = 5
 
+ID_COPY_INTERPRETER_NAME = wx.NewId()
+ID_COPY_INTERPRETER_VERSION = wx.NewId()
+ID_COPY_INTERPRETER_PATH = wx.NewId()
+ID_MODIFY_INTERPRETER_NAME = wx.NewId()
+ID_REMOVE_INTERPRETER = wx.NewId()
+ID_NEW_INTERPRETER_VIRTUALENV = wx.NewId()
 
 class PackagePanel(wx.Panel):
     def __init__(self,parent):
@@ -380,36 +386,65 @@ class InterpreterConfigDialog(wx.Dialog):
     def OnContextMenu(self, event):
         menu = wx.Menu()
         x, y = event.GetPosition().x,event.GetPosition().y
-        id = wx.NewId()
-        menu.Append(id,_("Copy Name"))
-        wx.EVT_MENU(self, id, self.ProcessEvent)  
+        menu.Append(ID_COPY_INTERPRETER_NAME,_("Copy Name"))
+        wx.EVT_MENU(self, ID_COPY_INTERPRETER_NAME, self.ProcessEvent)
+        wx.EVT_UPDATE_UI(self, ID_COPY_INTERPRETER_NAME, self.ProcessUpdateUIEvent)
         
-        id = wx.NewId()
-        menu.Append(id,_("Copy Version"))
-        wx.EVT_MENU(self, id, self.ProcessEvent) 
+        menu.Append(ID_COPY_INTERPRETER_VERSION,_("Copy Version"))
+        wx.EVT_MENU(self, ID_COPY_INTERPRETER_VERSION, self.ProcessEvent) 
+        wx.EVT_UPDATE_UI(self, ID_COPY_INTERPRETER_VERSION, self.ProcessUpdateUIEvent)
         
-        id = wx.NewId()
-        menu.Append(id,_("Copy Path"))
-        wx.EVT_MENU(self, id, self.ProcessEvent) 
+        menu.Append(ID_COPY_INTERPRETER_PATH,_("Copy Path"))
+        wx.EVT_MENU(self, ID_COPY_INTERPRETER_PATH, self.ProcessEvent)
+        wx.EVT_UPDATE_UI(self, ID_COPY_INTERPRETER_PATH, self.ProcessUpdateUIEvent)
         
-        id = wx.NewId()
-        menu.Append(id,_("Modify Name"))
-        wx.EVT_MENU(self, id, self.ProcessEvent) 
+        menu.Append(ID_MODIFY_INTERPRETER_NAME,_("Modify Name"))
+        wx.EVT_MENU(self, ID_MODIFY_INTERPRETER_NAME, self.ProcessEvent)
+        wx.EVT_UPDATE_UI(self, ID_MODIFY_INTERPRETER_NAME, self.ProcessUpdateUIEvent)
         
-        id = wx.NewId()
-        menu.Append(id,_("Remove"))
-        wx.EVT_MENU(self, id, self.ProcessEvent) 
+        menu.Append(ID_REMOVE_INTERPRETER,_("Remove"))
+        wx.EVT_MENU(self, ID_REMOVE_INTERPRETER, self.ProcessEvent)
+        wx.EVT_UPDATE_UI(self, ID_REMOVE_INTERPRETER, self.ProcessUpdateUIEvent)
         
-        id = wx.NewId()
-        menu.Append(id,_("New VirtualEnv"))
-        wx.EVT_MENU(self, id, self.ProcessEvent) 
+        menu.Append(ID_NEW_INTERPRETER_VIRTUALENV,_("New VirtualEnv"))
+        wx.EVT_MENU(self, ID_NEW_INTERPRETER_VIRTUALENV, self.ProcessEvent)
+        wx.EVT_UPDATE_UI(self, ID_NEW_INTERPRETER_VIRTUALENV, self.ProcessUpdateUIEvent)
         
         self.dvlc.PopupMenu(menu,wx.Point(x, y))
         menu.Destroy()
         
-    def ProcessEvent(self, event):        
+    def ProcessEvent(self, event): 
+        index = self.dvlc.GetSelectedRow()
+        if index == wx.NOT_FOUND:
+            return
+        item = self.dvlc.RowToItem(index)
+        id = self.dvlc.GetItemData(item)
+        interpreter = Interpreter.InterpreterManager().GetInterpreterById(id)   
         id = event.GetId()
-        print id,'+++++++++++++++++++'
+        if id == ID_COPY_INTERPRETER_NAME:
+            sysutils.CopyToClipboard(interpreter.Name)
+            return True
+        elif id == ID_COPY_INTERPRETER_VERSION:
+            sysutils.CopyToClipboard(interpreter.Version)
+            return True
+        elif id == ID_COPY_INTERPRETER_PATH:
+            sysutils.CopyToClipboard(interpreter.Path)
+            return True
+        elif id == ID_MODIFY_INTERPRETER_NAME:
+            self.ModifyInterpreterNameDlg(None)
+            return True
+        elif id == ID_REMOVE_INTERPRETER:
+            self.RemoveInterpreter(None)
+            return True
+        elif id == ID_NEW_INTERPRETER_VIRTUALENV:
+            return True
+            
+    def ProcessUpdateUIEvent(self, event):
+        if self.dvlc.GetSelectedRow() == wx.NOT_FOUND:
+            event.Enable(False)
+            return False
+        event.Enable(True)
+        return True
         
     def ModifyInterpreterNameDlg(self,event):
         index = self.dvlc.GetSelectedRow()

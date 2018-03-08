@@ -85,8 +85,9 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
         if index > -1:
             view = self._notebook.GetPage(index).GetView()
             doc = view.GetDocument()
-            self.AppendMenuItem(menu,_("Save"),OnSaveFile)
-            self.AppendMenuItem(menu,_("SaveAs"),OnSaveFileAs)
+            if view.GetType() == consts.TEXT_VIEW:
+                self.AppendMenuItem(menu,_("Save"),OnSaveFile)
+                self.AppendMenuItem(menu,_("SaveAs"),OnSaveFileAs)
             self.AppendMenuItem(menu,_("Close"),OnCloseDoc)
             self.AppendMenuItem(menu,_("CloseAll"),OnCloseAllDocs)
             if self._notebook.GetPageCount() > 1:
@@ -94,11 +95,12 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
                 self.AppendMenuItem(menu,item_name,OnCloseAllWithoutDoc,True)
                 tabsMenu = wx.Menu()
                 menu.AppendMenu(wx.NewId(), _("Select Tab"), tabsMenu)
-            self.AppendMenuItem(menu,_("Open File Path In FileManager"),OnOpenPathInExplorer)
-            self.AppendMenuItem(menu,_("Open File Path In Terminator"),OnOpenPathInTerminator)
+            if view.GetType() == consts.TEXT_VIEW:
+                self.AppendMenuItem(menu,_("Open File Path In FileManager"),OnOpenPathInExplorer)
+                self.AppendMenuItem(menu,_("Open File Path In Terminator"),OnOpenPathInTerminator)
             self.AppendMenuItem(menu,_("Copy File Path"),OnCopyFilePath)
             self.AppendMenuItem(menu,_("Copy File Name"),OnCopyFileName)
-            if view.GetLangLexer() == parserconfig.LANG_PYTHON_LEXER:
+            if view.GetType() == consts.TEXT_VIEW and view.GetLangLexer() == parserconfig.LANG_PYTHON_LEXER:
                 self.AppendMenuItem(menu,_("Copy Module Name"),OnCopyModuleName)
         else:
             y = y - 25  # wxBug: It is offsetting click events in the blank notebook area

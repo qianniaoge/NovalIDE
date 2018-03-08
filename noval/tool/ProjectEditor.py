@@ -31,6 +31,7 @@ import SVNService
 import project as projectlib
 import ExtensionService
 import ResourceView
+import noval.util.sysutils as sysutilslib
 
 from IDE import ACTIVEGRID_BASE_IDE
 if not ACTIVEGRID_BASE_IDE:
@@ -47,7 +48,6 @@ if not ACTIVEGRID_BASE_IDE:
     import PropertyService
     from activegrid.server.toolsupport import GetTemplate
     import activegrid.util.xmlutils as xmlutils
-    import activegrid.util.sysutils as sysutils
     DataServiceExistenceException = DeploymentGeneration.DataServiceExistenceException
     import WebBrowserService
 
@@ -1361,7 +1361,14 @@ class ProjectTreeCtrl(wx.TreeCtrl):
         self.SetItemImage(item, self._folderOpenIconIndex, wx.TreeItemIcon_Expanded)
         self.SetPyData(item, None)
         return item
-
+        
+    def GetIconIndexFromName(self,filename):
+        template = wx.GetApp().GetDocumentManager().FindTemplateForPath(filename)
+        if template:
+            for t, iconIndex in self._iconIndexLookup:
+                if t is template:
+                    return iconIndex
+        return -1
 
     def AppendItem(self, parent, filename, file):
         item = wx.TreeCtrl.AppendItem(self, parent, filename)
@@ -1554,7 +1561,7 @@ class ProjectView(wx.lib.docview.View):
 
         panel = wx.Panel(frame, -1)
 
-        sizer = wx.BoxSizer(wx.VERTICAL)
+        self.panel_sizer = wx.BoxSizer(wx.VERTICAL)
 
         butSizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -1578,15 +1585,28 @@ class ProjectView(wx.lib.docview.View):
         butSizer.Add(self._projectChoice, 1, wx.EXPAND)
         butSizer.Add(self._logicalBtn, 0)
         butSizer.Add(self._physicalBtn, 0)
-        sizer.Add(butSizer, 0, wx.EXPAND)
-
-        self._treeCtrl = ProjectTreeCtrl(panel, -1, style = wx.TR_HIDE_ROOT | wx.TR_HAS_BUTTONS | wx.TR_EDIT_LABELS | wx.TR_DEFAULT_STYLE | wx.TR_EXTENDED)
-        self._treeCtrl.AddRoot(_("Projects"))
+        self.panel_sizer.Add(butSizer, 0, wx.EXPAND)
+        
+        self.dirSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.dir_ctrl = ResourceView.ResourceTreeCtrl(panel, -1, style = wx.TR_HIDE_ROOT | wx.TR_HAS_BUTTONS | wx.TR_EDIT_LABELS | wx.TR_DEFAULT_STYLE | wx.TR_EXTENDED)
+        self.dir_ctrl.AddRoot(_("Resources"))
+        self.dirSizer.Add(self.dir_ctrl, 1, wx.EXPAND)
+        
+        self.treeSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._treeCtrl = ProjectTreeCtrl(panel, -1, style = wx.TR_HAS_BUTTONS | wx.TR_EDIT_LABELS | wx.TR_DEFAULT_STYLE | wx.TR_EXTENDED)
+        rootItem = self._treeCtrl.AddRoot(_("Projects"))
+        project_icon_index = self._treeCtrl.GetIconIndexFromName("test.agp")
+        self._treeCtrl.SetItemImage(rootItem,project_icon_index,wx.TreeItemIcon_Normal)
+        self.treeSizer.Add(self._treeCtrl, 1, wx.EXPAND)
         if self._embeddedWindow:
-            sizer.Add(self._treeCtrl, 1, wx.EXPAND|wx.BOTTOM, HALF_SPACE)  # allow space for embedded window resize-sash
+            self.panel_sizer.Add(self.dirSizer, 1, wx.EXPAND|wx.BOTTOM, HALF_SPACE)
+            self.panel_sizer.Add(self.treeSizer, 1, wx.EXPAND|wx.BOTTOM, HALF_SPACE)
+            #sizer.Add(self._treeCtrl, 1, wx.EXPAND|wx.BOTTOM, HALF_SPACE)  # allow space for embedded window resize-sash
         else:
-            sizer.Add(self._treeCtrl, 1, wx.EXPAND)
-        panel.SetSizer(sizer)
+            self.panel_sizer.Add(self.treeSizer, 1, wx.EXPAND)
+            self.panel_sizer.Add(self.dirSizer, 1, wx.EXPAND)
+            #sizer.Add(self._treeCtrl, 1, wx.EXPAND)
+        panel.SetSizer(self.panel_sizer)
         
         sizer = wx.BoxSizer(wx.VERTICAL)
         
@@ -1611,11 +1631,11 @@ class ProjectView(wx.lib.docview.View):
         wx.EVT_TREE_END_LABEL_EDIT(self._treeCtrl, self._treeCtrl.GetId(), self.OnEndLabelEdit)
         wx.EVT_RIGHT_DOWN(self._treeCtrl, self.OnRightClick)
         wx.EVT_KEY_DOWN(self._treeCtrl, self.OnKeyPressed)
-      #  wx.EVT_TREE_ITEM_COLLAPSED(self._treeCtrl, self._treeCtrl.GetId(), self.SaveFolderState)
+        wx.EVT_TREE_ITEM_COLLAPSED(self._treeCtrl, self._treeCtrl.GetId(), self.SaveFolderState)
         wx.EVT_TREE_ITEM_EXPANDING(self._treeCtrl, self._treeCtrl.GetId(), self.OnOpenSelection)
         wx.EVT_TREE_BEGIN_DRAG(self._treeCtrl, self._treeCtrl.GetId(), self.OnBeginDrag)
         wx.EVT_TREE_END_DRAG(self._treeCtrl, self._treeCtrl.GetId(), self.OnEndDrag)
-       ## wx.EVT_LEFT_DOWN(self._treeCtrl, self.OnLeftClick)
+        wx.EVT_LEFT_DOWN(self._treeCtrl, self.OnLeftClick)
 
         # drag-and-drop support
         dt = ProjectFileDropTarget(self)
@@ -1640,9 +1660,14 @@ class ProjectView(wx.lib.docview.View):
     def SelectView(self):    
         if self.GetMode() == ProjectView.RESOURCE_VIEW:
             ResourceView.ResourceView(self).LoadResource()
+            self.panel_sizer.Hide(self.treeSizer)
+            self.panel_sizer.Show(self.dirSizer)
         else:
             self._projectChoice.Clear()
             self.LoadProject(self.GetDocument())
+            self.panel_sizer.Show(self.treeSizer)
+            self.panel_sizer.Hide(self.dirSizer)
+        self.panel_sizer.Layout()
 
     def GetMode(self):
         if not self._physicalBtn.up:
@@ -2133,7 +2158,7 @@ class ProjectView(wx.lib.docview.View):
 
 
     def AddProjectToView(self, document):
-        i = self._projectChoice.Append(self._MakeProjectName(document), document)
+        i = self._projectChoice.Append(self._MakeProjectName(document),getProjectBitmap(), document)
         self._projectChoice.SetSelection(i)
         self.OnProjectSelect()
 
@@ -3979,34 +4004,10 @@ class ProjectService(Service.Service):
 from wx import ImageFromStream, BitmapFromImage
 import cStringIO
 
-
-def getProjectData():
-    return \
-'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x10\x00\x00\x00\x10\x08\x06\
-\x00\x00\x00\x1f\xf3\xffa\x00\x00\x00\x04sBIT\x08\x08\x08\x08|\x08d\x88\x00\
-\x00\x01\x89IDAT8\x8d\xa5\x92\xcdJ\x02Q\x18\x86\x9fq&-+H\xd40\x033Bha\x05\
-\xfd\xac*[\xb7l\xd1\xae\xfbhQ7\x10\x04A]\x86\xd0&\xba\x01CW\n!B\xa2\x882\x8b\
-)R+"\x7fft\x9a\x16\x91\xcd4\xd3\x0f\xf4\xee\xce\xf9\xde\xf7\xe1\xfd\x0eG\x10\
-\\"\x9arb\xe8\xcf\x1a\x9d\x9e\n\x80\xd6\xad\x03\x10Z;\x13\xf8ER\xa7xd\x88\
-\xbe-D\x1f\xb8\xbf\x0c\xaf\xcf\x15C\xd2k\xf4\xc5(\x92^\x03 \xbe\x9b\xb3@\x85\
-n\xe9\xd8h\xde\xe6\x1d\xe9\xfe\xa9E\xc7\xfb\x91\xf9\xfd\x01D\xfa\xc9\xd8\xf7\
-\xcdPI\'\x01X\xd8>@p\xf7\x00($W\x8c\x8f&R\xa7\xa7\xa2u\xebL.\xef\xd9\x00\x97\
-\xa7\x87D\\er\x15\x95\xb9\xf5\x12\xa3\x81Y\x9bG\xfax0\xb3Z\x8d*\x95t\x92z\
-\xb5\x80yjhC\x83\x16\x96\x15\xdc\xc3AZ\x8d\xea{XN#g.,\xa6\xe0l\x9c\xde}\x89\
-\xb6\xc3\x9aR\xff\xe5\x01\x801}\x1c\x80\x9b\xcc\x05\xde\xb0\x9f\xd0t\x04oX\
-\xa6\xad4\xc9U\n\xc0&\x1e\xfd\xd6\x0e\x18\xd4Se\x00\xbca?m\xa5\xc9\x1d\xd0V\
-\x9a\x03\xa3\xd6\xadc\xa8\x8fv\xc0S\xa3H\xc8\x13\x01\xa2\x00\xc4V\x13\x94\
-\xb3)\xae\xae\x14\x8b\xd1\x17\x90laK\x03\xb3b\xab\t&\x02\xf7(\xf94\xf2k\x8c\
-\x8d\x8dy\xc7\xf0\xb7\x00\x80`t\x92`t\x87%\xa0\x9cM\xd1\xa8}\xce\xcc\xbf\xd1\
-\x11P\xce\xa6,\xe7\xaf\xdf\xd7,Ap\x89\x14\x92+\xc6_\x03\x8e\x80\xff\xc8\xf5\
-\xaf4\xf0\x06=\xf3\x8fJr]C\xd9\x00\x00\x00\x00IEND\xaeB`\x82'
-
 def getProjectBitmap():
-    return BitmapFromImage(getProjectImage())
-
-def getProjectImage():
-    stream = cStringIO.StringIO(getProjectData())
-    return ImageFromStream(stream)
+    project_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "project.png")
+    project_image = wx.Image(project_image_path,wx.BITMAP_TYPE_ANY)
+    return BitmapFromImage(project_image)
 
 def getProjectIcon():
     return wx.IconFromBitmap(getProjectBitmap())
@@ -4061,7 +4062,9 @@ def getFolderClosedData():
 \xfe\x01\xd1\x03SV!\xfbHa\x00\x00\x00\x00IEND\xaeB`\x82' 
 
 def getFolderClosedBitmap():
-    return BitmapFromImage(getFolderClosedImage())
+    folder_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "folder_close.png")
+    folder_image = wx.Image(folder_image_path,wx.BITMAP_TYPE_ANY)
+    return BitmapFromImage(folder_image)
 
 def getFolderClosedImage():
     stream = cStringIO.StringIO(getFolderClosedData())
@@ -4092,7 +4095,9 @@ R\x01\x04\x9e\x03\xc0\xea\xde\x8dH\th\xa8\xa81:\xf8\x1e\x00\xf9\x8d\x03\x00\
 \xe54\x00\x00\x00\x00IEND\xaeB`\x82' 
 
 def getFolderOpenBitmap():
-    return BitmapFromImage(getFolderOpenImage())
+    folder_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "folder_open.png")
+    folder_image = wx.Image(folder_image_path,wx.BITMAP_TYPE_ANY)
+    return BitmapFromImage(folder_image)
 
 def getFolderOpenImage():
     stream = cStringIO.StringIO(getFolderOpenData())

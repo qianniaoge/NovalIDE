@@ -2414,7 +2414,8 @@ class DebuggerService(Service.Service):
             status = dlg.ShowModal()
             dlg.Destroy()
             wx.GetApp().AddInterpreters()
-            Interpreter.InterpreterManager().SavePythonInterpretersConfig()
+            if status == wx.ID_OK:
+                Interpreter.InterpreterManager().SavePythonInterpretersConfig()
         else:
            interpreter = cb.GetClientData(selection)
            self.SelectInterpreter(interpreter)

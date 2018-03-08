@@ -2,7 +2,7 @@
 
 ; 安装程序初始定义常量
 !define PRODUCT_NAME "NovalIDE"
-!define PRODUCT_VERSION "1.0.5"
+!define PRODUCT_VERSION "1.0.6"
 !define PRODUCT_PUBLISHER "wukan"
 !define PRODUCT_WEB_SITE "http://www.genetalks.com"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\NovalIDE.exe"
@@ -75,6 +75,7 @@ Section "MainSection" SEC01
   File "dist\wx._core_.pyd"
   File "dist\wx._controls_.pyd"
   File "dist\win32process.pyd"
+  File "dist\win32com.shell.shell.pyd"
   File "dist\win32pipe.pyd"
   File "dist\win32gui.pyd"
   File "dist\win32file.pyd"
@@ -188,6 +189,7 @@ Section Uninstall
   Delete "$INSTDIR\version.txt"
   Delete "$INSTDIR\w9xpopen.exe"
   Delete "$INSTDIR\win32api.pyd"
+  Delete "$INSTDIR\win32com.shell.shell.pyd"
   Delete "$INSTDIR\win32event.pyd"
   Delete "$INSTDIR\win32evtlog.pyd"
   Delete "$INSTDIR\win32file.pyd"
@@ -214,6 +216,7 @@ Section Uninstall
   Delete "$INSTDIR\wxmsw30u_html_vc90.dll"
   Delete "$INSTDIR\wxmsw30u_stc_vc90.dll"
   Delete "$INSTDIR\wxmsw30u_xrc_vc90.dll"
+  Delete "$INSTDIR\NovalIDE.exe.log"
 
   Delete "$SMPROGRAMS\NovalIDE\Uninstall.lnk"
   Delete "$SMPROGRAMS\NovalIDE\Website.lnk"

@@ -28,6 +28,8 @@ import MarkerService
 import TextService
 import CompletionService
 import NavigationService
+import consts
+import noval.util.sysutils as sysutilslib
 
 _ = wx.GetTranslation
 
@@ -271,6 +273,9 @@ class TextView(wx.lib.docview.View):
     def GetCtrlClass(self):
         """ Used in split window to instantiate new instances """
         return TextCtrl
+
+    def GetType(self):
+        return consts.TEXT_VIEW
     
     def GetLangLexer(self):
         return parserconfig.LANG_NONE_LEXER
@@ -1636,7 +1641,9 @@ l+\xbek.\x02\x00\xec\x99\x03\x80\xeb\xf8\\\x9d\x1d\x1bd\xd5hl\xab\xd7O\x15\
 
 
 def getTextBitmap():
-    return BitmapFromImage(getTextImage())
+    blank_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "file.gif")
+    blank_image = wx.Image(blank_image_path,wx.BITMAP_TYPE_ANY)
+    return BitmapFromImage(blank_image)
 
 def getTextImage():
     stream = cStringIO.StringIO(getTextData())

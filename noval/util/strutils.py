@@ -111,12 +111,15 @@ def parseArgs(argStr, stripQuotes=False):
         argStr = argStr[endIndex:]
     return rtn
 
-def GetFileExt(filename):
+def GetFileExt(filename,to_lower=True):
     basename = os.path.basename(filename)
-    parts = basename.split(".")
-    if 1 == len(parts):
+    names = basename.split(".")
+    if 1 == len(names):
         return ""
-    return parts[-1]
+    if to_lower:
+        return names[-1].lower()
+    else:
+        return names[-1]
     
 def GetFilenameWithoutExt(file_path_name):
     filename = os.path.basename(file_path_name)

@@ -141,3 +141,8 @@ Version 1.0.5 -------------2018-02-13
 Version 1.0.6 -------------2018-03-6
 1.add drive icon and volument name on resource view
 2.use multithread to load python pip package
+3.fix image view display context menu bug
+4.change python and text file icon
+5.add project icon to project and show project root
+6.show local icon of file when scan disk file on resource view
+7.when add point and brace symbol to document text will delete selected text
