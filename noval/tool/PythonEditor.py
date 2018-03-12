@@ -134,7 +134,7 @@ class PythonView(CodeEditor.CodeView):
         if not doc_update:
             return
 
-        module = parser.parse_content(self.GetCtrl().GetValue(),filename)
+        module = parser.parse_content(self.GetCtrl().GetValue(),filename,self.GetDocument().file_encoding)
         if module is None:
             return
         module_scope = scope.ModuleScope(module,self.GetCtrl().GetLineCount())
@@ -333,7 +333,7 @@ class PythonView(CodeEditor.CodeView):
         treeCtrl.Freeze()
         treeCtrl.DeleteAllItems()
         rootItem = treeCtrl.AddRoot(self.ModuleScope.Module.Name)
-        treeCtrl.SetItemImage(rootItem,treeCtrl.moduleidx,wx.TreeItemIcon_Normal)
+        treeCtrl.SetItemImage(rootItem,treeCtrl.ModuleIdx,wx.TreeItemIcon_Normal)
         treeCtrl.SetDoSelectCallback(rootItem, self, self.ModuleScope.Module)
         self.TranverseItem(treeCtrl,self.ModuleScope.Module,rootItem)
         treeCtrl.Expand(rootItem)
@@ -344,43 +344,41 @@ class PythonView(CodeEditor.CodeView):
     def TranverseItem(self,treeCtrl,node,parent):
         for child in node.Childs:
             if child.Type == parserconfig.NODE_FUNCDEF_TYPE:
-                item_image_index = 1
                 item = treeCtrl.AppendItem(parent, child.Name)
-                treeCtrl.SetItemImage(item,item_image_index,wx.TreeItemIcon_Normal)
+                treeCtrl.SetItemImage(item,treeCtrl.FuncIdx,wx.TreeItemIcon_Normal)
                 treeCtrl.SetDoSelectCallback(item, self, child)
             elif child.Type == parserconfig.NODE_CLASSDEF_TYPE:
-                item_image_index = 2
                 item = treeCtrl.AppendItem(parent, child.Name)
-                treeCtrl.SetItemImage(item,item_image_index,wx.TreeItemIcon_Normal)
+                treeCtrl.SetItemImage(item,treeCtrl.ClassIdx,wx.TreeItemIcon_Normal)
                 treeCtrl.SetDoSelectCallback(item, self, child)
                 self.TranverseItem(treeCtrl,child,item)
             elif child.Type == parserconfig.NODE_OBJECT_PROPERTY or \
                         child.Type == parserconfig.NODE_ASSIGN_TYPE:
-                item_image_index = 3
                 item = treeCtrl.AppendItem(parent, child.Name)
-                treeCtrl.SetItemImage(item,item_image_index,wx.TreeItemIcon_Normal)
+                treeCtrl.SetItemImage(item,treeCtrl.PropertyIdx,wx.TreeItemIcon_Normal)
                 treeCtrl.SetDoSelectCallback(item, self, child)
             elif child.Type == parserconfig.NODE_IMPORT_TYPE:
-                item_image_index = 4
                 name = child.Name
                 if child.AsName is not None:
                     name = child.AsName
                 item = treeCtrl.AppendItem(parent,name)
-                treeCtrl.SetItemImage(item,item_image_index,wx.TreeItemIcon_Normal)
+                treeCtrl.SetItemImage(item,treeCtrl.ImportIdx,wx.TreeItemIcon_Normal)
                 treeCtrl.SetDoSelectCallback(item, self, child)
             elif child.Type == parserconfig.NODE_FROMIMPORT_TYPE:
-                item_image_index = 5
                 from_import_item = treeCtrl.AppendItem(parent,child.Name)
-                treeCtrl.SetItemImage(from_import_item,item_image_index,wx.TreeItemIcon_Normal)
+                treeCtrl.SetItemImage(from_import_item,treeCtrl.FromImportIdx,wx.TreeItemIcon_Normal)
                 treeCtrl.SetDoSelectCallback(from_import_item, self, child)
                 for node_import in child.Childs:
-                    item_image_index = 4
                     name = node_import.Name
                     if node_import.AsName is not None:
                         name = node_import.AsName
                     import_item = treeCtrl.AppendItem(from_import_item,name)
-                    treeCtrl.SetItemImage(import_item,item_image_index,wx.TreeItemIcon_Normal)
+                    treeCtrl.SetItemImage(import_item,treeCtrl.ImportIdx,wx.TreeItemIcon_Normal)
                     treeCtrl.SetDoSelectCallback(import_item, self, node_import)
+            elif child.Type == parserconfig.NODE_MAIN_FUNCTION_TYPE:
+                item = treeCtrl.AppendItem(parent, child.Name)
+                treeCtrl.SetItemImage(item,treeCtrl.MainFunctionIdx,wx.TreeItemIcon_Normal)
+                treeCtrl.SetDoSelectCallback(item, self, child)
 
     def IsUnitTestEnable(self):
         return True

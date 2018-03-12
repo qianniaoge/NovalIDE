@@ -85,17 +85,32 @@ class ResourceView(object):
     __metaclass__ = Singleton.SingletonNew
     def __init__(self,view):
         self._view = view
-
-    def LoadResource(self):
+        self._is_load = False
+        self._select_index = 0
+        
+    @property
+    def IsLoad(self):
+        return self._is_load
+        
+    @property
+    def SelectIndex(self):
+        return self._select_index
+        
+    @SelectIndex.setter
+    def SelectIndex(self,select_index):
+        self._select_index = select_index
+        
+    def LoadRoots(self):
         roots = GetRoots()
         self._view._projectChoice.Clear()
         for root in roots:
             self._view._projectChoice.Append(root[0],root[1],root[2])
-        #self._view._projectChoice.InsertItems(roots,0)
-        select_index = 0
-        self._view._projectChoice.SetSelection(select_index)
-        name = self._view._projectChoice.GetClientData(select_index)
+        self._view._projectChoice.SetSelection(self._select_index)
+
+    def LoadResource(self):
+        name = self._view._projectChoice.GetClientData(self._select_index)
         self.LoadRoot(name)
+        self._is_load = True
 
     def SetRootDir(self,directory):
         if not os.path.isdir(directory):

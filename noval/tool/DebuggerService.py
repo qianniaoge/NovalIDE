@@ -471,16 +471,19 @@ class RunCommandUI(wx.Panel):
                      (self._font.GetFaceName(),self._font.GetPointSize())) 
         key = event.GetKeyCode()
         if key == wx.WXK_RETURN:
-            lineText, pos = self._textCtrl.GetCurLine()
-            if pos-1 >= 0:
+            inputText = self._textCtrl.GetRange(self._textCtrl.InputStartPos,self._textCtrl.GetCurrentPos())
+            #should colorize last input char
+            if self._textCtrl.GetCurrentPos() - 1 >= 0:
                 self._textCtrl.StartStyling(self._textCtrl.GetCurrentPos()-1, 31)
                 self._textCtrl.SetStyling(1, input_color_style)
             self._textCtrl.AddText('\n')
-            self._executor.WriteInput(lineText + "\n")
+            self._executor.WriteInput(inputText + "\n")
+            self._textCtrl.IsFirstInput = True
         else:
             pos = self._textCtrl.GetCurrentPos()
             STCTextEditor.TextCtrl.OnKeyPressed(self._textCtrl, event)
             if pos-1 >= 0:
+                #should colorize input char from last pos
                 self._textCtrl.StartStyling(pos-1, 31)
                 self._textCtrl.SetStyling(1, input_color_style)
 

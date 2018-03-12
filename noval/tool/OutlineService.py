@@ -189,31 +189,35 @@ class OutlineTreeCtrl(wx.TreeCtrl):
         self._origOrderIndex = 0
         self._sortOrder = SORT_BY_NONE
         
-        isz = (16,15)
+        isz = (16,16)
         il = wx.ImageList(isz[0], isz[1])
         modulebmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "module.png")
         modulebmp = wx.Bitmap(modulebmp_path, wx.BITMAP_TYPE_PNG)
-        self.moduleidx = il.Add(modulebmp)
+        self.ModuleIdx = il.Add(modulebmp)
 
         funcbmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "func.png")
         funcbmp = wx.Bitmap(funcbmp_path, wx.BITMAP_TYPE_PNG)
-        self.funcidx = il.Add(funcbmp)
+        self.FuncIdx = il.Add(funcbmp)
 
         classbmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "class.png")
         classbmp = wx.Bitmap(classbmp_path, wx.BITMAP_TYPE_PNG)
-        self.classidx = il.Add(classbmp)
+        self.ClassIdx = il.Add(classbmp)
 
         propertybmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "property.png")
         propertybmp = wx.Bitmap(propertybmp_path, wx.BITMAP_TYPE_PNG)
-        self.propertyidx = il.Add(propertybmp)
+        self.PropertyIdx = il.Add(propertybmp)
         
         importbmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "import.png")
         importbmp = wx.Bitmap(importbmp_path, wx.BITMAP_TYPE_PNG)
-        self.importidx = il.Add(importbmp)
+        self.ImportIdx = il.Add(importbmp)
         
         from_importbmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "from_import.png")
         from_import_bmp = wx.Bitmap(from_importbmp_path, wx.BITMAP_TYPE_PNG)
-        self.from_import_idx = il.Add(from_import_bmp)
+        self.FromImportIdx = il.Add(from_import_bmp)
+        
+        mainfunction_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "mainfunction.gif")
+        mainfunction_image = wx.Image(mainfunction_image_path, wx.BITMAP_TYPE_ANY)
+        self.MainFunctionIdx = il.Add(wx.BitmapFromImage(mainfunction_image))
 
         self.SetImageList(il)
         self.il = il

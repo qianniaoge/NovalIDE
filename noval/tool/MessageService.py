@@ -141,7 +141,9 @@ class MessageView(Service.ServiceView):
 
     def GetCurrLine(self):
         return self.GetControl().GetCurLine()
-
+        
+    def GetCurrentLine(self):
+        return self.GetControl().GetCurrentLine()
 
     #----------------------------------------------------------------------------
     # Callback Methods

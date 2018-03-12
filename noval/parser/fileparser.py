@@ -69,8 +69,8 @@ def fix_ref_module_name(module_dir,ref_module_name):
         return utils.get_top_modulename(ref_module_path)[0]
     elif os.path.exists(ref_module_package_file_path):
         return utils.get_top_modulename(ref_module_package_file_path)[0]
-    elif ref_module_name in sys.modules:
-        return sys.modules[ref_module_name].__name__
+    #elif ref_module_name in sys.modules:
+     #   return sys.modules[ref_module_name].__name__
     else:
         return ref_module_name
 
@@ -159,9 +159,9 @@ def parse(module_path):
         print (e)
         return None
 
-def parse_content(content,module_path):
+def parse_content(content,module_path,text_encoding):
     try:
-        node = ast.parse(content.encode("utf-8"),module_path.encode("utf-8"))
+        node = ast.parse(content.encode(text_encoding),module_path.encode("utf-8"))
         doc = get_node_doc(node)
         module = nodeast.Module(os.path.basename(module_path).split('.')[0],module_path,doc)
         deep_walk(node,module)
@@ -315,6 +315,12 @@ def make_element_node(element,parent,retain_new):
         for name in element.names:
             nodeast.ImportNode(name.name,element.lineno,element.col_offset,from_import_node,name.asname)
     elif isinstance(element,ast.If):
+        #parse if __name__ == "__main__" function
+        if isinstance(element.test,ast.Compare) and isinstance(element.test.left,ast.Name) and element.test.left.id == "__name__" \
+                and len(element.test.ops) > 0 and isinstance(element.test.ops[0],ast.Eq) \
+                and len(element.test.comparators) > 0 and isinstance(element.test.comparators[0],ast.Str) \
+                and element.test.comparators[0].s == nodeast.MainFunctionNode.MAIN_FUNCTION_NAME:
+            nodeast.MainFunctionNode(element.lineno,element.col_offset,parent)
         for body in element.body:
             make_element_node(body,parent,retain_new)
         for orelse in element.orelse:
@@ -454,12 +460,12 @@ def walk(node):
 if __name__ == "__main__":
     
   ###  print get_package_childs(r"C:\Python27\Lib\site-packages\aliyunsdkcore\auth\__init__.py")
-  ##  module = parse(r"D:\env\Noval\noval\parser\nodeast.py")
+    module = parse(r"D:\env\Noval\noval\parser\fileparser.py")
    ## module = parse(r"D:\env\Noval\noval\test\run_test_input.py")
     ##print module
-    dump(r"C:\Python27\lib\subprocess.py","subprocess","./",False)
+    dump(r"C:\Users\wk\AppData\Local\Programs\Python\Python36-32\Lib\collections\abc.py","collections","./",False)
     import pickle
-    with open(r"D:\env\Noval\noval\parser\subprocess.$members",'rb') as f:
+    with open(r"D:\env\Noval\noval\parser\collections.$members",'rb') as f:
         datas = pickle.load(f)
    ### print datas['name'],datas['path'],datas['is_builtin']
     import json

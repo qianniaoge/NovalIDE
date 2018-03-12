@@ -555,6 +555,7 @@ class InterpreterConfigDialog(wx.Dialog):
         self.SmartAnalyse(interpreter)
 
     def SmartAnalyse(self,interpreter):
+        interpreter.GetDocPath()
         interpreter.GetSyspathList()
         interpreter.GetBuiltins()
         self.package_panel.LoadPackages(interpreter,True)

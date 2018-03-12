@@ -11,6 +11,7 @@ import __builtin__
 import json
 import threading
 from noval.util.logger import app_debugLogger
+import glob
 _ = wx.GetTranslation
 
 class Interpreter(object):
@@ -312,6 +313,15 @@ class PythonInterpreter(Interpreter):
             if os.path.exists(pip_path):
                 return pip_path
         return None
+        
+    def GetDocPath(self):
+        if self._help_path == "":
+            if sysutils.isWindows():
+                python_location = os.path.dirname(self.Path)
+                doc_location = os.path.join(python_location,"Doc")
+                file_list = glob.glob(os.path.join(doc_location,"*.chm"))
+                if len(file_list) > 0 :
+                   self._help_path =  file_list[0]
         
     def LoadPackages(self,ui_panel,force):
         if (not self._is_loading_package and 0 == len(self._packages)) or force:

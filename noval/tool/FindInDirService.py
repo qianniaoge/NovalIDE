@@ -676,6 +676,9 @@ class FindInDirService(FindService.FindService):
 
     def OnJumpToFoundLine(self, event=None, defLineNum=-1):
         messageService = wx.GetApp().GetService(MessageService.MessageService)
+        #skip the first line of search results view
+        if 0 == messageService.GetView().GetCurrentLine():
+            return
         if defLineNum == -1:
             lineText, pos = messageService.GetView().GetCurrLine()
         else:

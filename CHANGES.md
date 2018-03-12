@@ -143,6 +143,14 @@ Version 1.0.6 -------------2018-03-6
 2.use multithread to load python pip package
 3.fix image view display context menu bug
 4.change python and text file icon
-5.add project icon to project and show project root
+5.add project file icon to project and show project root
 6.show local icon of file when scan disk file on resource view
 7.when add point and brace symbol to document text will delete selected text
+8.save folder open state when swith toggle button on resource view
+9.parse main function node and show main function in outline view
+10.fix parse file content bug where content encoding is error
+11.fix parse collections package recursive bug in python3
+12.when current interpreter is analysing,load intellisense data at end
+13.try to get python help path in python loation if help path is empty on windows os
+14.fix image size is not suitable which will invoke corruption on linux os.convernt png image to 16*16
+15.fix the bug when click the first line of search results view

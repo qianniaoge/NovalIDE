@@ -244,6 +244,8 @@ class ModuleScope(Scope):
                 elif child.Type == config.NODE_FROMIMPORT_TYPE:
                     from_import_scope = FromImportScope(child,parent_scope,self)
                     self.MakeScopes(child,from_import_scope)
+                elif child.Type == config.NODE_MAIN_FUNCTION_TYPE:
+                    MainFunctionScope(child,parent_scope,self)
                 elif child.Type == config.NODE_UNKNOWN_TYPE:
                     UnknownScope(child,parent_scope,self)
                     
@@ -548,6 +550,11 @@ class FromImportScope(NodeScope):
                 if child_scope.EqualName(name):
                     return True
             return False
+            
+class MainFunctionScope(NodeScope):
+    
+        def __init__(self,main_function_node,parent,root):
+            super(MainFunctionScope,self).__init__(main_function_node,parent,root)
     
 if __name__ == "__main__":
     module = fileparser.parse(r"D:\env\Noval\noval\parser\nodeast.py")

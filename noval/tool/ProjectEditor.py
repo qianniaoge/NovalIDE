@@ -1659,7 +1659,10 @@ class ProjectView(wx.lib.docview.View):
             
     def SelectView(self):    
         if self.GetMode() == ProjectView.RESOURCE_VIEW:
-            ResourceView.ResourceView(self).LoadResource()
+            ResourceView.ResourceView(self).LoadRoots()
+            #only load file resource one,avoid load many times when switch toogle button
+            if not ResourceView.ResourceView(self).IsLoad:
+                ResourceView.ResourceView(self).LoadResource()
             self.panel_sizer.Hide(self.treeSizer)
             self.panel_sizer.Show(self.dirSizer)
         else:
@@ -1679,6 +1682,7 @@ class ProjectView(wx.lib.docview.View):
     def OnProjectSelect(self, event=None):
         if self.GetMode() == ProjectView.RESOURCE_VIEW:
             i = self._projectChoice.GetSelection()
+            ResourceView.ResourceView(self).SelectIndex = i
             name = self._projectChoice.GetClientData(i)
             ResourceView.ResourceView(self).LoadRoot(name)
         else:

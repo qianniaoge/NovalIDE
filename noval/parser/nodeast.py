@@ -280,3 +280,10 @@ class UnknownNode(Node):
      def __init__(self,line,col,parent):
         super(UnknownNode,self).__init__("___UnknownNode",line,col,config.NODE_UNKNOWN_TYPE,parent)
         
+class MainFunctionNode(Node):
+    
+    MAIN_FUNCTION_NAME = "__main__"
+    
+    def __init__(self,line,col,parent):
+        super(MainFunctionNode,self).__init__(self.MAIN_FUNCTION_NAME,line,col,config.NODE_MAIN_FUNCTION_TYPE,parent)
+        

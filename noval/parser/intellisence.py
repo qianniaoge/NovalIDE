@@ -201,7 +201,7 @@ class ModuleLoader(object):
             bases = child.get('bases',[])
             for i,base in enumerate(bases):
                 bases[i] = parent.Name + "." + base
-            print (bases)
+            #print (bases)
             node = nodeast.ClassDef(name,line_no,col,parent,doc,bases=bases)
             for class_child in child.get(self.CHILD_KEY,[]):
                 self.MakeChildScope(class_child,node)
@@ -335,6 +335,9 @@ class IntellisenceManager(object):
         self._process_obj = subprocess.Popen(cmd_list,startupinfo=startupinfo,cwd=os.path.join(sysutilslib.mainModuleDir, "noval", "parser"))
         interpreter.Analysing = True
         self._is_running = interpreter.Analysing
+        #if current interpreter is analysing,load data at end
+        if interpreter == Interpreter.InterpreterManager().GetCurrentInterpreter():
+            load_data_end = True
         self.Wait(interpreter,progress_dlg,load_data_end)
         
     def Wait(self,interpreter,progress_dlg,load_data_end):
