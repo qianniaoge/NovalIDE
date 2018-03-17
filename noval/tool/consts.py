@@ -24,3 +24,10 @@ ID_MRU_FILE20 = wx.NewId()
 
 TEXT_VIEW = 1
 IMAGE_VIEW = 2
+
+SPACE = 10
+HALF_SPACE = 5
+
+_ = wx.GetTranslation
+
+PYTHON_PATH_KEY = 'PYTHONPATH'

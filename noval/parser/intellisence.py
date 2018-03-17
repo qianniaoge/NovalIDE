@@ -321,7 +321,7 @@ class IntellisenceManager(object):
         return self._is_running
         
     def generate_intellisence_data(self,interpreter,progress_dlg = None,load_data_end=False):
-        sys_path_list = interpreter.SyspathList
+        sys_path_list = interpreter.SysPathList
         script_path = os.path.join(sysutilslib.mainModuleDir, "noval", "parser", "factory.py")
         database_version = config.DATABASE_VERSION
         cmd_list = [interpreter.Path,script_path,os.path.join(self.data_root_path,str(interpreter.Id)),\

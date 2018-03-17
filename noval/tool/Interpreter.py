@@ -72,13 +72,13 @@ class PythonEnvironment(object):
             environ.update(os.environ)
         return environ
         
-    def Remove(self,key):
-        if self.Exist(key):
-            self.environ.pop(key)
-            
-    def Add(self,key,value):
-        if not self.Exist(key):
-            self.environ[str(key)] = str(value)
+    def SetEnviron(self,dct):
+        self.environ = {}
+        for key in dct:
+            #should avoid environment contain unicode string,such as u'xxx'
+            if len(key) != len(str(key)) or len(dct[key]) != len(str(dct[key])):
+                raise EnvironmentError(_("Environment variable contains invalid character"))
+            self.environ[str(key)] = str(dct[key])
             
     @property
     def IncludeSystemEnviron(self):
@@ -127,6 +127,7 @@ class PythonInterpreter(Interpreter):
         self._is_default = False
         self._is_analysing = False
         self._sys_path_list = []
+        self._python_path_list = []
         self._version = "Unknown Version"
         self._builtins = []
         self.Environ = PythonEnvironment()
@@ -139,7 +140,7 @@ class PythonInterpreter(Interpreter):
         if not is_valid_interpreter:
             self.GetVersion()
         if not is_valid_interpreter and self._is_valid_interpreter:
-            self.GetSyspathList()
+            self.GetSysPathList()
             self.GetBuiltins()
             
     def GetVersion(self):
@@ -247,7 +248,7 @@ class PythonInterpreter(Interpreter):
     def Default(self,is_default):
         self._is_default = is_default
         
-    def GetSyspathList(self):
+    def GetSysPathList(self):
         if int(self._version.split(".")[0]) == 2:
             run_cmd ="%s -c \"import sys;print sys.path\"" % (self.Path)
         elif int(self._version.split(".")[0]) == 3:
@@ -264,21 +265,33 @@ class PythonInterpreter(Interpreter):
         output = GetCommandOutput(run_cmd).strip()
         lst = eval(output)
         self._builtins = lst
+        
     @property
-    def SyspathList(self):
-        return self._sys_path_list        
+    def SysPathList(self):
+        return self._sys_path_list
+        
+    @property
+    def PythonPathList(self):
+        return self._python_path_list 
+        
+    @PythonPathList.setter
+    def PythonPathList(self,path_list):
+        self._python_path_list = path_list
+        
     @property    
     def Builtins(self):
         return self._builtins
         
-    def SetInterpreterInfo(self,version,builtins,sys_path_list):
-        self._version = version
+    def SetInterpreter(self,**kwargs):
+        self._version = kwargs.get('version')
         if self.IsV3():
             self._builtin_module_name = self.PYTHON3_BUILTIN_MODULE_NAME
         assert(0 == len(self._builtins))
-        self._builtins = builtins
+        self._builtins = kwargs.get('builtins')
         assert(0 == len(self._sys_path_list))
-        self._sys_path_list = sys_path_list
+        self._sys_path_list = kwargs.get('sys_path_list')
+        self._python_path_list = kwargs.get('python_path_list')
+        
     @property
     def Analysing(self):
         return self._is_analysing
@@ -431,7 +444,7 @@ class InterpreterManager(Singleton):
     def LoadPythonInterpretersFromConfig(self):
         config = wx.ConfigBase_Get()
         if sysutils.isWindows():
-            dct = self.ConvertInterpretersToDictList()
+            ###dct = self.ConvertInterpretersToDictList()
             data = config.Read(self.KEY_PREFIX)
             if not data:
                 return False
@@ -441,9 +454,16 @@ class InterpreterManager(Singleton):
                 interpreter.Default = l['default']
                 if interpreter.Default:
                     self.SetDefaultInterpreter(interpreter)
-                interpreter.SetInterpreterInfo(l['version'],l['builtins'],l['path_list'])
+                data = {
+                    'version': l['version'],
+                    'builtins': l['builtins'],
+                    #'path_list' is the old key name of sys_path_list,we should make compatible of old version
+                    'sys_path_list': l.get('sys_path_list',l.get('path_list')),
+                    'python_path_list': l.get('python_path_list',[])
+                }
+                interpreter.SetInterpreter(**data)
                 interpreter.HelpPath = l.get('help_path','')
-                interpreter.Environ.environ = l.get('environ',{})
+                interpreter.Environ.SetEnviron(l.get('environ',{}))
                 interpreter.Packages = l.get('packages',{})
                 self.interpreters.append(interpreter)
         else:
@@ -458,16 +478,23 @@ class InterpreterManager(Singleton):
                 is_default = config.ReadInt("%s/%s/Default" % (prefix,id))
                 version = config.Read("%s/%s/Version" % (prefix,id))
                 sys_paths = config.Read("%s/%s/SysPathList" % (prefix,id))
+                python_path_list = config.Read("%s/%s/PythonPathList" % (prefix,id),"")
                 builtins = config.Read("%s/%s/Builtins" % (prefix,id))
                 environ = json.loads(config.Read("%s/%s/Environ" % (prefix,id),"{}"))
                 packages = json.loads(config.Read("%s/%s/Packages" % (prefix,id),"{}"))
                 interpreter = PythonInterpreter(name,path,id,True)
                 interpreter.Default = is_default
-                interpreter.Environ.environ = environ
+                interpreter.Environ.SetEnviron(environ)
                 interpreter.Packages = packages
                 if interpreter.Default:
                     self.SetDefaultInterpreter(interpreter)
-                interpreter.SetInterpreterInfo(version,builtins.split(os.pathsep),sys_paths.split(os.pathsep))
+                data = {
+                    'version': version,
+                    'builtins': builtins.split(os.pathsep),
+                    'sys_path_list': sys_paths.split(os.pathsep),
+                    'python_path_list':python_path_list.split(os.pathsep)
+                }
+                interpreter.SetInterpreter(**data)
                 self.interpreters.append(interpreter)
         
         if len(self.interpreters) > 0:
@@ -478,8 +505,9 @@ class InterpreterManager(Singleton):
         lst = []
         for interpreter in self.interpreters:
             d = dict(id=interpreter.Id,name=interpreter.Name,version=interpreter.Version,path=interpreter.Path,\
-                     default=interpreter.Default,path_list=interpreter.SyspathList,builtins=interpreter.Builtins,help_path=interpreter.HelpPath,\
-                     environ=interpreter.Environ.environ,packages=interpreter.Packages)
+                        default=interpreter.Default,sys_path_list=interpreter.SysPathList,python_path_list=interpreter.PythonPathList,\
+                        builtins=interpreter.Builtins,help_path=interpreter.HelpPath,\
+                        environ=interpreter.Environ.environ,packages=interpreter.Packages)
             lst.append(d)
         return lst
         
@@ -500,7 +528,8 @@ class InterpreterManager(Singleton):
                 config.Write("%s/%d/Version"%(prefix,kl.Id),kl.Version)
                 config.Write("%s/%d/Path"%(prefix,kl.Id),kl.Path)
                 config.WriteInt("%s/%d/Default"%(prefix,kl.Id),kl.Default)
-                config.Write("%s/%d/SysPathList"%(prefix,kl.Id),os.pathsep.join(kl.SyspathList))
+                config.Write("%s/%d/SysPathList"%(prefix,kl.Id),os.pathsep.join(kl.SysPathList))
+                config.Write("%s/%d/PythonPathList"%(prefix,kl.Id),os.pathsep.join(kl.PythonPathList))
                 config.Write("%s/%d/Builtins"%(prefix,kl.Id),os.pathsep.join(kl.Builtins))
                 config.Write("%s/%d/Environ"%(prefix,kl.Id),json.dumps(kl.Environ.environ))
                 config.Write("%s/%d/Packages"%(prefix,kl.Id),json.dumps(kl.Packages))
@@ -508,10 +537,10 @@ class InterpreterManager(Singleton):
     def AddPythonInterpreter(self,interpreter_path,name):
         interpreter = PythonInterpreter(name,interpreter_path)
         if not interpreter.IsValidInterpreter:
-            raise InterpreterAddError("%s is not a valid interpreter path" % interpreter_path)
+            raise InterpreterAddError(_("%s is not a valid interpreter path") % interpreter_path)
         interpreter.Name = name
         if self.CheckInterpreterExist(interpreter):
-            raise InterpreterAddError("interpreter have already exist")
+            raise InterpreterAddError(_("interpreter have already exist"))
         self.interpreters.append(interpreter)
         #first interpreter should be the default interpreter by default
         if 1 == len(self.interpreters):
@@ -603,3 +632,11 @@ class InterpreterAddError(Exception):
         
     def __str__(self):
         return repr(self.msg)
+        
+class EnvironmentError(Exception):
+    
+    def __init__(self, error_msg):
+        self.msg = error_msg
+        
+    def __str__(self):
+        return repr(self.msg) 

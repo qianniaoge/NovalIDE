@@ -154,3 +154,6 @@ Version 1.0.6 -------------2018-03-6
 13.try to get python help path in python loation if help path is empty on windows os
 14.fix image size is not suitable which will invoke corruption on linux os.convernt png image to 16*16
 15.fix the bug when click the first line of search results view
+16.allow add or remove python search path,such as directory,zip ,egg and wheel file path
+17.add new python virtual env function 
+18.fix environment variable contains unicode character bug

@@ -882,6 +882,8 @@ class PythonCtrl(CodeEditor.CodeCtrl):
             self.AddText(self.TYPE_POINT_WORD)
             self.ListMembers(pos)
         elif key == ord(self.TYPE_BLANK_WORD):
+            if self.GetSelectedText():
+                self.ReplaceSelection("")
             self.AddText(self.TYPE_BLANK_WORD)
             is_from_import_type,name = self.IsFromImportType(pos)
             if is_from_import_type:
@@ -1054,16 +1056,13 @@ class PythonOptionsPanel(wx.Panel):
     def OnChoosePath(self, event):
         dlg = InterpreterConfigDialog.InterpreterConfigDialog(self,-1,_("Configure Interpreter"))
         dlg.CenterOnParent()
-        status = dlg.ShowModal()
-        dlg.Destroy()
+        dlg.ShowModal()
         choices,default_selection = Interpreter.InterpreterManager().GetChoices()
         self._pathTextCtrl.Clear()
         if len(choices) > 0:
             self._pathTextCtrl.InsertItems(choices,0)
             self._pathTextCtrl.SetSelection(default_selection)
             wx.GetApp().AddInterpreters()
-        if status == wx.ID_OK:
-            Interpreter.InterpreterManager().SavePythonInterpretersConfig()
 
     def OnOK(self, optionsDialog):
         config = wx.ConfigBase_Get()

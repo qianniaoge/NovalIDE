@@ -1,6 +1,5 @@
 import os
 import sys
-import utils
 
 def MakeDirs(dirname):
     dirname = os.path.abspath(dirname)
@@ -21,9 +20,9 @@ def get_top_modulename(fullpath):
     path = os.path.dirname(fullpath)
     data_name = ""
     recent_path = ''
-    sys.path = [l.lower() for l in sys.path]
     while True:
-        if path.lower() in sys.path or os.path.dirname(path) == path:
+        #when route to sys path or root path,such as / or c:\\,skip the circle
+        if PathsContainPath(sys.path,path) or os.path.dirname(path) == path:
             recent_path = path
             break
         path = os.path.dirname(path)
@@ -92,3 +91,16 @@ def IsPython2():
     if sys.version_info[0] == 2:
         return True
     return False
+    
+def ComparePath(path1,path2):
+    if os.name == 'nt':
+        return path1.lower() == path2.lower()
+    return path1 == path2
+    
+def PathsContainPath(path_list,path):
+    if os.name == 'nt':
+        for p in path_list:
+            if ComparePath(p,path):
+                return True
+        return False
+    return path in path_list

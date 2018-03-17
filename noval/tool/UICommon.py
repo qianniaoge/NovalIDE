@@ -97,16 +97,13 @@ def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Direc
     def OnGotoLink(event):
         dlg = InterpreterConfigDialog.InterpreterConfigDialog(parent,-1,_("Configure Interpreter"))
         dlg.CenterOnParent()
-        status = dlg.ShowModal()
-        dlg.Destroy()
+        dlg.ShowModal()
         choices,default_selection = Interpreter.InterpreterManager().GetChoices()
         interpreterCombo.Clear()
         if len(choices) > 0:
             interpreterCombo.InsertItems(choices,0)
             interpreterCombo.SetSelection(default_selection)
             wx.GetApp().AddInterpreters()
-        if status == wx.ID_OK:
-            Interpreter.InterpreterManager().SavePythonInterpretersConfig()
     parent.Bind(hl.EVT_HYPERLINK_LEFT, OnGotoLink,hyperLinkCtrl)
     
     def OnFindDirClick(event): 

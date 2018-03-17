@@ -186,12 +186,14 @@ class ExtensionService(Service.BaseService):
         interpreter = wx.GetApp().GetCurrentInterpreter()
         if interpreter is None:
             return
-
-        if sysutilslib.isWindows():
-            fileutils.start_file(interpreter.Path)
-        else:
-            cmd_list = ['gnome-terminal','-x','bash','-c',interpreter.Path]
-            subprocess.Popen(cmd_list,shell = False)
+        try:
+            if sysutilslib.isWindows():
+                fileutils.start_file(interpreter.Path)
+            else:
+                cmd_list = ['gnome-terminal','-x','bash','-c',interpreter.Path]
+                subprocess.Popen(cmd_list,shell = False)
+        except Exception as e:
+            wx.MessageBox(_("%s") % str(e),_("Open Error"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
         
     def ProcessEvent(self, event):
         id = event.GetId()

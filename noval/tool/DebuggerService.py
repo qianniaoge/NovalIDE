@@ -56,6 +56,7 @@ import WxThreadSafe
 import DebugOutputCtrl
 import InterpreterConfigDialog
 import noval.parser.intellisence as intellisence
+from consts import PYTHON_PATH_KEY
 
 import sys
 reload(sys)
@@ -372,24 +373,16 @@ class RunCommandUI(wx.Panel):
         self._textCtrl.SetReadOnly(False)
         self._textCtrl.AddText(event.value)
         self._textCtrl.ScrollToLine(self._textCtrl.GetLineCount())
-      ##  self._textCtrl.SetReadOnly(True)
 
     def AppendErrorText(self, event):
-      ##  self._textCtrl.SetReadOnly(False)
-       ### self._textCtrl.SetFontColor(wx.RED)
-      ###  self._textCtrl.StyleSetSpec(2, 'fore:#221dff, back:#FFFFFF,face:Courier New,size:12') 
         error_color_style = 2
         self._textCtrl.StyleSetSpec(error_color_style, 'fore:#ff0000, back:#FFFFFF,face:%s,size:%d' % \
                                     (self._font.GetFaceName(),self._font.GetPointSize())) 
         pos = self._textCtrl.GetCurrentPos()
         self._textCtrl.AddText(event.value)
-     ###  self._textCtrl.StyleClearAll()
         self._textCtrl.StartStyling(pos, 2)
         self._textCtrl.SetStyling(len(event.value), error_color_style)
         self._textCtrl.ScrollToLine(self._textCtrl.GetLineCount())
-        ##self._textCtrl.SetFontColor(wx.BLACK)
-        ###self._textCtrl.StyleClearAll()
-      ##  self._textCtrl.SetReadOnly(True)
 
     def StopAndRemoveUI(self, event):
         if not self._stopped:
@@ -2414,11 +2407,8 @@ class DebuggerService(Service.Service):
         if selection == cb.GetCount() - 1:
             dlg = InterpreterConfigDialog.InterpreterConfigDialog(wx.GetApp().GetTopWindow(),-1,_("Configure Interpreter"))
             dlg.CenterOnParent()
-            status = dlg.ShowModal()
-            dlg.Destroy()
+            dlg.ShowModal()
             wx.GetApp().AddInterpreters()
-            if status == wx.ID_OK:
-                Interpreter.InterpreterManager().SavePythonInterpretersConfig()
         else:
            interpreter = cb.GetClientData(selection)
            self.SelectInterpreter(interpreter)
@@ -2448,7 +2438,6 @@ class DebuggerService(Service.Service):
             self.RunScript(event)
             return True
         elif an_id == DebuggerService.DEBUG_ID:
-            ##self.OnDebugProject(event)
             self.DebugRunScript(event)
             return True
         elif an_id == DebuggerService.CHECK_ID:
@@ -2531,23 +2520,10 @@ class DebuggerService(Service.Service):
         document = doc_view.GetDocument()
         if not document.Save() or document.IsNewDocument:
             return
-    #    outputService = wx.GetApp().GetService(OutputService.OutputService)
-        #change to output tab page
-     #   Service.ServiceView.bottomTab.SetSelection(2)
-      #  output_view = outputService.GetView()
-      #  output_view.ClearLines()
         sys_encoding = locale.getdefaultlocale()[1]
-        #cmd_list = [interpreter.Path,document.GetFilename().encode(sys_encoding)]
-      #  cmd_list = [interpreter.Path,'-u',document.GetFilename().encode(sys_encoding)]
-       # p = subprocess.Popen(cmd_list,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE,cwd=os.path.dirname(document.GetFilename()).encode(sys_encoding))
-        
-        #stdout_thread = OutputThread.OutputThread(p.stdout,p,output_view)
-        #stdout_thread.start()
-        #stderr_thread = OutputThread.OutputThread(p.stderr,p,output_view)
-        #stderr_thread.start()
-        
         fileToRun = document.GetFilename()
         self.ShowWindow(True)
+        interpreter = wx.GetApp().GetCurrentInterpreter()
         shortFile = os.path.basename(fileToRun)
         page = RunCommandUI(Service.ServiceView.bottomTab, -1, fileToRun)
         count = Service.ServiceView.bottomTab.GetPageCount()
@@ -2562,7 +2538,7 @@ class DebuggerService(Service.Service):
             initialArgs = doc_view.RunParameter.Arg
             environment = doc_view.RunParameter.Environment
 
-        environ = wx.GetApp().GetCurrentInterpreter().Environ.GetEnviron()
+        environ = interpreter.Environ.GetEnviron()
         if len(environ) > 0:
             if environment is None:
                 environment = environ
@@ -2575,22 +2551,20 @@ class DebuggerService(Service.Service):
                 SYSTEMROOT_KEY = 'SYSTEMROOT'
                 if not environment.has_key(SYSTEMROOT_KEY):
                     environment[SYSTEMROOT_KEY] = os.environ[SYSTEMROOT_KEY]
+        #add python path to env
+        if len(interpreter.PythonPathList) > 0:
+            env = {}
+            python_path = os.pathsep.join(interpreter.PythonPathList)
+            env[PYTHON_PATH_KEY] = python_path
+            if environment is None:
+                environment = env
+            else:
+                if PYTHON_PATH_KEY in environment:
+                    environment[PYTHON_PATH_KEY] = env[PYTHON_PATH_KEY] + os.pathsep + environment.get(PYTHON_PATH_KEY)
+                else:
+                    environment[PYTHON_PATH_KEY] = env[PYTHON_PATH_KEY]
+                    
         page.Execute(initialArgs, startIn, environment, onWebServer = False)
-        
-##        while True:
-##            out = p.stdout.readline()
-##            err = p.stderr.readline()
-##            if out == b'' and err == b'':
-##                if p.poll() is not None:
-##                    break
-##            else:
-##                try:
-##                    output_view.AddLines(out)
-##                    output_view.AddLines(err)
-##                except:
-##                    output_view.AddLines(out.decode("utf-8"))
-##                    output_view.AddLines(err.decode("utf-8"))
-
 
     def RunScript(self,event,showDialog=True):
         python_executable_path = Executor.GetPythonExecutablePath()
@@ -2630,10 +2604,6 @@ class DebuggerService(Service.Service):
             if initialArgs is not None:
                 command += " " + initialArgs
             command += " &pause"
-            if environment is not None:
-                #should avoid environment contain unicode string,such as u'xxx'
-                for key in environment.keys():
-                    environment[str(key)] = str(environment[key])
             subprocess.Popen(command.encode(sys_encoding),shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE,cwd=startIn.encode(sys_encoding),env=environment)
         else:
             python_cmd = u"%s \"%s\"" % (python_executable_path,fileToRun)

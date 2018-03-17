@@ -2,14 +2,15 @@ import wx
 import wx.dataview as dataview
 import Interpreter
 import noval.parser.intellisence as intellisence
+import noval.parser.utils as parserutils
 import noval.util.sysutils as sysutils
+import noval.util.fileutils as fileutils
 import os
 import wx.lib.agw.hyperlink as hl
 import WxThreadSafe
-_ = wx.GetTranslation
-
-SPACE = 10
-HALF_SPACE = 5
+import wx.lib.agw.flatmenu as flatmenu
+from NewVirtualEnvDialog import NewVirtualEnvDialog
+from consts import SPACE,HALF_SPACE,_ 
 
 ID_COPY_INTERPRETER_NAME = wx.NewId()
 ID_COPY_INTERPRETER_VERSION = wx.NewId()
@@ -17,6 +18,9 @@ ID_COPY_INTERPRETER_PATH = wx.NewId()
 ID_MODIFY_INTERPRETER_NAME = wx.NewId()
 ID_REMOVE_INTERPRETER = wx.NewId()
 ID_NEW_INTERPRETER_VIRTUALENV = wx.NewId()
+
+ID_GOTO_PATH = wx.NewId()
+ID_REMOVE_PATH = wx.NewId()
 
 class PackagePanel(wx.Panel):
     def __init__(self,parent):
@@ -99,21 +103,192 @@ class AddInterpreterDialog(wx.Dialog):
         dlg.Destroy()  
         
 class PythonPathPanel(wx.Panel):
+    
+    ID_NEW_ZIP = wx.NewId()
+    ID_NEW_EGG = wx.NewId()
+    ID_NEW_WHEEL = wx.NewId()
     def __init__(self,parent):
         wx.Panel.__init__(self, parent)
-        self.tree_ctrl = wx.TreeCtrl(self, -1, style = wx.TR_HAS_BUTTONS|wx.TR_DEFAULT_STYLE)
         self.Sizer = wx.BoxSizer()
-        self.Sizer.Add(self.tree_ctrl, 1, wx.EXPAND)
+        
+        left_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.tree_ctrl = wx.TreeCtrl(self, -1, style = wx.TR_HAS_BUTTONS|wx.TR_DEFAULT_STYLE)
+        wx.EVT_RIGHT_DOWN(self.tree_ctrl, self.OnRightClick)
+        left_sizer.Add(self.tree_ctrl, 1,  wx.EXPAND)
+        
+        right_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.add_path_btn = wx.Button(self, -1, _("Add Path.."))
+        wx.EVT_BUTTON(self.add_path_btn, -1, self.AddNewPath)
+        right_sizer.Add(self.add_path_btn, 0, wx.TOP|wx.EXPAND, SPACE*3)
+        
+        self.add_file_btn = wx.Button(self, -1, _("Add File..."))
+        wx.EVT_BUTTON(self.add_file_btn, -1, self.PopFileMenu)
+        right_sizer.Add(self.add_file_btn, 0, wx.TOP|wx.EXPAND, SPACE)
+        
+        self.remove_path_btn = wx.Button(self, -1, _("Remove Path..."))
+        wx.EVT_BUTTON(self.remove_path_btn, -1, self.RemovePath)
+        right_sizer.Add(self.remove_path_btn, 0, wx.TOP|wx.EXPAND, SPACE)
+        
+        self.Sizer.Add(left_sizer, 1, wx.EXPAND|wx.RIGHT,HALF_SPACE)
+        self.Sizer.Add(right_sizer, 0, wx.RIGHT,SPACE)
+        
+        self._popUpMenu = None
+        self._interpreter = None
+        self.Fit()
         
     def AppendSysPath(self,interpreter):
+        self._interpreter = interpreter
         self.tree_ctrl.DeleteAllItems()
         root_item = self.tree_ctrl.AddRoot(_("Path List"))
-        for path in interpreter.SyspathList:
+        path_list = interpreter.SysPathList + interpreter.PythonPathList
+        for path in path_list:
             if path.strip() == "":
                 continue
             self.tree_ctrl.AppendItem(root_item, path)
         self.tree_ctrl.ExpandAll()
+        
+    def PopFileMenu(self,event):
+        
+        btn = event.GetEventObject()
+        # Create the popup menu
+        self.CreatePopupMenu()
+        # Position the menu:
+        # The menu should be positioned at the bottom left corner of the button.
+        btnSize = btn.GetSize()
+        btnPt = btn.GetPosition()
+        # Since the btnPt (button position) is in client coordinates, 
+        # and the menu coordinates is relative to screen we convert
+        # the coords
+        btnPt = btn.GetParent().ClientToScreen(btnPt)
+        # A nice feature with the Popup menu, is the ability to provide an 
+        # object that we wish to handle the menu events, in this case we
+        # pass 'self'
+        # if we wish the menu to appear under the button, we provide its height
+        self._popUpMenu.SetOwnerHeight(btnSize.y)
+        self._popUpMenu.Popup(wx.Point(btnPt.x, btnPt.y), self)
+        
+    def CreatePopupMenu(self):
+        if not self._popUpMenu:
+            self._popUpMenu = flatmenu.FlatMenu()
+            menuItem = flatmenu.FlatMenuItem(self._popUpMenu, self.ID_NEW_ZIP, _("Add Zip File"), "", wx.ITEM_NORMAL)
+            self.Bind(flatmenu.EVT_FLAT_MENU_SELECTED, self.AddNewFilePath, id = self.ID_NEW_ZIP)
+            self._popUpMenu.AppendItem(menuItem)
+            menuItem = flatmenu.FlatMenuItem(self._popUpMenu, self.ID_NEW_EGG, _("Add Egg File"), "", wx.ITEM_NORMAL)
+            self.Bind(flatmenu.EVT_FLAT_MENU_SELECTED, self.AddNewFilePath, id = self.ID_NEW_EGG)
+            self._popUpMenu.AppendItem(menuItem)
+            menuItem = flatmenu.FlatMenuItem(self._popUpMenu, self.ID_NEW_WHEEL, _("Add Wheel File"), "", wx.ITEM_NORMAL)
+            self.Bind(flatmenu.EVT_FLAT_MENU_SELECTED, self.AddNewFilePath, id = self.ID_NEW_WHEEL)
+            self._popUpMenu.AppendItem(menuItem)
 
+    def AddNewFilePath(self,event):
+        if self._interpreter is None:
+            return
+        id = event.GetId()
+        descr = _("Zip File (*.zip)|*.zip|Egg File (*.egg)|*.egg|Wheel File (*.whl)|*.whl")
+        if id == self.ID_NEW_ZIP:
+            descr = _("Zip File (*.zip)|*.zip")
+            title = _("Choose a Zip File")
+        elif id == self.ID_NEW_EGG:
+            descr = _("Egg File (*.egg)|*.egg")
+            title = _("Choose a Egg File")
+        elif id == self.ID_NEW_WHEEL:
+            descr = _("Wheel File (*.whl)|*.whl")
+            title = _("Choose a Wheel File")
+        dlg = wx.FileDialog(self,title ,
+                       wildcard = descr,
+                       style=wx.OPEN|wx.FILE_MUST_EXIST|wx.CHANGE_DIR)
+        if dlg.ShowModal() != wx.ID_OK:
+            dlg.Destroy()
+            return
+        path = dlg.GetPath()
+        dlg.Destroy()
+        if self.CheckPathExist(path):
+            wx.MessageBox(_("Path already exist"),_("Add Search Path"),wx.OK,self)
+            return
+        self.tree_ctrl.AppendItem(self.tree_ctrl.GetRootItem(),path)
+        
+    def RemovePath(self,event):
+        if self._interpreter is None:
+            return
+        item = self.tree_ctrl.GetSelection()
+        if item == self.tree_ctrl.GetRootItem():
+            return
+        path = self.tree_ctrl.GetItemText(item)
+        if parserutils.PathsContainPath(self._interpreter.SysPathList,path):
+            wx.MessageBox(_("The Python System Path could not be removed"),_("Error"),wx.OK|wx.ICON_ERROR,self)
+            return
+        self.tree_ctrl.Delete(item)
+        
+    def AddNewPath(self,event):
+        if self._interpreter is None:
+            return
+        dlg = wx.DirDialog(wx.GetApp().GetTopWindow(),
+                        _("Choose a directory to Add"), 
+                        style=wx.DD_DEFAULT_STYLE|wx.DD_NEW_DIR_BUTTON)
+        if dlg.ShowModal() != wx.ID_OK:
+            dlg.Destroy()
+            return
+        path = dlg.GetPath()
+        if self.CheckPathExist(path):
+            wx.MessageBox(_("Path already exist"),_("Add Search Path"),wx.OK,self)
+            return
+        dlg.Destroy()
+        self.tree_ctrl.AppendItem(self.tree_ctrl.GetRootItem(),path)
+        
+    def OnRightClick(self, event):
+        
+        if self.tree_ctrl.GetSelection() == self.tree_ctrl.GetRootItem():
+            return
+        x, y = event.GetPosition()
+        menu = wx.Menu()
+        menu.Append(ID_GOTO_PATH, _("&Goto Path"))
+        #must not use name ProcessEvent,otherwise will invoke flatmenu pop event invalid
+        wx.EVT_MENU(self, ID_GOTO_PATH, self.TreeCtrlEvent)
+        
+        menu.Append(ID_REMOVE_PATH, _("&Remove Path"))
+        wx.EVT_MENU(self, ID_REMOVE_PATH, self.TreeCtrlEvent)
+        
+        self.tree_ctrl.PopupMenu(menu,wx.Point(x, y))
+        menu.Destroy()
+        
+    def TreeCtrlEvent(self, event): 
+        id = event.GetId()
+        if id == ID_GOTO_PATH:
+            item = self.tree_ctrl.GetSelection()
+            fileutils.open_file_directory(self.tree_ctrl.GetItemText(item))
+            return True
+        elif id == ID_REMOVE_PATH:
+            self.RemovePath(event)
+            return True
+        else:
+            return True
+        
+    def CheckPathExist(self,path):
+        items = []
+        root_item = self.tree_ctrl.GetRootItem()
+        (item, cookie) = self.tree_ctrl.GetFirstChild(root_item)
+        while item:
+            items.append(item)
+            (item, cookie) = self.tree_ctrl.GetNextChild(root_item, cookie)
+        
+        for item in items:
+            if parserutils.ComparePath(self.tree_ctrl.GetItemText(item),path):
+                return True
+        return False
+        
+    def GetPythonPathList(self):
+        if self._interpreter is None:
+            return
+        python_path_list = []
+        root_item = self.tree_ctrl.GetRootItem()
+        (item, cookie) = self.tree_ctrl.GetFirstChild(root_item)
+        while item:
+            path = self.tree_ctrl.GetItemText(item)
+            if not parserutils.PathsContainPath(self._interpreter.SysPathList,path):
+                python_path_list.append(path)
+            (item, cookie) = self.tree_ctrl.GetNextChild(root_item, cookie)
+        self._interpreter.PythonPathList = python_path_list
+        
 class PythonBuiltinsPanel(wx.Panel):
     def __init__(self,parent):
         wx.Panel.__init__(self, parent)
@@ -182,9 +357,9 @@ class EnvironmentPanel(wx.Panel):
         
         left_sizer = wx.BoxSizer(wx.VERTICAL)
         left_sizer.Add(wx.StaticText(self, label=_("Set User Defined Environment Variable:")),0, wx.TOP|wx.EXPAND, SPACE)
-        self.dvlc = dataview.DataViewListCtrl(self,size=(510,230))
+        self.dvlc = dataview.DataViewListCtrl(self,size=(500,230))
         self.dvlc.AppendTextColumn(_('Key'), width=100)
-        self.dvlc.AppendTextColumn(_('Value'),width=500)
+        self.dvlc.AppendTextColumn(_('Value'),width=400)
         dataview.EVT_DATAVIEW_SELECTION_CHANGED(self.dvlc, -1, self.UpdateUI)
         left_sizer.Add(self.dvlc, 0,  wx.TOP|wx.EXPAND, HALF_SPACE)
         
@@ -204,7 +379,7 @@ class EnvironmentPanel(wx.Panel):
         right_sizer.Add(self.remove_btn, 0, wx.TOP|wx.EXPAND, SPACE)
         
         top_sizer.Add(right_sizer, 0, wx.LEFT, SPACE*2)
-        
+
         bottom_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self._includeCheckBox = wx.CheckBox(self, -1, _("Include System Environment Variable"))
         self.Bind(wx.EVT_CHECKBOX,self.checkInclude,self._includeCheckBox)
@@ -226,6 +401,8 @@ class EnvironmentPanel(wx.Panel):
         self.UpdateUI(None)
         
     def checkInclude(self,event):
+        if self.interpreter is None:
+            return
         include_system_environ = self._includeCheckBox.GetValue()
         self.interpreter.Environ.IncludeSystemEnviron = include_system_environ
         
@@ -237,13 +414,18 @@ class EnvironmentPanel(wx.Panel):
         else:
             self.remove_btn.Enable(True)
             self.edit_btn.Enable(True)
-        
+        if self.interpreter is None:
+            self.new_btn.Enable(False)
+        else:
+            self.new_btn.Enable(True)
+            
     def SetVariables(self,interpreter):
         self.interpreter = interpreter
         self.dvlc.DeleteAllItems()
         for env in self.interpreter.Environ:
             self.dvlc.AppendItem([env,self.interpreter.Environ[env]])
         self._includeCheckBox.SetValue(self.interpreter.Environ.IncludeSystemEnviron)
+        self.UpdateUI(None)
             
     def RemoveVariable(self,event):
         index = self.dvlc.GetSelectedRow()
@@ -254,19 +436,25 @@ class EnvironmentPanel(wx.Panel):
         
     def RemoveRowVariable(self,row):
         key = self.dvlc.GetTextValue(row,0)
-        self.interpreter.Environ.Remove(key)
         ##self.interpreter.environments = filter(lambda e:not e.has_key(key),self.interpreter.environments)
         self.dvlc.DeleteItem(row)
         
     def GetVariableRow(self,key):
-        count = self.interpreter.Environ.GetCount()
+        count = self.dvlc.GetStore().GetCount()
         for i in range(count):
             if self.dvlc.GetTextValue(i,0) == key:
                 return i
         return -1
         
     def AddVariable(self,key,value):
-        self.interpreter.Environ.Add(key,value)
+        if self.CheckKeyExist(key):
+            ret = wx.MessageBox(_("Key name has already exist in environment variable,Do you wann't to overwrite it?"),_("Warning"),wx.YES_NO|wx.ICON_QUESTION,self)
+            if ret == wx.YES:
+                row = self.GetVariableRow(key)
+                assert(row != -1)
+                self.RemoveRowVariable(row)
+            else:
+                return
         self.dvlc.AppendItem([key, value])
         
     def NewVariable(self,event):
@@ -276,15 +464,7 @@ class EnvironmentPanel(wx.Panel):
         key = dlg.key_ctrl.GetValue().strip()
         value = dlg.value_ctrl.GetValue().strip()
         if status == wx.ID_OK and key and value:
-            if self.interpreter.Environ.Exist(key):
-                 ret = wx.MessageBox(_("Key name has already exist in environment variable,Do you wann't to overwrite it?"),_("Warning"),wx.YES_NO|wx.ICON_QUESTION,self)
-                 if ret == wx.YES:
-                    row = self.GetVariableRow(key)
-                    assert(row != -1)
-                    self.RemoveRowVariable(row)
-                    self.AddVariable(key,value)
-            else:
-                self.AddVariable(key,value)
+            self.AddVariable(key,value)
         self.UpdateUI(None)
         dlg.Destroy()
         
@@ -303,8 +483,6 @@ class EnvironmentPanel(wx.Panel):
         if status == wx.ID_OK and key and value:
             self.dvlc.SetTextValue(key,index,0)
             self.dvlc.SetTextValue(value,index,1)
-            self.interpreter.Environ.Remove(old_key)
-            self.interpreter.Environ.Add(key,value)
         self.UpdateUI(None)
         dlg.Destroy()
         
@@ -313,6 +491,20 @@ class EnvironmentPanel(wx.Panel):
         dlg.CenterOnParent()
         dlg.ShowModal()
         dlg.Destroy()
+    
+    def CheckKeyExist(self,key):
+        for row in range(self.dvlc.GetStore().GetCount()):
+            if self.dvlc.GetTextValue(row,0) == key:
+                return True
+        return False
+        
+    def GetEnviron(self):
+        if self.interpreter is None:
+            return
+        dct = {}
+        for row in range(self.dvlc.GetStore().GetCount()):
+            dct[self.dvlc.GetTextValue(row,0)] = self.dvlc.GetTextValue(row,1)
+        self.interpreter.Environ.SetEnviron(dct)
         
 class InterpreterConfigDialog(wx.Dialog):
     def __init__(self,parent,dlg_id,title,size=(700,500)):
@@ -354,11 +546,11 @@ class InterpreterConfigDialog(wx.Dialog):
         top_sizer.Add(right_sizer, 0, wx.LEFT, SPACE*2)
         
         bottom_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        nb = wx.Notebook(self,size=(650,330))
+        nb = wx.Notebook(self,size=(650,350))
         self.package_panel = PackagePanel(nb)
         nb.AddPage(self.package_panel, _("Package"))
         self.path_panel = PythonPathPanel(nb)
-        nb.AddPage(self.path_panel, _("Sys Path"))
+        nb.AddPage(self.path_panel, _("Search Path"))
         self.builtin_panel = PythonBuiltinsPanel(nb)
         nb.AddPage(self.builtin_panel, _("Builtin Modules"))
         self.environment_panel = EnvironmentPanel(nb)
@@ -370,6 +562,7 @@ class InterpreterConfigDialog(wx.Dialog):
         
         bsizer = wx.StdDialogButtonSizer()
         ok_btn = wx.Button(self, wx.ID_OK, _("&OK"))
+        wx.EVT_BUTTON(ok_btn, -1, self.OnOK)
         ok_btn.SetDefault()
         bsizer.AddButton(ok_btn)
         cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
@@ -437,6 +630,11 @@ class InterpreterConfigDialog(wx.Dialog):
             self.RemoveInterpreter(None)
             return True
         elif id == ID_NEW_INTERPRETER_VIRTUALENV:
+            dlg = NewVirtualEnvDialog(self,interpreter,-1,_("New Virtual Env"))
+            dlg.CenterOnParent()
+            status = dlg.ShowModal()
+            if status == wx.ID_OK:
+                pass
             return True
             
     def ProcessUpdateUIEvent(self, event):
@@ -491,7 +689,7 @@ class InterpreterConfigDialog(wx.Dialog):
             else:
                 try:
                     interpreter = Interpreter.InterpreterManager().AddPythonInterpreter(dlg.path_ctrl.GetValue(),dlg.name_ctrl.GetValue())
-                    self.AddOneInterpreter(interpreter,len(Interpreter.InterpreterManager.interpreters)-1)
+                    self.AddOneInterpreter(interpreter)
                     self.SmartAnalyse(interpreter)
                     passedCheck = True
                 except Exception,e:
@@ -500,19 +698,20 @@ class InterpreterConfigDialog(wx.Dialog):
         self.UpdateUI(None)
         dlg.Destroy()
         
-    def AddOneInterpreter(self,interpreter,row):
+    def AddOneInterpreter(self,interpreter):
         def GetDefaultFlag(is_default):
             if is_default:
                 return _("Yes")
             else:
                 return _("No")
+        item_count = self.dvlc.GetStore().GetCount()
         self.dvlc.AppendItem([interpreter.Name,interpreter.Version,interpreter.Path,GetDefaultFlag(interpreter.Default)],interpreter.Id)
         self.path_panel.AppendSysPath(interpreter)
         self.builtin_panel.SetBuiltiins(interpreter)
         self.environment_panel.SetVariables(interpreter)
         self.package_panel.LoadPackages(interpreter)
         self.dvlc.Refresh()
-        self.dvlc.SelectRow(row)
+        self.dvlc.SelectRow(item_count)
     
     def RemoveInterpreter(self,event):
         index = self.dvlc.GetSelectedRow()
@@ -556,7 +755,7 @@ class InterpreterConfigDialog(wx.Dialog):
 
     def SmartAnalyse(self,interpreter):
         interpreter.GetDocPath()
-        interpreter.GetSyspathList()
+        interpreter.GetSysPathList()
         interpreter.GetBuiltins()
         self.package_panel.LoadPackages(interpreter,True)
         self.path_panel.AppendSysPath(interpreter)
@@ -579,8 +778,8 @@ class InterpreterConfigDialog(wx.Dialog):
         self.smart_analyse_btn.Enable(True)
           
     def ScanAllInterpreters(self):
-        for i,interpreter in enumerate(Interpreter.InterpreterManager.interpreters):
-            self.AddOneInterpreter(interpreter,i)
+        for interpreter in Interpreter.InterpreterManager.interpreters:
+            self.AddOneInterpreter(interpreter)
             
     def ReloadAllInterpreters(self):
         self.dvlc.DeleteAllItems()
@@ -606,6 +805,15 @@ class InterpreterConfigDialog(wx.Dialog):
             self.builtin_panel.SetBuiltiins(interpreter)
             self.environment_panel.SetVariables(interpreter)
             self.package_panel.LoadPackages(interpreter)
+            
+    def OnOK(self,event):
+        try:
+            self.path_panel.GetPythonPathList()
+            self.environment_panel.GetEnviron()
+            Interpreter.InterpreterManager().SavePythonInterpretersConfig()
+            self.Destroy()
+        except Exception as e:
+            wx.MessageBox(e.msg,_("Save Interpreter Error"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
             
         
 class AnalyseProgressDialog(wx.ProgressDialog):
