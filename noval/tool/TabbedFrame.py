@@ -157,7 +157,7 @@ class IDEMDIParentFrame(wx.lib.pydocview.DocMDIParentFrame,MessageNotification):
     # the top of the screen instead of disappearing. 
 
     def __init__(self, docManager, parent, id, title, pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.DEFAULT_FRAME_STYLE, name="DocMDIFrame", embeddedWindows=0, minSize=20):
-        wx.lib.pydocview.DocMDIParentFrame.__init__(docManager,parent,id,title,pos,size,style,name,embeddedWindows,minSize)
+        wx.lib.pydocview.DocMDIParentFrame.__init__(self,docManager,parent,id,title,pos,size,style,name,embeddedWindows,minSize)
         self.RegisterMsg()
 
     def CreateDefaultStatusBar(self):

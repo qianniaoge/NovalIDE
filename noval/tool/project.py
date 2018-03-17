@@ -15,7 +15,7 @@ import os
 import os.path
 import noval.util.xmlutils as xmlutils
 import noval.util.logger as logger
-import Interpreter
+import noval.tool.interpreter.manager as interpretermanager
 
 # REVIEW 07-Mar-06 stoens@activegrid.com -- Ideally move the pieces required
 # to generate the .dpl file out of this module so there's no dependency on wx,
@@ -267,7 +267,7 @@ class ProjectInterpreter(object):
     def __init__(self,parent=None,name=''):
         self._parentProj = parent
         self.name = name
-        interpreter = Interpreter.InterpreterManager().GetInterpreterByName(self.name)
+        interpreter = interpretermanager.InterpreterManager().GetInterpreterByName(self.name)
         if interpreter is None:
             return
         self.version = interpreter.Version

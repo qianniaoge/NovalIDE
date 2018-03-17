@@ -47,15 +47,16 @@ import UICommon
 import noval.util.sysutils as sysutilslib
 import subprocess
 import shutil
-import Interpreter
+import interpreter.Interpreter as Interpreter
 import OutputService
 import locale
 import OutputThread
 import noval.parser.config as parserconfig
 import WxThreadSafe
 import DebugOutputCtrl
-import InterpreterConfigDialog
+import interpreter.configruation as configruation
 import noval.parser.intellisence as intellisence
+import interpreter.manager as interpretermanager
 from consts import PYTHON_PATH_KEY
 
 import sys
@@ -2405,7 +2406,7 @@ class DebuggerService(Service.Service):
         cb = wx.GetApp().ToolbarCombox
         selection = event.GetSelection()
         if selection == cb.GetCount() - 1:
-            dlg = InterpreterConfigDialog.InterpreterConfigDialog(wx.GetApp().GetTopWindow(),-1,_("Configure Interpreter"))
+            dlg = configruation.InterpreterConfigDialog(wx.GetApp().GetTopWindow(),-1,_("Configure Interpreter"))
             dlg.CenterOnParent()
             dlg.ShowModal()
             wx.GetApp().AddInterpreters()
@@ -2414,8 +2415,8 @@ class DebuggerService(Service.Service):
            self.SelectInterpreter(interpreter)
            
     def SelectInterpreter(self,interpreter):
-        if interpreter != Interpreter.InterpreterManager.GetCurrentInterpreter():
-            Interpreter.InterpreterManager.SetCurrentInterpreter(interpreter)
+        if interpreter != interpretermanager.InterpreterManager.GetCurrentInterpreter():
+            interpretermanager.InterpreterManager.SetCurrentInterpreter(interpreter)
             if intellisence.IntellisenceManager().IsRunning:
                 return
             intellisence.IntellisenceManager().load_intellisence_data(interpreter)

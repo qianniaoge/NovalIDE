@@ -20,10 +20,11 @@ import noval.util.fileutils as fileutils
 import noval.util.strutils as strutils
 import noval.util.sysutils as sysutils
 import noval.util.xmlutils as xmlutils
-import Interpreter
+import interpreter.Interpreter as Interpreter
 import noval.parser.utils as dirutils
 import wx.lib.agw.hyperlink as hl
-import InterpreterConfigDialog
+import interpreter.configruation as configruation
+import noval.tool.interpreter.manager as interpretermanager
 _ = wx.GetTranslation
 
 def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Directory:"), fileExtension="*", startingName="", startingDirectory=None, choiceDirs=None, appDirDefaultStartDir=False, returnAll=False, useDirDialog=False):
@@ -81,7 +82,7 @@ def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Direc
     button = wx.Button(parent, -1, _("Browse..."))
     
     interpreterLabelText = wx.StaticText(parent, -1, _("Interpreter:"))
-    choices,default_selection = Interpreter.InterpreterManager().GetChoices()
+    choices,default_selection = interpretermanager.InterpreterManager().GetChoices()
     interpreterCombo = wx.ComboBox(parent, -1,size=(-1,-1),choices=choices, style = wx.CB_READONLY)
     if len(choices) > 0:
         interpreterCombo.SetSelection(default_selection)
@@ -95,10 +96,10 @@ def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Direc
     allControls = [nameControl, nameLabelText, dirLabelText, dirControl, button]
     
     def OnGotoLink(event):
-        dlg = InterpreterConfigDialog.InterpreterConfigDialog(parent,-1,_("Configure Interpreter"))
+        dlg = configruation.InterpreterConfigDialog(parent,-1,_("Configure Interpreter"))
         dlg.CenterOnParent()
         dlg.ShowModal()
-        choices,default_selection = Interpreter.InterpreterManager().GetChoices()
+        choices,default_selection = interpretermanager.InterpreterManager().GetChoices()
         interpreterCombo.Clear()
         if len(choices) > 0:
             interpreterCombo.InsertItems(choices,0)

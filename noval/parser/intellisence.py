@@ -1,5 +1,6 @@
 import noval.util.appdirs as appdirs
-import noval.tool.Interpreter as Interpreter
+import noval.tool.interpreter.Interpreter as Interpreter
+import noval.tool.interpreter.manager as interpretermanager
 import subprocess
 import noval.util.sysutils as sysutilslib
 from noval.tool import Singleton 
@@ -336,7 +337,7 @@ class IntellisenceManager(object):
         interpreter.Analysing = True
         self._is_running = interpreter.Analysing
         #if current interpreter is analysing,load data at end
-        if interpreter == Interpreter.InterpreterManager().GetCurrentInterpreter():
+        if interpreter == interpretermanager.InterpreterManager().GetCurrentInterpreter():
             load_data_end = True
         self.Wait(interpreter,progress_dlg,load_data_end)
         
@@ -355,7 +356,7 @@ class IntellisenceManager(object):
             self.load_intellisence_data(interpreter)            
         
     def generate_default_intellisence_data(self):
-        default_interpreter = Interpreter.InterpreterManager().GetDefaultInterpreter()
+        default_interpreter = interpretermanager.InterpreterManager().GetDefaultInterpreter()
         if default_interpreter is None:
             return
         try:

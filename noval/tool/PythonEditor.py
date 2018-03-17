@@ -31,8 +31,8 @@ import noval.parser.config as parserconfig
 import Service
 import noval.parser.fileparser as parser
 import noval.parser.scope as scope
-import Interpreter
-import InterpreterConfigDialog
+import interpreter.Interpreter as Interpreter
+import interpreter.configruation as configruation
 import noval.parser.intellisence as intellisence
 import noval.parser.nodeast as nodeast
 import noval.util.strutils as strutils
@@ -41,6 +41,7 @@ import DebuggerService
 from noval.parser.utils import CmpMember
 from noval.util.logger import app_debugLogger
 import noval.util.sysutils as sysutilslib
+import noval.tool.interpreter.manager as interpretermanager
 try:
     import checker # for pychecker
     _CHECKER_INSTALLED = True
@@ -1031,7 +1032,7 @@ class PythonOptionsPanel(wx.Panel):
         pathLabel = wx.StaticText(self, -1, _("Interpreters:"))
         config = wx.ConfigBase_Get()
       ###  path = config.Read("ActiveGridPythonLocation")
-        choices,default_selection = Interpreter.InterpreterManager().GetChoices()
+        choices,default_selection = interpretermanager.InterpreterManager().GetChoices()
         self._pathTextCtrl = wx.ComboBox(self, -1,choices=choices, style = wx.CB_READONLY)
         if len(choices) > 0:
             self._pathTextCtrl.SetSelection(default_selection)
@@ -1054,10 +1055,10 @@ class PythonOptionsPanel(wx.Panel):
         parent.AddPage(self, _("Python"))
         
     def OnChoosePath(self, event):
-        dlg = InterpreterConfigDialog.InterpreterConfigDialog(self,-1,_("Configure Interpreter"))
+        dlg = configruation.InterpreterConfigDialog(self,-1,_("Configure Interpreter"))
         dlg.CenterOnParent()
         dlg.ShowModal()
-        choices,default_selection = Interpreter.InterpreterManager().GetChoices()
+        choices,default_selection = interpretermanager.InterpreterManager().GetChoices()
         self._pathTextCtrl.Clear()
         if len(choices) > 0:
             self._pathTextCtrl.InsertItems(choices,0)

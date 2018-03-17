@@ -651,11 +651,11 @@ class _FileWrapper:
                     text, self._lineBuf =\
                         self._lineBuf[:nBytes], self._lineBuf[nBytes:]
                 else:
-                    nBytesToGo = nBytes - len(self._lineBuf)
-                    text = self._lineBuf + os.read(self._descriptor,
-                                                   nBytesToGo)
-                    self._lineBuf = ""
-            return text
+                    #nBytesToGo = nBytes - len(self._lineBuf)
+                    self._lineBuf = os.read(self._descriptor,
+                                                   nBytes)
+                    #self._lineBuf = ""
+            return self._lineBuf
         elif self._handle is not None:
             if nBytes <= 0:
                 text, self._lineBuf = self._lineBuf, ""
@@ -680,6 +680,31 @@ class _FileWrapper:
             raise Exception, "FileHandle.read: no handle to read with"
 
     def readline(self):
+        if self._descriptor is not None or self._handle is not None:
+            while 1:
+                #XXX This is not portable to the Mac.
+                idx = self._lineBuf.find('\n')
+                if idx != -1:
+                    line, self._lineBuf =\
+                        self._lineBuf[:idx+1], self._lineBuf[idx+1:]
+                    break
+                else:
+                    lengthBefore = len(self._lineBuf)
+                    if lengthBefore > 0:
+                        line, self._lineBuf = self._lineBuf, ""
+                        break
+                    t = self.read(4092)
+                    if 0 == len(t):
+                        line = t
+                        assert(0 == len(self._lineBuf))
+                        break
+            return line
+        elif self._file is not None:
+            return self._file.readline()
+        else:
+            raise Exception, "FileHandle.readline: no handle to read with"
+            
+    def readline2(self):
         if self._descriptor is not None or self._handle is not None:
             while 1:
                 #XXX This is not portable to the Mac.
