@@ -2,11 +2,11 @@ import threading
 
 class OutputThread(threading.Thread):
     
-    def __init__(self,stdout,process,text_ctrl):
+    def __init__(self,stdout,process,output_ctrl):
         threading.Thread.__init__(self)
         self._stdout = stdout
         self._process = process
-        self._text_ctrl = text_ctrl
+        self._output_ctrl = output_ctrl
         self._is_running = False
         
     def run(self):
@@ -18,7 +18,7 @@ class OutputThread(threading.Thread):
                     self._is_running = False
                     break
             else:
-                self._text_ctrl.AddLines(out)
+                self._output_ctrl.call_back(out)
       
                     
     @property

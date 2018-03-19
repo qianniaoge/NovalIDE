@@ -155,5 +155,7 @@ Version 1.0.6 -------------2018-03-6
 14.fix image size is not suitable which will invoke corruption on linux os.convernt png image to 16*16
 15.fix the bug when click the first line of search results view
 16.allow add or remove python search path,such as directory,zip ,egg and wheel file path
-17.add new python virtual env function 
+17.add new python virtual env function
 18.fix environment variable contains unicode character bug
+19.fix add python virtual env bug on linux os
+20.fix the bug when double click the file line and show messagebox which cause wxEVT_MOUSE_CAPTURE_LOST problem

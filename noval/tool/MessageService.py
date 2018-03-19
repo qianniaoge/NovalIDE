@@ -68,8 +68,12 @@ class MessageView(Service.ServiceView):
         txtCtrl.StyleClearAll()
         txtCtrl.UpdateStyles()
         wx.EVT_SET_FOCUS(txtCtrl, self.OnFocus)
-
+        #fix the bug when double click the file line and show messagebox which cause wxEVT_MOUSE_CAPTURE_LOST problem
+        wx.EVT_MOUSE_CAPTURE_LOST(txtCtrl,self.OnMouseCaptureLost)
         return txtCtrl
+        
+    def OnMouseCaptureLost(self,event):
+        pass
 
     def GetDocument(self):
         return None

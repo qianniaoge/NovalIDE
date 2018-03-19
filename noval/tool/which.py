@@ -368,7 +368,14 @@ def main(argv):
             failures += 1
     return failures
 
-
+def GuessPath(executable_name):
+    matchs = []
+    for match in whichgen(executable_name):
+        matchs.append(match)
+    if 0 == len(matchs):
+        return executable_name
+    return matchs[0]
+    
 if __name__ == "__main__":
     sys.exit( main(sys.argv) )
 

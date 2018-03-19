@@ -14,6 +14,10 @@ class DebugOutputCtrl(STCTextEditor.TextCtrl):
         self.SetAcceleratorTable(accelTbl)
         self._first_input = True
         self._input_start_pos = 0
+        wx.EVT_MOUSE_CAPTURE_LOST(self,self.OnMouseCaptureLost)
+        
+    def OnMouseCaptureLost(self,event):
+        pass
         
     @property
     def IsFirstInput(self):

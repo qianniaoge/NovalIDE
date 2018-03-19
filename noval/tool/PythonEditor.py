@@ -131,6 +131,7 @@ class PythonView(CodeEditor.CodeView):
     def ModuleScope(self):
         return self._module_scope
 
+    @sysutilslib.time_func
     def LoadModule(self,filename,doc_update):
         if not doc_update:
             return
@@ -341,7 +342,8 @@ class PythonView(CodeEditor.CodeView):
         #use thaw to update freezw control
         treeCtrl.Thaw()
         return True
-           
+        
+    @sysutilslib.time_func
     def TranverseItem(self,treeCtrl,node,parent):
         for child in node.Childs:
             if child.Type == parserconfig.NODE_FUNCDEF_TYPE:

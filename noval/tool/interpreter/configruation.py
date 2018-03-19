@@ -10,6 +10,11 @@ import environment
 import packages
 import pythonpath
 import noval.tool.interpreter.manager as interpretermanager
+import threading
+import noval.tool.OutputThread as OutputThread
+import subprocess
+import noval.tool.which as whichpath
+import noval.tool.WxThreadSafe as WxThreadSafe
 
 ID_COPY_INTERPRETER_NAME = wx.NewId()
 ID_COPY_INTERPRETER_VERSION = wx.NewId()
@@ -30,10 +35,15 @@ class NewVirtualEnvProgressDialog(wx.ProgressDialog):
                                 | wx.PD_APP_MODAL
                                 | wx.PD_SMOOTH
                                 )
-        self.KeepGoing = True        
+        self.KeepGoing = True
+        self.msg = ""
+        
+    @WxThreadSafe.call_after
+    def AppendMsg(self,msg):
+        self.msg = msg.strip()
 
 class NewVirtualEnvDialog(wx.Dialog):
-    def __init__(self,parent,interpreter,dlg_id,title,size=(440,200)):
+    def __init__(self,parent,interpreter,dlg_id,title,size=(440,210)):
         wx.Dialog.__init__(self,parent,dlg_id,title,size=size)
         contentSizer = wx.BoxSizer(wx.VERTICAL)
         
@@ -58,10 +68,16 @@ class NewVirtualEnvDialog(wx.Dialog):
         flexGridSizer.Add(self._interprterChoice, 2, flag=wx.ALIGN_CENTER_VERTICAL|wx.EXPAND)
         flexGridSizer.Add(wx.StaticText(parent, -1, ""), 0)
         
+        line_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._includeSitePackgaes = wx.CheckBox(self, -1, _("Inherited system site-packages from base interpreter"))
+        line_sizer.Add(self._includeSitePackgaes, 0, wx.LEFT|wx.BOTTOM,0)
+        
         contentSizer.Add(flexGridSizer, 1, flag=wx.EXPAND|wx.LEFT|wx.TOP,border=SPACE)
+        contentSizer.Add(line_sizer, 0, wx.BOTTOM|wx.EXPAND|wx.LEFT,SPACE)
         
         bsizer = wx.StdDialogButtonSizer()
         ok_btn = wx.Button(self, wx.ID_OK, _("&OK"))
+        wx.EVT_BUTTON(ok_btn, -1, self.OnOKClick)
         #set ok button default focused
         ok_btn.SetDefault()
         bsizer.AddButton(ok_btn)
@@ -69,7 +85,7 @@ class NewVirtualEnvDialog(wx.Dialog):
         cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
         bsizer.AddButton(cancel_btn)
         bsizer.Realize()
-        contentSizer.Add(bsizer, 1, wx.EXPAND|wx.BOTTOM,SPACE)
+        contentSizer.Add(bsizer, 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.BOTTOM,HALF_SPACE)
         self.SetSizer(contentSizer)
         self._interpreter = interpreter
         self.LoadInterpreters()
@@ -93,7 +109,17 @@ class NewVirtualEnvDialog(wx.Dialog):
             return
         path = dlg.GetPath()
         self.path_ctrl.SetValue(path)
-
+        
+    def OnOKClick(self, event):
+        name = self.name_ctrl.GetValue().strip()
+        location = self.path_ctrl.GetValue().strip()
+        if name == "":
+            wx.MessageBox(_("name cann't be empty"))
+            return
+        if location == "":
+            wx.MessageBox(_("location cann't be empty"))
+            return
+        self.EndModal(wx.ID_OK)
 
 class AddInterpreterDialog(wx.Dialog):
     def __init__(self,parent,dlg_id,title,size=(420,150)):
@@ -128,7 +154,7 @@ class AddInterpreterDialog(wx.Dialog):
         cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
         bsizer.AddButton(cancel_btn)
         bsizer.Realize()
-        contentSizer.Add(bsizer, 1, wx.EXPAND,SPACE)
+        contentSizer.Add(bsizer, 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.BOTTOM,HALF_SPACE)
         self.SetSizer(contentSizer)
         
     def ChooseExecutablePath(self,event):
@@ -207,7 +233,7 @@ class InterpreterConfigDialog(wx.Dialog):
         cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
         bsizer.AddButton(cancel_btn)
         bsizer.Realize()
-        box_sizer.Add(bsizer, 1, wx.BOTTOM|wx.EXPAND,SPACE)
+        box_sizer.Add(bsizer, 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.BOTTOM,HALF_SPACE)
 
         self.SetSizer(box_sizer) 
         self.ScanAllInterpreters()
@@ -271,10 +297,70 @@ class InterpreterConfigDialog(wx.Dialog):
         elif id == ID_NEW_INTERPRETER_VIRTUALENV:
             dlg = NewVirtualEnvDialog(self,interpreter,-1,_("New Virtual Env"))
             dlg.CenterOnParent()
+            python_path = dlg._interprterChoice.GetClientData(dlg._interprterChoice.GetSelection())
+            interpreter = interpretermanager.InterpreterManager().GetInterpreterByPath(python_path)
             status = dlg.ShowModal()
             if status == wx.ID_OK:
-                pass
+                name = dlg.name_ctrl.GetValue().strip()
+                location = dlg.path_ctrl.GetValue().strip()
+                include_site_packages = dlg._includeSitePackgaes.GetValue()
+                dlg.Destroy()
+                progress_dlg = NewVirtualEnvProgressDialog(self)
+                try:
+                    self.CreateVirtualEnv(name,location,include_site_packages,interpreter,progress_dlg)
+                except:
+                    return
+                while True:
+                    if not progress_dlg.KeepGoing:
+                        break
+                    wx.MilliSleep(250)
+                    wx.Yield()
+                    progress_dlg.Pulse(progress_dlg.msg)
+                progress_dlg.Destroy()
+                if sysutils.isWindows():
+                    python_path = os.path.join(location,"Scripts\\python.exe")
+                else:
+                    python_path = os.path.join(location,"bin/python")
+                interpreter = interpretermanager.InterpreterManager().AddPythonInterpreter(python_path,name)
+                self.AddOneInterpreter(interpreter)
+                self.SmartAnalyse(interpreter)
             return True
+            
+    def CreateVirtualEnv(self,name,location,include_site_packages,interpreter,progress_dlg):
+        t = threading.Thread(target=self.CreatePythonVirtualEnv,args=(name,location,include_site_packages,interpreter,progress_dlg))
+        t.start()
+        
+    def ExecCommandAndOutput(self,command,progress_dlg):
+        #shell must be True on linux
+        p = subprocess.Popen(command,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        stdout_thread = OutputThread.OutputThread(p.stdout,p,progress_dlg)
+        stdout_thread.start()
+        p.wait()
+        
+    def GetVirtualEnvPath(self,interpreter):
+        if sysutils.isWindows():
+            virtualenv_name = "virtualenv.exe"
+        else:
+            virtualenv_name = "virtualenv"
+        python_location = os.path.dirname(interpreter.Path)
+        virtualenv_path_list = [os.path.join(python_location,"Scripts",virtualenv_name),os.path.join(python_location,virtualenv_name)]
+        for virtualenv_path in virtualenv_path_list:
+            if os.path.exists(virtualenv_path):
+                return virtualenv_path
+        virtualenv_path = whichpath.GuessPath(virtualenv_name)
+        return virtualenv_path
+        
+    def CreatePythonVirtualEnv(self,name,location,include_site_packages,interpreter,progress_dlg):
+        progress_dlg.call_back = progress_dlg.AppendMsg
+        if not interpreter.Packages.has_key('virtualenv'):
+            progress_dlg.msg = "install virtualenv package..."
+            command = interpreter.GetPipPath() + " install virtualenv"
+            self.ExecCommandAndOutput(command,progress_dlg)
+        command = self.GetVirtualEnvPath(interpreter) + " " + location
+        if include_site_packages:
+            command += " --system-site-packages"
+        self.ExecCommandAndOutput(command,progress_dlg)
+        progress_dlg.KeepGoing = False
             
     def ProcessUpdateUIEvent(self, event):
         if self.dvlc.GetSelectedRow() == wx.NOT_FOUND:

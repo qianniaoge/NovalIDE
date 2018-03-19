@@ -53,6 +53,13 @@ class InterpreterManager(Singleton):
             if name == interpreter.Name:
                 return interpreter
         return None
+        
+    def GetInterpreterByPath(self,path):
+        for interpreter in self.interpreters:
+            if path == interpreter.Path:
+                return interpreter
+        return None
+        
     def LoadPythonInterpreters(self):
         if sysutils.isWindows():
             import _winreg

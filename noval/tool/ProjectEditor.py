@@ -377,6 +377,7 @@ class ProjectDocument(wx.lib.docview.Document):
         view._physicalBtn.SetToggle(False)
         view._logicalBtn.SetToggle(True)
         view._projectChoice.Clear()
+        view.SelectView()
 
         if not os.path.exists(filePath):
             wx.GetApp().CloseSplash()
@@ -1497,6 +1498,9 @@ class ProjectView(wx.lib.docview.View):
         self._editingSoDontKillFocus = False
         self._checkEditMenu = True
         self._loading = False  # flag to not to try to saving state of folders while it is loading
+        max_documemt_num = 5
+        self._documents = []
+        self._document = None
 
 
     def GetDocumentManager(self):  # Overshadow this since the superclass uses the view._viewDocument attribute directly, which the project editor doesn't use since it hosts multiple docs
@@ -1513,15 +1517,17 @@ class ProjectView(wx.lib.docview.View):
     def GetDocument(self):
         if not self._projectChoice or self.GetMode() == ProjectView.RESOURCE_VIEW:
             return None
+        return self._document
+##        selItem = self._projectChoice.GetSelection()
+##        if selItem == wx.NOT_FOUND:
+##            return None
+##
+##        document = self._projectChoice.GetClientData(selItem)
+##        return document
 
-        selItem = self._projectChoice.GetSelection()
-        if selItem == wx.NOT_FOUND:
-            return None
-
-        document = self._projectChoice.GetClientData(selItem)
-        return document
-
-
+    def SetDocument(self,document):
+        self._document = document
+        
     def Activate(self, activate = True):
         if not wx.GetApp().IsMDI():
             if activate and not self.IsShown():
@@ -1588,7 +1594,7 @@ class ProjectView(wx.lib.docview.View):
         self.panel_sizer.Add(butSizer, 0, wx.EXPAND)
         
         self.dirSizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.dir_ctrl = ResourceView.ResourceTreeCtrl(panel, -1, style = wx.TR_HIDE_ROOT | wx.TR_HAS_BUTTONS | wx.TR_EDIT_LABELS | wx.TR_DEFAULT_STYLE | wx.TR_EXTENDED)
+        self.dir_ctrl = ResourceView.ResourceTreeCtrl(panel, -1, style = wx.TR_HIDE_ROOT | wx.TR_HAS_BUTTONS | wx.TR_DEFAULT_STYLE | wx.TR_EXTENDED)
         self.dir_ctrl.AddRoot(_("Resources"))
         self.dirSizer.Add(self.dir_ctrl, 1, wx.EXPAND)
         
@@ -1601,11 +1607,9 @@ class ProjectView(wx.lib.docview.View):
         if self._embeddedWindow:
             self.panel_sizer.Add(self.dirSizer, 1, wx.EXPAND|wx.BOTTOM, HALF_SPACE)
             self.panel_sizer.Add(self.treeSizer, 1, wx.EXPAND|wx.BOTTOM, HALF_SPACE)
-            #sizer.Add(self._treeCtrl, 1, wx.EXPAND|wx.BOTTOM, HALF_SPACE)  # allow space for embedded window resize-sash
         else:
             self.panel_sizer.Add(self.treeSizer, 1, wx.EXPAND)
             self.panel_sizer.Add(self.dirSizer, 1, wx.EXPAND)
-            #sizer.Add(self._treeCtrl, 1, wx.EXPAND)
         panel.SetSizer(self.panel_sizer)
         
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -1635,7 +1639,7 @@ class ProjectView(wx.lib.docview.View):
         wx.EVT_TREE_ITEM_EXPANDING(self._treeCtrl, self._treeCtrl.GetId(), self.OnOpenSelection)
         wx.EVT_TREE_BEGIN_DRAG(self._treeCtrl, self._treeCtrl.GetId(), self.OnBeginDrag)
         wx.EVT_TREE_END_DRAG(self._treeCtrl, self._treeCtrl.GetId(), self.OnEndDrag)
-        wx.EVT_LEFT_DOWN(self._treeCtrl, self.OnLeftClick)
+        ###wx.EVT_LEFT_DOWN(self._treeCtrl, self.OnLeftClick)
 
         # drag-and-drop support
         dt = ProjectFileDropTarget(self)
@@ -1666,8 +1670,8 @@ class ProjectView(wx.lib.docview.View):
             self.panel_sizer.Hide(self.treeSizer)
             self.panel_sizer.Show(self.dirSizer)
         else:
-            self._projectChoice.Clear()
-            self.LoadProject(self.GetDocument())
+            self.LoadDocuments()
+            #self.LoadProject(self.GetDocument())
             self.panel_sizer.Show(self.treeSizer)
             self.panel_sizer.Hide(self.dirSizer)
         self.panel_sizer.Layout()
@@ -1680,12 +1684,16 @@ class ProjectView(wx.lib.docview.View):
 
 
     def OnProjectSelect(self, event=None):
+        selItem = self._projectChoice.GetSelection()
+        if selItem == wx.NOT_FOUND:
+            return
         if self.GetMode() == ProjectView.RESOURCE_VIEW:
-            i = self._projectChoice.GetSelection()
-            ResourceView.ResourceView(self).SelectIndex = i
-            name = self._projectChoice.GetClientData(i)
+            ResourceView.ResourceView(self).SelectIndex = selItem
+            name = self._projectChoice.GetClientData(selItem)
             ResourceView.ResourceView(self).LoadRoot(name)
         else:
+            document = self._projectChoice.GetClientData(selItem)
+            self.SetDocument(document)
             self.LoadProject(self.GetDocument())
             if self.GetDocument():
                 filename = self.GetDocument().GetFilename()
@@ -1922,12 +1930,16 @@ class ProjectView(wx.lib.docview.View):
             i = numProj - 1
         if i >= 0:
             self._projectChoice.SetSelection(i)
+        self._documents.remove(self._document)
+        wx.GetApp().GetDocumentManager().CloseDocument(projectDoc, False)
+        self._document = None
         self.OnProjectSelect()
 
 
     def RemoveCurrentDocumentUpdate(self, i=-1):
         """ Called by service after deleting a project, need to remove from project choices """
         i = self._projectChoice.GetSelection()
+        assert(self._document == self._projectChoice.GetClientData(i))
         self._projectChoice.Delete(i)
 
         numProj = self._projectChoice.GetCount()
@@ -1935,6 +1947,8 @@ class ProjectView(wx.lib.docview.View):
             i = numProj - 1
         if i >= 0:
             self._projectChoice.SetSelection(i)
+        self._documents.remove(self._document)
+        self._document = None
         self.OnProjectSelect()
  
 
@@ -2165,7 +2179,14 @@ class ProjectView(wx.lib.docview.View):
         i = self._projectChoice.Append(self._MakeProjectName(document),getProjectBitmap(), document)
         self._projectChoice.SetSelection(i)
         self.OnProjectSelect()
-
+        self._documents.append(document)
+        
+    def LoadDocuments(self):
+        self._projectChoice.Clear()
+        for document in self._documents:
+            i = self._projectChoice.Append(self._MakeProjectName(document),getProjectBitmap(), document)
+            if document == self.GetDocument():
+                self._projectChoice.SetSelection(i)
 
     def LoadProject(self, document):
         wx.GetApp().GetTopWindow().SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
@@ -3074,7 +3095,7 @@ class ProjectView(wx.lib.docview.View):
                           msgTitle,
                           wx.OK | wx.ICON_EXCLAMATION,
                           self.GetFrame())
-
+        event.Skip()
 
     #----------------------------------------------------------------------------
     # Convenience methods

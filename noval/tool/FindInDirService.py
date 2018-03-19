@@ -711,6 +711,12 @@ class FindInDirService(FindService.FindService):
                 break
 
         if not foundView:
+            if not os.path.exists(filename):
+                wx.MessageBox(_("The file '%s' doesn't exist and couldn't be opened!") % filename,
+                              _("Open File Error"),
+                              wx.OK | wx.ICON_ERROR,
+                              wx.GetApp().GetTopWindow())
+                return
             doc = wx.GetApp().GetDocumentManager().CreateDocument(filename, wx.lib.docview.DOC_SILENT|wx.lib.docview.DOC_OPEN_ONCE)
             if doc:
                 foundView = doc.GetFirstView()

@@ -8,6 +8,7 @@ import threading
 from noval.util.logger import app_debugLogger
 import glob
 import manager
+import sys
 
 _ = wx.GetTranslation
 
@@ -98,7 +99,78 @@ class PythonEnvironment(object):
     def __getitem__(self,name):
         return self.environ[name]
         
-class PythonInterpreter(Interpreter):
+class BuiltinPythonInterpreter(Interpreter):
+    def __init__(self,name,executable_path,id=None,is_builtin = True):
+        super(BuiltinPythonInterpreter,self).__init__(name,executable_path)
+        self._is_builtin = is_builtin
+        if id is None:
+            self._id = manager.InterpreterManager.GenerateId()
+        else:
+            self._id = int(id)
+        self._is_default = False
+        self._sys_path_list = sys.path
+        self._python_path_list = []
+        self._version = ".".join([str(sys.version_info.major),str(sys.version_info.minor),str(sys.version_info.micro)])
+        self._builtins = sys.builtin_module_names
+        self.Environ = PythonEnvironment()
+        self._packages = {}
+        self._help_path = ""
+        #builtin module name which python2 is __builtin__ and python3 is builtins
+        self._builtin_module_name = "__builtin__"
+        
+    @property
+    def Version(self):
+        return self._version
+
+    @property
+    def HelpPath(self):
+        return self._help_path
+        
+    @HelpPath.setter
+    def HelpPath(self,help_path):
+        self._help_path = help_path
+        
+    @property
+    def Default(self):
+        return self._is_default
+        
+    @Default.setter
+    def Default(self,is_default):
+        self._is_default = is_default
+        
+    @property
+    def SysPathList(self):
+        return self._sys_path_list
+        
+    @property
+    def PythonPathList(self):
+        return self._python_path_list 
+        
+    @PythonPathList.setter
+    def PythonPathList(self,path_list):
+        self._python_path_list = path_list
+        
+    @property    
+    def Builtins(self):
+        return self._builtins
+        
+    @property
+    def Id(self):
+        return self._id
+        
+    @property
+    def BuiltinModuleName(self):
+        return self._builtin_module_name
+        
+    @property
+    def Packages(self):
+        return self._packages
+        
+    @Packages.setter
+    def Packages(self,packages):
+        self._packages = packages
+        
+class PythonInterpreter(BuiltinPythonInterpreter):
     
     CONSOLE_EXECUTABLE_NAME = "python.exe"
     WINDOW_EXECUTABLE_NAME = "pythonw.exe"
@@ -115,25 +187,12 @@ class PythonInterpreter(Interpreter):
                 window_path = os.path.join(os.path.dirname(executable_path),PythonInterpreter.WINDOW_EXECUTABLE_NAME)
                 self._window_path = window_path
                 
-        super(PythonInterpreter,self).__init__(name,executable_path)
-        if id is None:
-            self._id = manager.InterpreterManager.GenerateId()
-        else:
-            self._id = int(id)
+        super(PythonInterpreter,self).__init__(name,executable_path,id,False)
         self._is_valid_interpreter = is_valid_interpreter
-        self._is_default = False
-        self._is_analysing = False
-        self._sys_path_list = []
-        self._python_path_list = []
         self._version = "Unknown Version"
-        self._builtins = []
-        self.Environ = PythonEnvironment()
-        self._help_path = ""
+        self._is_analysing = False
         self._is_analysed = False
-        self._packages = {}
         self._is_loading_package = False
-        #builtin module name which python2 is __builtin__ and python3 is builtins
-        self._builtin_module_name = "__builtin__"
         if not is_valid_interpreter:
             self.GetVersion()
         if not is_valid_interpreter and self._is_valid_interpreter:
@@ -215,18 +274,6 @@ class PythonInterpreter(Interpreter):
             msg = lines[0][0:i].strip()
             lineNum = int(lines[0][i+1:j].split()[-1])
         return False,lineNum,msg
-        
-    @property
-    def Version(self):
-        return self._version
-
-    @property
-    def HelpPath(self):
-        return self._help_path
-
-    @HelpPath.setter
-    def HelpPath(self,help_path):
-        self._help_path = help_path
          
     @property
     def ConsolePath(self):
@@ -237,13 +284,6 @@ class PythonInterpreter(Interpreter):
     @property
     def IsValidInterpreter(self):
          return self._is_valid_interpreter
-    @property
-    def Default(self):
-        return self._is_default
-        
-    @Default.setter
-    def Default(self,is_default):
-        self._is_default = is_default
         
     def GetSysPathList(self):
         if int(self._version.split(".")[0]) == 2:
@@ -263,29 +303,11 @@ class PythonInterpreter(Interpreter):
         lst = eval(output)
         self._builtins = lst
         
-    @property
-    def SysPathList(self):
-        return self._sys_path_list
-        
-    @property
-    def PythonPathList(self):
-        return self._python_path_list 
-        
-    @PythonPathList.setter
-    def PythonPathList(self,path_list):
-        self._python_path_list = path_list
-        
-    @property    
-    def Builtins(self):
-        return self._builtins
-        
     def SetInterpreter(self,**kwargs):
         self._version = kwargs.get('version')
         if self.IsV3():
             self._builtin_module_name = self.PYTHON3_BUILTIN_MODULE_NAME
-        assert(0 == len(self._builtins))
         self._builtins = kwargs.get('builtins')
-        assert(0 == len(self._sys_path_list))
         self._sys_path_list = kwargs.get('sys_path_list')
         self._python_path_list = kwargs.get('python_path_list')
         
@@ -304,13 +326,6 @@ class PythonInterpreter(Interpreter):
     @IsAnalysed.setter
     def IsAnalysed(self,is_analysed):
         self._is_analysed = is_analysed
-
-    @property
-    def Id(self):
-        return self._id
-    @property
-    def BuiltinModuleName(self):
-        return self._builtin_module_name
         
     def GetPipPath(self):
         if sysutils.isWindows():
@@ -352,14 +367,6 @@ class PythonInterpreter(Interpreter):
                 self._packages[name] = version
         self._is_loading_package = False
         ui_panel.LoadPackageEnd(self)
-        
-    @property
-    def Packages(self):
-        return self._packages
-        
-    @Packages.setter
-    def Packages(self,packages):
-        self._packages = packages
         
     @property
     def IsLoadingPackage(self):

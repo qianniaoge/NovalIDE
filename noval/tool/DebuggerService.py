@@ -3206,9 +3206,10 @@ class CommandPropertiesDialog(wx.Dialog):
         else:
             postpend = False
         if postpend:
-            env['PYTHONPATH'] = self._pythonPathEntry.GetValue() + os.pathsep + os.path.join(os.getcwd(), "3rdparty", "pywin32")
+            env['PYTHONPATH'] = str(self._pythonPathEntry.GetValue()) + os.pathsep + os.path.join(os.getcwd(), "3rdparty", "pywin32")
         else:
-            env['PYTHONPATH'] = self._pythonPathEntry.GetValue()
+            #should avoid environment contain unicode string,such as u'xxx'
+            env['PYTHONPATH'] = str(self._pythonPathEntry.GetValue())
 
         return projectPath, filename, args, startIn, isPython, env
 
