@@ -190,6 +190,7 @@ class PythonPathPanel(wx.Panel):
         while item:
             path = self.tree_ctrl.GetItemText(item)
             if not parserutils.PathsContainPath(self._interpreter.SysPathList,path):
-                python_path_list.append(path)
+                #should avoid environment contain unicode string,such as u'xxx'
+                python_path_list.append(str(path))
             (item, cookie) = self.tree_ctrl.GetNextChild(root_item, cookie)
         self._interpreter.PythonPathList = python_path_list

@@ -390,10 +390,18 @@ class PythonInterpreterView(Service.ServiceView):
 
     def _CreateControl(self, parent, id):
         sizer = wx.BoxSizer()
-        self._pyCrust = wx.py.crust.Crust(parent)
-        self._pyCrust._shouldsplit = False
-        sizer.Add(self._pyCrust, 1, wx.EXPAND, 0)
-        return self._pyCrust
+       # self._pyCrust = wx.py.crust.Crust(parent)
+        #self._pyCrust._shouldsplit = False
+        #sizer.Add(self._pyCrust, 1, wx.EXPAND, 0)
+        
+        self.shell = wx.py.shell.Shell(parent=parent, id=-1, introText='',
+                           locals=None, InterpClass=None,
+                           startupScript=None,
+                           execStartupScript=True)
+        self.shell.SetMarginType(1, 0)
+        self.shell.SetMarginWidth(1, 0)
+        sizer.Add(self.shell, 1, wx.EXPAND, 0)
+        return self.shell
         
     def GetDocument(self):
         return None
@@ -403,7 +411,7 @@ class PythonInterpreterView(Service.ServiceView):
         event.Skip()        
 
     def ProcessEvent(self, event):
-        if not hasattr(self, "_pyCrust") or not self._pyCrust:
+        if not hasattr(self, "shell") or not self.shell:
             return wx.lib.docview.View.ProcessEvent(self, event)
         stcControl = wx.Window_FindFocus()
         if not isinstance(stcControl, wx.stc.StyledTextCtrl):
@@ -435,12 +443,14 @@ class PythonInterpreterView(Service.ServiceView):
 
 
     def ProcessUpdateUIEvent(self, event):
-        if not hasattr(self, "_pyCrust") or not self._pyCrust:
+        print 111111
+        if not hasattr(self, "shell") or not self.shell:
             return wx.lib.docview.View.ProcessUpdateUIEvent(self, event)
         stcControl = wx.Window_FindFocus()
         if not isinstance(stcControl, wx.stc.StyledTextCtrl):
             return wx.lib.docview.View.ProcessUpdateUIEvent(self, event)
         id = event.GetId()
+        print id
         if id == wx.ID_UNDO:
             event.Enable(stcControl.CanUndo())
             return True
@@ -448,10 +458,10 @@ class PythonInterpreterView(Service.ServiceView):
             event.Enable(stcControl.CanRedo())
             return True
         elif id == wx.ID_CUT:
-            event.Enable(stcControl.CanCut())
+            event.Enable(stcControl.HasSelection())
             return True
         elif id == wx.ID_COPY:
-            event.Enable(stcControl.CanCopy())
+            event.Enable(stcControl.HasSelection())
             return True
         elif id == wx.ID_PASTE:
             event.Enable(stcControl.CanPaste())

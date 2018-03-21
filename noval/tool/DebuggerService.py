@@ -1345,12 +1345,12 @@ class BaseFramesUI(wx.SplitterWindow):
             lineText = foundView.GetCtrl().GetLine(lineNum - 1)
             foundView.SetSelection(startPos, startPos + len(lineText.rstrip("\n")))
             import OutlineService
-            wx.GetApp().GetService(OutlineService.OutlineService).LoadOutline(foundView, position=startPos)
+            wx.GetApp().GetService(OutlineService.OutlineService).LoadOutline(foundView, lineNum=lineNum)
 
     def MakeConsoleTab(self, parent, id):
         panel = wx.Panel(parent, id)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self._textCtrl = STCTextEditor.TextCtrl(panel, wx.NewId())
+        self._textCtrl = STCTextEditor.TextCtrl(panel, wx.NewId(),bind_left_up_event = False)
         sizer.Add(self._textCtrl, 1, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 2)
         self._textCtrl.SetViewLineNumbers(False)
         self._textCtrl.SetReadOnly(True)
@@ -2510,7 +2510,42 @@ class DebuggerService(Service.Service):
             return
         wx.MessageBox(msg,wx.GetApp().GetAppName(),wx.OK | wx.ICON_ERROR,doc_view.GetFrame())
         if line > 0:
-            doc_view.GotoLine(line)           
+            doc_view.GotoLine(line)
+            
+    def GetEnvironment(self,doc_view,interpreter):
+        
+        environment = None
+        if doc_view.RunParameter is not None:
+            startIn = doc_view.RunParameter.StartUp
+            initialArgs = doc_view.RunParameter.Arg
+            environment = doc_view.RunParameter.Environment
+
+        environ = interpreter.Environ.GetEnviron()
+        if len(environ) > 0:
+            if environment is None:
+                environment = environ
+            else:
+                environment.update(environ)
+            #in windows and if is python3 interpreter ,shoud add 'SYSTEMROOT' Environment Variable
+            #othersise it will raise progblem below when add a Environment Variable
+            #Fatal Python error: failed to get random numbers to initialize Python
+            if sysutilslib.isWindows() and interpreter.IsV3():
+                SYSTEMROOT_KEY = 'SYSTEMROOT'
+                if not environment.has_key(SYSTEMROOT_KEY):
+                    environment[SYSTEMROOT_KEY] = os.environ[SYSTEMROOT_KEY]
+        #add python path to env
+        if len(interpreter.PythonPathList) > 0:
+            env = {}
+            python_path = os.pathsep.join(interpreter.PythonPathList)
+            env[PYTHON_PATH_KEY] = python_path
+            if environment is None:
+                environment = env
+            else:
+                if PYTHON_PATH_KEY in environment:
+                    environment[PYTHON_PATH_KEY] = env[PYTHON_PATH_KEY] + os.pathsep + environment.get(PYTHON_PATH_KEY)
+                else:
+                    environment[PYTHON_PATH_KEY] = env[PYTHON_PATH_KEY]
+        return environment
         
     def DebugRunScript(self,event,showDialog=True):
         if not Executor.GetPythonExecutablePath():
@@ -2533,38 +2568,7 @@ class DebuggerService(Service.Service):
         Service.ServiceView.bottomTab.SetSelection(count)
         startIn = os.path.dirname(fileToRun)
         initialArgs = None
-        environment = None
-        if doc_view.RunParameter is not None:
-            startIn = doc_view.RunParameter.StartUp
-            initialArgs = doc_view.RunParameter.Arg
-            environment = doc_view.RunParameter.Environment
-
-        environ = interpreter.Environ.GetEnviron()
-        if len(environ) > 0:
-            if environment is None:
-                environment = environ
-            else:
-                environment.update(environ)
-            #in windows and if is python3 interpreter ,shoud add 'SYSTEMROOT' Environment Variable
-            #othersise it will raise progblem below when add a Environment Variable
-            #Fatal Python error: failed to get random numbers to initialize Python
-            if sysutilslib.isWindows() and wx.GetApp().GetCurrentInterpreter().IsV3():
-                SYSTEMROOT_KEY = 'SYSTEMROOT'
-                if not environment.has_key(SYSTEMROOT_KEY):
-                    environment[SYSTEMROOT_KEY] = os.environ[SYSTEMROOT_KEY]
-        #add python path to env
-        if len(interpreter.PythonPathList) > 0:
-            env = {}
-            python_path = os.pathsep.join(interpreter.PythonPathList)
-            env[PYTHON_PATH_KEY] = python_path
-            if environment is None:
-                environment = env
-            else:
-                if PYTHON_PATH_KEY in environment:
-                    environment[PYTHON_PATH_KEY] = env[PYTHON_PATH_KEY] + os.pathsep + environment.get(PYTHON_PATH_KEY)
-                else:
-                    environment[PYTHON_PATH_KEY] = env[PYTHON_PATH_KEY]
-                    
+        environment = self.GetEnvironment(doc_view,interpreter)
         page.Execute(initialArgs, startIn, environment, onWebServer = False)
 
     def RunScript(self,event,showDialog=True):
@@ -2581,25 +2585,7 @@ class DebuggerService(Service.Service):
         fileToRun = document.GetFilename()
         startIn = os.path.dirname(fileToRun)
         initialArgs = None
-        environment = None
-        if doc_view.RunParameter is not None:
-            startIn = doc_view.RunParameter.StartUp
-            initialArgs = doc_view.RunParameter.Arg
-            environment = doc_view.RunParameter.Environment
-        environ = wx.GetApp().GetCurrentInterpreter().Environ.GetEnviron()
-        if len(environ) > 0:
-            if environment is None:
-                environment = environ
-            else:
-                environment.update(environ)
-            #in windows and if is python3 interpreter ,shoud add 'SYSTEMROOT' Environment Variable
-            #othersise it will raise progblem below when add a Environment Variable
-            #Fatal Python error: failed to get random numbers to initialize Python
-            if sysutilslib.isWindows() and wx.GetApp().GetCurrentInterpreter().IsV3():
-                SYSTEMROOT_KEY = 'SYSTEMROOT'
-                if not environment.has_key(SYSTEMROOT_KEY):
-                    environment[SYSTEMROOT_KEY] = os.environ[SYSTEMROOT_KEY]
-                    
+        environment = self.GetEnvironment(doc_view,wx.GetApp().GetCurrentInterpreter())
         if sysutilslib.isWindows():
             command = u"cmd.exe /c %s \"%s\""  % (python_executable_path,fileToRun)
             if initialArgs is not None:
