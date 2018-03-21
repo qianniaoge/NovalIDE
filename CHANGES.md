@@ -159,3 +159,4 @@ Version 1.0.6 -------------2018-03-6
 18.fix environment variable contains unicode character bug
 19.fix add python virtual env bug on linux os
 20.fix the bug when double click the file line and show messagebox which cause wxEVT_MOUSE_CAPTURE_LOST problem
+21.adjust the control layout of configuration page

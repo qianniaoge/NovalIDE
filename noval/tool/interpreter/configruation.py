@@ -43,37 +43,37 @@ class NewVirtualEnvProgressDialog(wx.ProgressDialog):
         self.msg = msg.strip()
 
 class NewVirtualEnvDialog(wx.Dialog):
-    def __init__(self,parent,interpreter,dlg_id,title,size=(440,210)):
-        wx.Dialog.__init__(self,parent,dlg_id,title,size=size)
+    def __init__(self,parent,interpreter,dlg_id,title):
+        wx.Dialog.__init__(self,parent,dlg_id,title)
         contentSizer = wx.BoxSizer(wx.VERTICAL)
         
         flexGridSizer = wx.FlexGridSizer(cols = 3, vgap = HALF_SPACE, hgap = HALF_SPACE)
         flexGridSizer.AddGrowableCol(1,1)
         
         flexGridSizer.Add(wx.StaticText(self, -1, _("Name:")), 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT)
-        self.name_ctrl = wx.TextCtrl(self, -1, "", size=(200,-1))
+        self.name_ctrl = wx.TextCtrl(self, -1, "", size=(-1,-1))
         flexGridSizer.Add(self.name_ctrl, 2, flag=wx.ALIGN_CENTER_VERTICAL|wx.EXPAND)
         flexGridSizer.Add(wx.StaticText(parent, -1, ""), 0)
 
         flexGridSizer.Add(wx.StaticText(self, -1, _("Location:")), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT)
-        self.path_ctrl = wx.TextCtrl(self, -1, "", size=(200,-1))
+        self.path_ctrl = wx.TextCtrl(self, -1, "", size=(-1,-1))
         self.path_ctrl.SetToolTipString(_("set the location of virtual env"))
         flexGridSizer.Add(self.path_ctrl, 2, flag=wx.ALIGN_CENTER_VERTICAL|wx.EXPAND)
         self.browser_btn = wx.Button(self, -1, _("..."),size=(40,-1))
         wx.EVT_BUTTON(self.browser_btn, -1, self.ChooseVirtualEnvPath)
-        flexGridSizer.Add(self.browser_btn, flag=wx.ALIGN_RIGHT|wx.RIGHT, border=SPACE)  
+        flexGridSizer.Add(self.browser_btn, flag=wx.ALIGN_RIGHT|wx.RIGHT, border=HALF_SPACE)  
         
         flexGridSizer.Add(wx.StaticText(self, -1, _("Base Interpreter:")), 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT)
-        self._interprterChoice = wx.combo.BitmapComboBox(self, -1, "",choices=[], style=wx.CB_READONLY)
+        self._interprterChoice = wx.combo.BitmapComboBox(self, -1, "",choices = self.GetChoices(),size=(-1,-1), style=wx.CB_READONLY)
         flexGridSizer.Add(self._interprterChoice, 2, flag=wx.ALIGN_CENTER_VERTICAL|wx.EXPAND)
         flexGridSizer.Add(wx.StaticText(parent, -1, ""), 0)
         
         line_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self._includeSitePackgaes = wx.CheckBox(self, -1, _("Inherited system site-packages from base interpreter"))
-        line_sizer.Add(self._includeSitePackgaes, 0, wx.LEFT|wx.BOTTOM,0)
+        line_sizer.Add(self._includeSitePackgaes, 0, wx.LEFT|wx.BOTTOM,SPACE)
         
-        contentSizer.Add(flexGridSizer, 1, flag=wx.EXPAND|wx.LEFT|wx.TOP,border=SPACE)
-        contentSizer.Add(line_sizer, 0, wx.BOTTOM|wx.EXPAND|wx.LEFT,SPACE)
+        contentSizer.Add(flexGridSizer, 1, flag=wx.EXPAND|wx.ALL,border=SPACE)
+        contentSizer.Add(line_sizer, 0, wx.RIGHT|wx.BOTTOM,HALF_SPACE)
         
         bsizer = wx.StdDialogButtonSizer()
         ok_btn = wx.Button(self, wx.ID_OK, _("&OK"))
@@ -87,10 +87,20 @@ class NewVirtualEnvDialog(wx.Dialog):
         bsizer.Realize()
         contentSizer.Add(bsizer, 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.BOTTOM,HALF_SPACE)
         self.SetSizer(contentSizer)
+        self.Fit()
+        
         self._interpreter = interpreter
         self.LoadInterpreters()
+       
+    def GetChoices(self):
+        choices = []
+        for i,interpreter in enumerate(interpretermanager.InterpreterManager.interpreters):
+            display_name = "%s (%s)" % (interpreter.Version,interpreter.Path)
+            choices.append(display_name)
+        return choices
         
     def LoadInterpreters(self):
+        self._interprterChoice.Clear()
         interpreter_image_path = os.path.join(sysutils.mainModuleDir, "noval", "tool", "bmp_source", "python_nature.png")
         interpreter_image = wx.Image(interpreter_image_path,wx.BITMAP_TYPE_ANY)
         interpreter_bmp = wx.BitmapFromImage(interpreter_image)
@@ -122,8 +132,8 @@ class NewVirtualEnvDialog(wx.Dialog):
         self.EndModal(wx.ID_OK)
 
 class AddInterpreterDialog(wx.Dialog):
-    def __init__(self,parent,dlg_id,title,size=(420,150)):
-        wx.Dialog.__init__(self,parent,dlg_id,title,size=size)
+    def __init__(self,parent,dlg_id,title):
+        wx.Dialog.__init__(self,parent,dlg_id,title)
         contentSizer = wx.BoxSizer(wx.VERTICAL)
         
         lineSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -137,15 +147,15 @@ class AddInterpreterDialog(wx.Dialog):
         
         self.browser_btn = wx.Button(self, -1, _("Browse..."))
         wx.EVT_BUTTON(self.browser_btn, -1, self.ChooseExecutablePath)
-        lineSizer.Add(self.browser_btn, 0, wx.LEFT|wx.ALIGN_BOTTOM, SPACE)
-        contentSizer.Add(lineSizer, 0, wx.BOTTOM, SPACE)
+        lineSizer.Add(self.browser_btn, 0, wx.LEFT|wx.ALIGN_BOTTOM, HALF_SPACE)
+        contentSizer.Add(lineSizer, 0, wx.ALL, HALF_SPACE)
         
         lineSizer = wx.BoxSizer(wx.HORIZONTAL)
         lineSizer.Add(wx.StaticText(self, -1, _("Interpreter Name:")), 0, wx.ALIGN_CENTER | wx.LEFT, HALF_SPACE)
         self.name_ctrl = wx.TextCtrl(self, -1, "", size=(190,-1))
         self.name_ctrl.SetToolTipString(_("set the name of python interpreter"))
         lineSizer.Add(self.name_ctrl, 0, wx.LEFT, HALF_SPACE)
-        contentSizer.Add(lineSizer, 0, wx.BOTTOM, SPACE)
+        contentSizer.Add(lineSizer, 0, wx.ALL, HALF_SPACE)
         
         bsizer = wx.StdDialogButtonSizer()
         ok_btn = wx.Button(self, wx.ID_OK, _("&OK"))
@@ -156,6 +166,7 @@ class AddInterpreterDialog(wx.Dialog):
         bsizer.Realize()
         contentSizer.Add(bsizer, 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.BOTTOM,HALF_SPACE)
         self.SetSizer(contentSizer)
+        self.Fit()
         
     def ChooseExecutablePath(self,event):
         if sysutils.isWindows():

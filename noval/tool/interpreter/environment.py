@@ -21,21 +21,21 @@ class SystemEnvironmentVariableDialog(wx.Dialog):
             self.dvlc.AppendItem([env, os.environ[env]])
             
 class EditAddEnvironmentVariableDialog(wx.Dialog):
-    def __init__(self,parent,dlg_id,title,size=(300,150)):
-        wx.Dialog.__init__(self,parent,dlg_id,title,size=size)
+    def __init__(self,parent,dlg_id,title):
+        wx.Dialog.__init__(self,parent,dlg_id,title)
         contentSizer = wx.BoxSizer(wx.VERTICAL)
         
         lineSizer = wx.BoxSizer(wx.HORIZONTAL)
         lineSizer.Add(wx.StaticText(self, -1, _("Key: ")), 0, wx.ALIGN_CENTER | wx.LEFT, HALF_SPACE)
         self.key_ctrl = wx.TextCtrl(self, -1, "", size=(200,-1))
         lineSizer.Add(self.key_ctrl, 0, wx.LEFT|wx.ALIGN_BOTTOM, SPACE)
-        contentSizer.Add(lineSizer, 0, wx.TOP, HALF_SPACE)
+        contentSizer.Add(lineSizer, 0, wx.ALL, HALF_SPACE)
     
         lineSizer = wx.BoxSizer(wx.HORIZONTAL)
         lineSizer.Add(wx.StaticText(self, -1, _("Value:")), 0, wx.ALIGN_CENTER | wx.LEFT, HALF_SPACE)
         self.value_ctrl = wx.TextCtrl(self, -1, "", size=(200,-1))
         lineSizer.Add(self.value_ctrl, 0, wx.LEFT, HALF_SPACE)
-        contentSizer.Add(lineSizer, 0, wx.TOP, SPACE)
+        contentSizer.Add(lineSizer, 0, wx.ALL, HALF_SPACE)
         
         bsizer = wx.StdDialogButtonSizer()
         ok_btn = wx.Button(self, wx.ID_OK, _("&OK"))
@@ -46,9 +46,10 @@ class EditAddEnvironmentVariableDialog(wx.Dialog):
         cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
         bsizer.AddButton(cancel_btn)
         bsizer.Realize()
-        contentSizer.Add(bsizer, 1, wx.EXPAND,SPACE)
+        contentSizer.Add(bsizer, 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.BOTTOM,HALF_SPACE)
         
         self.SetSizer(contentSizer)
+        self.Fit()
 
 class EnvironmentPanel(wx.Panel):
     def __init__(self,parent):
@@ -64,24 +65,24 @@ class EnvironmentPanel(wx.Panel):
         self.dvlc.AppendTextColumn(_('Key'), width=100)
         self.dvlc.AppendTextColumn(_('Value'),width=400)
         dataview.EVT_DATAVIEW_SELECTION_CHANGED(self.dvlc, -1, self.UpdateUI)
-        left_sizer.Add(self.dvlc, 0,  wx.TOP|wx.EXPAND, HALF_SPACE)
+        left_sizer.Add(self.dvlc, 1,  wx.TOP|wx.RIGHT|wx.EXPAND, HALF_SPACE)
         
         top_sizer.Add(left_sizer, 0, wx.LEFT, 0)
         
         right_sizer = wx.BoxSizer(wx.VERTICAL)
         self.new_btn = wx.Button(self, -1, _("New.."))
         wx.EVT_BUTTON(self.new_btn, -1, self.NewVariable)
-        right_sizer.Add(self.new_btn, 0, wx.TOP|wx.EXPAND, SPACE*3)
+        right_sizer.Add(self.new_btn, 0, wx.LEFT|wx.BOTTOM|wx.EXPAND, SPACE)
         
         self.edit_btn = wx.Button(self, -1, _("Edit"))
         wx.EVT_BUTTON(self.edit_btn, -1, self.EditVariable)
-        right_sizer.Add(self.edit_btn, 0, wx.TOP|wx.EXPAND, SPACE)
+        right_sizer.Add(self.edit_btn, 0, wx.LEFT|wx.BOTTOM|wx.EXPAND, SPACE)
         
         self.remove_btn = wx.Button(self, -1, _("Remove..."))
         wx.EVT_BUTTON(self.remove_btn, -1, self.RemoveVariable)
-        right_sizer.Add(self.remove_btn, 0, wx.TOP|wx.EXPAND, SPACE)
+        right_sizer.Add(self.remove_btn, 0, wx.LEFT|wx.BOTTOM|wx.EXPAND, SPACE)
         
-        top_sizer.Add(right_sizer, 0, wx.LEFT, SPACE*2)
+        top_sizer.Add(right_sizer, 0, wx.TOP, SPACE*3.5)
 
         bottom_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self._includeCheckBox = wx.CheckBox(self, -1, _("Include System Environment Variable"))
@@ -95,8 +96,8 @@ class EnvironmentPanel(wx.Panel):
         self.Bind(hl.EVT_HYPERLINK_LEFT, self.OnGotoLink,self.hyperLinkCtrl)
         bottom_sizer.Add(self.hyperLinkCtrl, 0, wx.LEFT|wx.ALIGN_BOTTOM, SPACE)
         
-        box_sizer.Add(top_sizer, 0, wx.BOTTOM, HALF_SPACE)
-        box_sizer.Add(bottom_sizer, 0, wx.BOTTOM,0)
+        box_sizer.Add(top_sizer, 0, wx.TOP, HALF_SPACE)
+        box_sizer.Add(bottom_sizer, 0, wx.TOP,SPACE)
 
         self.SetSizer(box_sizer)
         self.interpreter = None
