@@ -2547,6 +2547,14 @@ class DebuggerService(Service.Service):
                     environment[PYTHON_PATH_KEY] = env[PYTHON_PATH_KEY]
         return environment
         
+    def DebugRunSciptWithBuiltinInterpreter(self,interpreter,fileToRun):
+        pythonService = wx.GetApp().GetService(PythonEditor.PythonService)
+        Service.ServiceView.bottomTab.SetSelection(0)
+        pythonService.ShowWindow()
+        python_interpreter_view = pythonService.GetView()
+        command = 'execfile(r"%s")' % fileToRun
+        python_interpreter_view.shell.run(command)
+        
     def DebugRunScript(self,event,showDialog=True):
         if not Executor.GetPythonExecutablePath():
             return
@@ -2560,6 +2568,9 @@ class DebuggerService(Service.Service):
         fileToRun = document.GetFilename()
         self.ShowWindow(True)
         interpreter = wx.GetApp().GetCurrentInterpreter()
+        if interpreter.IsBuiltIn:
+            self.DebugRunSciptWithBuiltinInterpreter(interpreter,fileToRun)
+            return
         shortFile = os.path.basename(fileToRun)
         page = RunCommandUI(Service.ServiceView.bottomTab, -1, fileToRun)
         count = Service.ServiceView.bottomTab.GetPageCount()
@@ -2578,6 +2589,9 @@ class DebuggerService(Service.Service):
         doc_view = self.GetActiveView()
         if not doc_view:
             return
+        interpreter = wx.GetApp().GetCurrentInterpreter()
+        if interpreter.IsBuiltIn:
+            return
         document = doc_view.GetDocument()
         if not document.Save() or document.IsNewDocument:
             return
@@ -2585,7 +2599,7 @@ class DebuggerService(Service.Service):
         fileToRun = document.GetFilename()
         startIn = os.path.dirname(fileToRun)
         initialArgs = None
-        environment = self.GetEnvironment(doc_view,wx.GetApp().GetCurrentInterpreter())
+        environment = self.GetEnvironment(doc_view,interpreter)
         if sysutilslib.isWindows():
             command = u"cmd.exe /c %s \"%s\""  % (python_executable_path,fileToRun)
             if initialArgs is not None:

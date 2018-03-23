@@ -509,6 +509,13 @@ class IDEApplication(wx.lib.pydocview.DocApp):
     def OnExit(self):
         intellisence.IntellisenceManager().Stop()
         wx.lib.pydocview.DocApp.OnExit(self)
+        
+    def ShowSplash(self, image):
+        """
+        Shows a splash window with the given image.  Input parameter 'image' can either be a wx.Bitmap or a filename.
+        """
+        wx.lib.pydocview.DocApp.ShowSplash(self,image)
+        wx.Yield()
 
 class IDEDocManager(wx.lib.docview.DocManager):
 
@@ -628,7 +635,7 @@ from wx import BitmapFromImage
 #----------------------------------------------------------------------
 
 def getIDESplashBitmap():
-    splash_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "splash.jpg")
+    splash_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "tt.png")
     splash_image = wx.Image(splash_image_path,wx.BITMAP_TYPE_ANY)
     return BitmapFromImage(splash_image)
 

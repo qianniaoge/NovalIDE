@@ -160,3 +160,9 @@ Version 1.0.6 -------------2018-03-6
 19.fix add python virtual env bug on linux os
 20.fix the bug when double click the file line and show messagebox which cause wxEVT_MOUSE_CAPTURE_LOST problem
 21.adjust the control layout of configuration page
+22.remove the left gap if python interpreter view
+23.allow load builtin python interpreter
+24.enable debug file in python interpreter view with builtin interpreter
+25.optimise the speed of load outline of parse tree
+26.change startup splash image of application
+27.fix bug when show startup splash image on linux os

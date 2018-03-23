@@ -23,12 +23,18 @@ class InterpreterManager(Singleton):
             return
         self.LoadPythonInterpreters()
         if 0 == len(self.interpreters):
-             dlg = wx.MessageDialog(None, _("No Python Interpreter Found!"), _("No Interpreter"), wx.OK | wx.ICON_WARNING)  
-             dlg.ShowModal()
-             dlg.Destroy()  
-        elif 1 == len(self.interpreters):
+            if sysutils.isWindows():
+                dlg = wx.MessageDialog(None, _("No Python Interpreter Found In Your Computer,Will Use the Builtin Interpreter Instead"), \
+                    _("No Python Interpreter Found"), wx.OK | wx.ICON_WARNING)
+            else:
+                dlg = wx.MessageDialog(None, _("No Python Interpreter Found!"), _("No Interpreter"), wx.OK | wx.ICON_WARNING)
+            dlg.ShowModal()
+            dlg.Destroy()
+        if sysutils.isWindows():
+            self.LoadBuiltinInterpreter()
+        if 1 == len(self.interpreters):
             self.MakeDefaultInterpreter()
-        else:
+        elif 1 < len(self.interpreters):
             self.ChooseDefaultInterpreter()
         self.SetCurrentInterpreter(self.DefaultInterpreter)
         self.SavePythonInterpretersConfig()
@@ -100,7 +106,11 @@ class InterpreterManager(Singleton):
                 return False
             lst = pickle.loads(data.encode('ascii'))
             for l in lst:
-                interpreter = Interpreter.PythonInterpreter(l['name'],l['path'],l['id'],True)
+                is_builtin = l.get('is_builtin',False)
+                if is_builtin:
+                    interpreter = Interpreter.BuiltinPythonInterpreter(l['name'],l['path'],l['id'])
+                else:
+                    interpreter = Interpreter.PythonInterpreter(l['name'],l['path'],l['id'],True)
                 interpreter.Default = l['default']
                 if interpreter.Default:
                     self.SetDefaultInterpreter(interpreter)
@@ -109,7 +119,8 @@ class InterpreterManager(Singleton):
                     'builtins': l['builtins'],
                     #'path_list' is the old key name of sys_path_list,we should make compatible of old version
                     'sys_path_list': l.get('sys_path_list',l.get('path_list')),
-                    'python_path_list': l.get('python_path_list',[])
+                    'python_path_list': l.get('python_path_list',[]),
+                    'is_builtin':is_builtin
                 }
                 interpreter.SetInterpreter(**data)
                 interpreter.HelpPath = l.get('help_path','')
@@ -157,7 +168,7 @@ class InterpreterManager(Singleton):
             d = dict(id=interpreter.Id,name=interpreter.Name,version=interpreter.Version,path=interpreter.Path,\
                         default=interpreter.Default,sys_path_list=interpreter.SysPathList,python_path_list=interpreter.PythonPathList,\
                         builtins=interpreter.Builtins,help_path=interpreter.HelpPath,\
-                        environ=interpreter.Environ.environ,packages=interpreter.Packages)
+                        environ=interpreter.Environ.environ,packages=interpreter.Packages,is_builtin=interpreter.IsBuiltIn)
             lst.append(d)
         return lst
         
@@ -274,6 +285,10 @@ class InterpreterManager(Singleton):
     @classmethod    
     def GetCurrentInterpreter(cls):
         return cls.CurrentInterpreter
+        
+    def LoadBuiltinInterpreter(self):
+        builtin_interpreter = Interpreter.BuiltinPythonInterpreter(_("Builtin_Interpreter"),sys.executable)
+        self.interpreters.append(builtin_interpreter)
         
 class InterpreterAddError(Exception):
     def __init__(self, error_msg):

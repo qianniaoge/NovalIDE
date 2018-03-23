@@ -105,6 +105,8 @@ class NewVirtualEnvDialog(wx.Dialog):
         interpreter_image = wx.Image(interpreter_image_path,wx.BITMAP_TYPE_ANY)
         interpreter_bmp = wx.BitmapFromImage(interpreter_image)
         for i,interpreter in enumerate(interpretermanager.InterpreterManager.interpreters):
+            if interpreter.IsBuiltIn:
+                continue
             display_name = "%s (%s)" % (interpreter.Version,interpreter.Path)
             self._interprterChoice.Append(display_name,interpreter_bmp,interpreter.Path)
             if interpreter.Path == self._interpreter.Path:
@@ -183,13 +185,12 @@ class AddInterpreterDialog(wx.Dialog):
         dlg.Destroy()  
         
 class InterpreterConfigDialog(wx.Dialog):
-    def __init__(self,parent,dlg_id,title,size=(700,500)):
-        wx.Dialog.__init__(self,parent,dlg_id,title,size=size)
+    def __init__(self,parent,dlg_id,title):
+        wx.Dialog.__init__(self,parent,dlg_id,title)
         
         box_sizer = wx.BoxSizer(wx.VERTICAL)
-        top_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        
-        contentSizer = wx.BoxSizer(wx.HORIZONTAL)
+        flexGridSizer = wx.FlexGridSizer(cols = 2, vgap = 0, hgap = SPACE)
+        flexGridSizer.AddGrowableCol(1,1)
         self.dvlc = dataview.DataViewListCtrl(self,size=(510,150))
         self.dvlc.AppendTextColumn(_('Name'), width=100)
         self.dvlc.AppendTextColumn(_('Version'), width=70)
@@ -198,31 +199,29 @@ class InterpreterConfigDialog(wx.Dialog):
         dataview.EVT_DATAVIEW_SELECTION_CHANGED(self.dvlc, -1, self.UpdateUI)
         dataview.EVT_DATAVIEW_ITEM_ACTIVATED(self.dvlc, -1, self.ModifyInterpreterNameDlg)
         dataview.EVT_DATAVIEW_ITEM_CONTEXT_MENU(self.dvlc, -1,self.OnContextMenu)
-        contentSizer.Add(self.dvlc, 0, wx.EXPAND, 0)
-        top_sizer.Add(contentSizer, 0, wx.LEFT, 0)
+        flexGridSizer.Add(self.dvlc, 1, flag=wx.ALIGN_CENTER_VERTICAL|wx.EXPAND)
         
         right_sizer = wx.BoxSizer(wx.VERTICAL)
-        
         self.add_btn = wx.Button(self, -1, _("Add"))
         wx.EVT_BUTTON(self.add_btn, -1, self.AddInterpreter)
-        right_sizer.Add(self.add_btn, 0, wx.BOTTOM|wx.EXPAND, SPACE)
+        right_sizer.Add(self.add_btn, 0, wx.TOP|wx.RIGHT|wx.EXPAND, SPACE)
         
         self.remove_btn = wx.Button(self, -1, _("Remove"))
         wx.EVT_BUTTON(self.remove_btn, -1, self.RemoveInterpreter)
-        right_sizer.Add(self.remove_btn, 0, wx.BOTTOM|wx.EXPAND, SPACE)
+        right_sizer.Add(self.remove_btn, 0, wx.TOP|wx.RIGHT|wx.EXPAND, SPACE)
         
         self.smart_analyse_btn = wx.Button(self, -1, _("Smart Analyse"))
         wx.EVT_BUTTON(self.smart_analyse_btn, -1, self.SmartAnalyseIntreprter)
-        right_sizer.Add(self.smart_analyse_btn, 0, wx.BOTTOM|wx.EXPAND, SPACE)
+        right_sizer.Add(self.smart_analyse_btn, 0, wx.TOP|wx.RIGHT|wx.EXPAND, SPACE)
         
         self.set_default_btn = wx.Button(self, -1, _("Set Default"))
         wx.EVT_BUTTON(self.set_default_btn, -1, self.SetDefaultInterpreter)
-        right_sizer.Add(self.set_default_btn, 0, wx.BOTTOM|wx.EXPAND, SPACE)
+        right_sizer.Add(self.set_default_btn, 0, wx.TOP|wx.RIGHT|wx.EXPAND, SPACE)
         
-        top_sizer.Add(right_sizer, 0, wx.LEFT, SPACE*2)
+        flexGridSizer.Add(right_sizer, 2, flag=wx.ALIGN_TOP)
         
         bottom_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        nb = wx.Notebook(self,size=(650,350))
+        nb = wx.Notebook(self,-1)
         self.package_panel = packages.PackagePanel(nb)
         nb.AddPage(self.package_panel, _("Package"))
         self.path_panel = pythonpath.PythonPathPanel(nb)
@@ -233,8 +232,8 @@ class InterpreterConfigDialog(wx.Dialog):
         nb.AddPage(self.environment_panel, _("Environment Variable"))
         bottom_sizer.Add(nb, 0, wx.BOTTOM, HALF_SPACE)
         
-        box_sizer.Add(top_sizer, 0, wx.BOTTOM, HALF_SPACE)
-        box_sizer.Add(bottom_sizer, 0, wx.BOTTOM,0)
+        box_sizer.Add(flexGridSizer, 1, flag=wx.EXPAND|wx.ALL, border=0)
+        box_sizer.Add(bottom_sizer, 0, wx.TOP|wx.EXPAND,SPACE)
         
         bsizer = wx.StdDialogButtonSizer()
         ok_btn = wx.Button(self, wx.ID_OK, _("&OK"))
@@ -249,7 +248,6 @@ class InterpreterConfigDialog(wx.Dialog):
         self.SetSizer(box_sizer) 
         self.ScanAllInterpreters()
         self.UpdateUI(None)
-        
         self.Fit()
         
     def OnContextMenu(self, event):
@@ -374,9 +372,18 @@ class InterpreterConfigDialog(wx.Dialog):
         progress_dlg.KeepGoing = False
             
     def ProcessUpdateUIEvent(self, event):
-        if self.dvlc.GetSelectedRow() == wx.NOT_FOUND:
+        index = self.dvlc.GetSelectedRow()
+        if index == wx.NOT_FOUND:
             event.Enable(False)
             return False
+        if event.GetId() == ID_NEW_INTERPRETER_VIRTUALENV:
+            item = self.dvlc.RowToItem(index)
+            id = self.dvlc.GetItemData(item)
+            interpreter = interpretermanager.InterpreterManager().GetInterpreterById(id)
+            if interpreter.IsBuiltIn:
+                event.Enable(False)
+                return True
+            
         event.Enable(True)
         return True
         
@@ -490,6 +497,8 @@ class InterpreterConfigDialog(wx.Dialog):
         self.SmartAnalyse(interpreter)
 
     def SmartAnalyse(self,interpreter):
+        if interpreter.IsBuiltIn:
+            return
         interpreter.GetDocPath()
         interpreter.GetSysPathList()
         interpreter.GetBuiltins()

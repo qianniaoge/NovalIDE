@@ -42,6 +42,7 @@ from noval.parser.utils import CmpMember
 from noval.util.logger import app_debugLogger
 import noval.util.sysutils as sysutilslib
 import noval.tool.interpreter.manager as interpretermanager
+import threading
 try:
     import checker # for pychecker
     _CHECKER_INSTALLED = True
@@ -119,6 +120,7 @@ class PythonView(CodeEditor.CodeView):
         self._run_parameter = None
         #document checksum to check document is updated
         self._checkSum = -1
+        self._lock = threading.Lock()
 
     def SetRunParameter(self,arg,start_up,env):
         self._run_parameter = RunParameter(arg,env,start_up)
@@ -132,10 +134,7 @@ class PythonView(CodeEditor.CodeView):
         return self._module_scope
 
     @sysutilslib.time_func
-    def LoadModule(self,filename,doc_update):
-        if not doc_update:
-            return
-
+    def LoadModule(self,filename):
         module = parser.parse_content(self.GetCtrl().GetValue(),filename,self.GetDocument().file_encoding)
         if module is None:
             return
@@ -301,7 +300,7 @@ class PythonView(CodeEditor.CodeView):
             foundView.SetSelection(endPos, startPos)
             wx.GetApp().GetService(OutlineService.OutlineService).LoadOutline(foundView, position=startPos)
 
-    def DoLoadOutlineCallback(self, force=False):
+    def DoLoadOutlineCallback(self, force=False,lineNum=-1):
         outlineService = wx.GetApp().GetService(OutlineService.OutlineService)
         if not outlineService:
             return False
@@ -316,7 +315,7 @@ class PythonView(CodeEditor.CodeView):
 
         view = treeCtrl.GetCallbackView()
         newCheckSum = self.GenCheckSum()
-        doc_update = self._checkSum != newCheckSum
+        force = self._checkSum != newCheckSum
         if not force:
             if view and view is self:
                 if self._checkSum == newCheckSum:
@@ -325,23 +324,23 @@ class PythonView(CodeEditor.CodeView):
         document = self.GetDocument()
         if not document:
             return True
-        filename = document.GetFilename()
-        self.LoadModule(filename,doc_update)
-        if self.ModuleScope == None:
-            if view is None or filename != view.GetDocument().GetFilename():
-                treeCtrl.DeleteAllItems()
-            return True
-        #should freeze control to prevent update and treectrl flick
-        treeCtrl.Freeze()
-        treeCtrl.DeleteAllItems()
-        rootItem = treeCtrl.AddRoot(self.ModuleScope.Module.Name)
-        treeCtrl.SetItemImage(rootItem,treeCtrl.ModuleIdx,wx.TreeItemIcon_Normal)
-        treeCtrl.SetDoSelectCallback(rootItem, self, self.ModuleScope.Module)
-        self.TranverseItem(treeCtrl,self.ModuleScope.Module,rootItem)
-        treeCtrl.Expand(rootItem)
-        #use thaw to update freezw control
-        treeCtrl.Thaw()
+        t = threading.Thread(target=self.LoadMouduleSynchronizeTree,args=(view,force,treeCtrl,outlineService,lineNum))
+        t.start()
         return True
+        
+    def LoadMouduleSynchronizeTree(self,view,force,treeCtrl,outlineService,lineNum):
+        with self._lock:
+            document = self.GetDocument()
+            filename = document.GetFilename()
+            if force:
+                self.LoadModule(filename)
+            if self.ModuleScope == None:
+                if view is None or filename != view.GetDocument().GetFilename():
+                    wx.CallAfter(treeCtrl.DeleteAllItems)
+                return True
+            #should freeze control to prevent update and treectrl flick
+            treeCtrl.LoadModuleAst(self.ModuleScope,self,outlineService,lineNum)
+        
         
     @sysutilslib.time_func
     def TranverseItem(self,treeCtrl,node,parent):
@@ -390,15 +389,11 @@ class PythonInterpreterView(Service.ServiceView):
 
     def _CreateControl(self, parent, id):
         sizer = wx.BoxSizer()
-       # self._pyCrust = wx.py.crust.Crust(parent)
-        #self._pyCrust._shouldsplit = False
-        #sizer.Add(self._pyCrust, 1, wx.EXPAND, 0)
-        
         self.shell = wx.py.shell.Shell(parent=parent, id=-1, introText='',
                            locals=None, InterpClass=None,
                            startupScript=None,
                            execStartupScript=True)
-        self.shell.SetMarginType(1, 0)
+        #remove the left gap if python interpreter view
         self.shell.SetMarginWidth(1, 0)
         sizer.Add(self.shell, 1, wx.EXPAND, 0)
         return self.shell
@@ -441,16 +436,13 @@ class PythonInterpreterView(Service.ServiceView):
         else:
             return wx.lib.docview.View.ProcessEvent(self, event)
 
-
     def ProcessUpdateUIEvent(self, event):
-        print 111111
         if not hasattr(self, "shell") or not self.shell:
             return wx.lib.docview.View.ProcessUpdateUIEvent(self, event)
         stcControl = wx.Window_FindFocus()
         if not isinstance(stcControl, wx.stc.StyledTextCtrl):
             return wx.lib.docview.View.ProcessUpdateUIEvent(self, event)
         id = event.GetId()
-        print id
         if id == wx.ID_UNDO:
             event.Enable(stcControl.CanUndo())
             return True

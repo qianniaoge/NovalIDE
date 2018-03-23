@@ -16,6 +16,8 @@ import wx.lib.pydocview
 import Service
 import noval.util.sysutils as sysutilslib
 import os
+import WxThreadSafe
+import noval.parser.config as parserconfig
 _ = wx.GetTranslation
 
 
@@ -287,6 +289,7 @@ class OutlineTreeCtrl(wx.TreeCtrl):
                 child, cookie = self.GetNextChild(item, cookie)
         return None
         
+    @WxThreadSafe.call_after
     def SelectClosestItem(self, node):
         
         item = self.FindNodeItem(self.GetRootItem(),node)
@@ -297,26 +300,6 @@ class OutlineTreeCtrl(wx.TreeCtrl):
             self.SelectItem(item)
             if os_view:
                os_view.ResumeActionOnSelect()
-##        tree = self
-##        distances = []
-##        items = []
-##        self.FindDistanceToTreeItems(tree.GetRootItem(), position, distances, items)
-##        mindist = 1000000
-##        mindex = -1
-##        for index in range(0, len(distances)):
-##            if distances[index] <= mindist:
-##                mindist = distances[index]
-##                mindex = index
-##        if mindex != -1:
-##            item = items[mindex]
-##            self.EnsureVisible(item)
-##            os_view = wx.GetApp().GetService(OutlineService).GetView()
-##            if os_view:
-##               os_view.StopActionOnSelect()
-##            self.SelectItem(item)
-##            if os_view:
-##               os_view.ResumeActionOnSelect()
-
 
     def FindDistanceToTreeItems(self, item, position, distances, items):
         data = self.GetPyData(item)
@@ -362,6 +345,61 @@ class OutlineTreeCtrl(wx.TreeCtrl):
             return self.GetPyData(rootItem)[self.VIEW]
         else:
             return None
+            
+    @WxThreadSafe.call_after
+    def LoadModuleAst(self,module_scope,view,outlineService,lineNum):
+        #should freeze control to prevent update and treectrl flick
+        self.Freeze()
+        self.DeleteAllItems()
+        rootItem = self.AddRoot(module_scope.Module.Name)
+        self.SetItemImage(rootItem,self.ModuleIdx,wx.TreeItemIcon_Normal)
+        self.SetDoSelectCallback(rootItem, view, module_scope.Module)
+        self.TranverseItem(view,module_scope.Module,rootItem)
+        self.Expand(rootItem)
+        #use thaw to update freezw control
+        self.Thaw()
+        if lineNum >= 0:
+            outlineService.SyncToPosition(view,lineNum)
+        
+    @sysutilslib.time_func
+    def TranverseItem(self,view,node,parent):
+        for child in node.Childs:
+            if child.Type == parserconfig.NODE_FUNCDEF_TYPE:
+                item = self.AppendItem(parent, child.Name)
+                self.SetItemImage(item,self.FuncIdx,wx.TreeItemIcon_Normal)
+                self.SetDoSelectCallback(item, view, child)
+            elif child.Type == parserconfig.NODE_CLASSDEF_TYPE:
+                item = self.AppendItem(parent, child.Name)
+                self.SetItemImage(item,self.ClassIdx,wx.TreeItemIcon_Normal)
+                self.SetDoSelectCallback(item, view, child)
+                self.TranverseItem(view,child,item)
+            elif child.Type == parserconfig.NODE_OBJECT_PROPERTY or \
+                        child.Type == parserconfig.NODE_ASSIGN_TYPE:
+                item = self.AppendItem(parent, child.Name)
+                self.SetItemImage(item,self.PropertyIdx,wx.TreeItemIcon_Normal)
+                self.SetDoSelectCallback(item, view, child)
+            elif child.Type == parserconfig.NODE_IMPORT_TYPE:
+                name = child.Name
+                if child.AsName is not None:
+                    name = child.AsName
+                item = self.AppendItem(parent,name)
+                self.SetItemImage(item,self.ImportIdx,wx.TreeItemIcon_Normal)
+                self.SetDoSelectCallback(item, view, child)
+            elif child.Type == parserconfig.NODE_FROMIMPORT_TYPE:
+                from_import_item = self.AppendItem(parent,child.Name)
+                self.SetItemImage(from_import_item,self.FromImportIdx,wx.TreeItemIcon_Normal)
+                self.SetDoSelectCallback(from_import_item, view, child)
+                for node_import in child.Childs:
+                    name = node_import.Name
+                    if node_import.AsName is not None:
+                        name = node_import.AsName
+                    import_item = self.AppendItem(from_import_item,name)
+                    self.SetItemImage(import_item,self.ImportIdx,wx.TreeItemIcon_Normal)
+                    self.SetDoSelectCallback(import_item, view, node_import)
+            elif child.Type == parserconfig.NODE_MAIN_FUNCTION_TYPE:
+                item = self.AppendItem(parent, child.Name)
+                self.SetItemImage(item,self.MainFunctionIdx,wx.TreeItemIcon_Normal)
+                self.SetDoSelectCallback(item, view, child)
 
 
 class OutlineService(Service.Service):
@@ -504,20 +542,20 @@ class OutlineService(Service.Service):
 
         if hasattr(view, "DoLoadOutlineCallback"):
             self.SaveExpansionState()
-            if view.DoLoadOutlineCallback(force=force):
+            if view.DoLoadOutlineCallback(force=force,lineNum=lineNum):
                 self.GetView().OnSort(wx.ConfigBase_Get().ReadInt("OutlineSort", SORT_BY_NONE))
                 self.LoadExpansionState()
-            if lineNum >= 0 and view.ModuleScope is not None:
-                scope = view.ModuleScope.FindScope(lineNum)
-                if scope.Parent is None:
-                    return
-                self.SyncToPosition(scope.Node)
+            else:
+                self.SyncToPosition(view,lineNum)
 
-    def SyncToPosition(self, node):
+    def SyncToPosition(self, view,lineNum):
         if not self.GetView():
             return
-        self.GetView().GetTreeCtrl().SelectClosestItem(node)
-
+        if lineNum >= 0 and view.ModuleScope is not None:
+            scope = view.ModuleScope.FindScope(lineNum)
+            if scope.Parent is None:
+                return
+            self.GetView().GetTreeCtrl().SelectClosestItem(scope.Node)
 
     def OnCloseFrame(self, event):
         self.StopTimer()

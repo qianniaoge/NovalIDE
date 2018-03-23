@@ -61,9 +61,9 @@ class EnvironmentPanel(wx.Panel):
         
         left_sizer = wx.BoxSizer(wx.VERTICAL)
         left_sizer.Add(wx.StaticText(self, label=_("Set User Defined Environment Variable:")),0, wx.TOP|wx.EXPAND, SPACE)
-        self.dvlc = dataview.DataViewListCtrl(self,size=(500,230))
+        self.dvlc = dataview.DataViewListCtrl(self,size=(510,230))
         self.dvlc.AppendTextColumn(_('Key'), width=100)
-        self.dvlc.AppendTextColumn(_('Value'),width=400)
+        self.dvlc.AppendTextColumn(_('Value'),width=410)
         dataview.EVT_DATAVIEW_SELECTION_CHANGED(self.dvlc, -1, self.UpdateUI)
         left_sizer.Add(self.dvlc, 1,  wx.TOP|wx.RIGHT|wx.EXPAND, HALF_SPACE)
         

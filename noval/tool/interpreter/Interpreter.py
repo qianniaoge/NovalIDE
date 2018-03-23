@@ -9,6 +9,8 @@ from noval.util.logger import app_debugLogger
 import glob
 import manager
 import sys
+import cStringIO
+import py_compile
 
 _ = wx.GetTranslation
 
@@ -119,6 +121,10 @@ class BuiltinPythonInterpreter(Interpreter):
         self._builtin_module_name = "__builtin__"
         
     @property
+    def IsBuiltIn(self):
+        return self._is_builtin
+        
+    @property
     def Version(self):
         return self._version
 
@@ -169,6 +175,64 @@ class BuiltinPythonInterpreter(Interpreter):
     @Packages.setter
     def Packages(self,packages):
         self._packages = packages
+        
+    def LoadPackages(self,ui_panel,force):
+        ui_panel.LoadPackageEnd(self)
+        
+    @property
+    def IsLoadingPackage(self):
+        return False
+        
+    def SetInterpreter(self,**kwargs):
+        self._version = kwargs.get('version')
+        if self.IsV3():
+            self._builtin_module_name = self.PYTHON3_BUILTIN_MODULE_NAME
+        self._builtins = kwargs.get('builtins')
+        self._sys_path_list = kwargs.get('sys_path_list')
+        self._python_path_list = kwargs.get('python_path_list')
+        self._is_builtin = kwargs.get('is_builtin')
+        
+    def IsV2(self):
+        return True
+        
+    def IsV3(self):
+        return False
+        
+    @property
+    def Analysing(self):
+        return False
+    
+    @property
+    def IsValidInterpreter(self):
+         return True
+         
+    def CheckSyntax(self,script_path):
+        origin_stderr = sys.stderr
+        sys.stderr = cStringIO.StringIO()
+        py_compile.compile(script_path)
+        output = sys.stderr.getvalue().strip()
+        sys.stderr = origin_stderr
+        if 0 == len(output):
+            return True,-1,''
+        lower_output = output.lower()
+        lines = output.splitlines()
+        fileBegin = lines[0].find("File \"")
+        fileEnd = lines[0].find("\", line ")
+        if -1 != lower_output.find('permission denied:'):
+            line = lines[-1]
+            pos = line.find(']')
+            msg = line[pos+1:].replace("'","").strip()
+            msg += ",Perhaps you need to delete it first!"
+            return False,-1,msg
+        elif fileBegin != -1 and fileEnd != -1:
+            lineNum = int(lines[0][fileEnd + 8:].strip())
+            return False,lineNum,'\n'.join(lines[1:])
+
+        i = lines[0].find('(')
+        j = lines[0].find(')')
+        msg = lines[0][0:i].strip()
+        lineNum = int(lines[0][i+1:j].split()[-1])
+        return False,lineNum,msg
         
 class PythonInterpreter(BuiltinPythonInterpreter):
     
@@ -303,14 +367,6 @@ class PythonInterpreter(BuiltinPythonInterpreter):
         lst = eval(output)
         self._builtins = lst
         
-    def SetInterpreter(self,**kwargs):
-        self._version = kwargs.get('version')
-        if self.IsV3():
-            self._builtin_module_name = self.PYTHON3_BUILTIN_MODULE_NAME
-        self._builtins = kwargs.get('builtins')
-        self._sys_path_list = kwargs.get('sys_path_list')
-        self._python_path_list = kwargs.get('python_path_list')
-        
     @property
     def Analysing(self):
         return self._is_analysing
@@ -371,6 +427,11 @@ class PythonInterpreter(BuiltinPythonInterpreter):
     @property
     def IsLoadingPackage(self):
         return self._is_loading_package
+        
+    def SetInterpreter(self,**kwargs):
+        BuiltinPythonInterpreter.SetInterpreter(self,**kwargs)
+        if self.IsV3():
+            self._builtin_module_name = self.PYTHON3_BUILTIN_MODULE_NAME
         
 class EnvironmentError(Exception):
     

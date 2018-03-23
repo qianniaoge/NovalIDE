@@ -684,7 +684,7 @@ class TextView(wx.lib.docview.View):
             current_dlg.Move(to_point)
     
     def TextNotFound(self,findString,flags,forceFindNext = False, forceFindPrevious = False):
-        wx.MessageBox(_("Have been reached the end of document,Can't find \"%s\".") % findString, "Find",
+        wx.MessageBox(_("Have been reached the end of document,Can't find \"%s\".") % findString, _("Find Text"),
                           wx.OK | wx.ICON_INFORMATION)     
         down = flags & wx.FR_DOWN > 0
         wrap = flags & FindService.FindService.FR_WRAP > 0
