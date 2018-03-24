@@ -515,6 +515,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         Shows a splash window with the given image.  Input parameter 'image' can either be a wx.Bitmap or a filename.
         """
         wx.lib.pydocview.DocApp.ShowSplash(self,image)
+        #should pause a moment to show splash image on linux os,otherwise it will show white background on linux
         wx.Yield()
 
 class IDEDocManager(wx.lib.docview.DocManager):

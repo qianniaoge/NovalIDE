@@ -142,3 +142,7 @@ def get_python_coding_declare(lines):
         return None,-1
     name = match.group(1)
     return name,hit_line
+    
+def emphasis_path(path):
+    path = "\"%s\"" % path
+    return path

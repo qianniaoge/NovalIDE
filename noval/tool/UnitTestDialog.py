@@ -4,6 +4,7 @@ import noval.parser.config as parserconfig
 import wx.lib.agw.customtreectrl as CT
 import noval.parser.nodeast as nodeast
 import PythonEditor
+import noval.util.sysutils as sysutilslib
 _ = wx.GetTranslation
 
 SPACE = 10
@@ -38,18 +39,46 @@ class UnitTestDialog(wx.Dialog):
         self.checked_items = []
 
         contentSizer = wx.BoxSizer(wx.VERTICAL)
-        topSizer = wx.BoxSizer(wx.HORIZONTAL)
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        
+        flagSizer = wx.BoxSizer(wx.HORIZONTAL)
+        st_text = wx.StaticText(self,label = _("NovalIDE UnitTest Wizard"))
+        st_text.SetFont(wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD))
+        flagSizer.Add(st_text, 1,flag=wx.LEFT|wx.EXPAND,border = SPACE)  
+        icon = wx.StaticBitmap(self,bitmap = wx.Bitmap(os.path.join(sysutilslib.mainModuleDir, \
+                            "noval", "tool", "bmp_source", "python_logo.png")))  
+        flagSizer.Add(icon,0,flag=wx.TOP|wx.RIGHT,border = HALF_SPACE)
+        contentSizer.Add(flagSizer,0,flag=wx.EXPAND|wx.ALL,border = HALF_SPACE)
+        
+        isz = (16,16)
+        il = wx.ImageList(isz[0], isz[1])
+        modulebmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "module.png")
+        modulebmp = wx.Bitmap(modulebmp_path, wx.BITMAP_TYPE_PNG)
+        self.ModuleIdx = il.Add(modulebmp)
 
-        self._treeCtrl = CT.CustomTreeCtrl(self, agwStyle = wx.TR_DEFAULT_STYLE)
+        funcbmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "func.png")
+        funcbmp = wx.Bitmap(funcbmp_path, wx.BITMAP_TYPE_PNG)
+        self.FuncIdx = il.Add(funcbmp)
+
+        classbmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "class.png")
+        classbmp = wx.Bitmap(classbmp_path, wx.BITMAP_TYPE_PNG)
+        self.ClassIdx = il.Add(classbmp)
+
+        #lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._treeCtrl = CT.CustomTreeCtrl(self, style = wx.BORDER_THEME,agwStyle = wx.TR_DEFAULT_STYLE)
+        self._treeCtrl.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOX))
+        self._treeCtrl.SetImageList(il)
         contentSizer.Add(self._treeCtrl, 1, wx.EXPAND|wx.BOTTOM,SPACE)
 
+        bsizer = wx.StdDialogButtonSizer()
         ok_btn = wx.Button(self, wx.ID_OK, _("&OK"))
-        lineSizer.Add(ok_btn, 0, wx.LEFT, SPACE*22)
+        ok_btn.SetDefault()
+        bsizer.AddButton(ok_btn)
         cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
-        lineSizer.Add(cancel_btn, 0, wx.LEFT, SPACE)
-        contentSizer.Add(lineSizer, 0, wx.BOTTOM,SPACE)
-        self.SetSizer(contentSizer)
+        bsizer.AddButton(cancel_btn)
+        bsizer.Realize()
+        contentSizer.Add(bsizer, 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.BOTTOM,HALF_SPACE)
+        self.SetSizer(contentSizer) 
+        
         self._cur_view = view
         self.CreateUnitTestFrame()
         self.Bind(CT.EVT_TREE_ITEM_CHECKED, self.checked_item)
@@ -87,6 +116,7 @@ class UnitTestDialog(wx.Dialog):
     def CreateUnitTestFrame(self):
         module_scop = self._cur_view.ModuleScope
         self.root = self._treeCtrl.AddRoot(module_scop.Module.Name,ct_type=1)
+        self._treeCtrl.SetItemImage(self.root,self.ModuleIdx,wx.TreeItemIcon_Normal)
         self.TranverseItem(module_scop.Module,self.root)
 
     def TranverseItem(self,node,parent):
@@ -94,12 +124,12 @@ class UnitTestDialog(wx.Dialog):
             if child.Type == parserconfig.NODE_FUNCDEF_TYPE:
                 if child.IsConstructor:
                     continue
-                item_image_index = 1
+                item_image_index = self.FuncIdx
                 item = self._treeCtrl.AppendItem(parent, child.Name,ct_type=1)
                 self._treeCtrl.SetItemImage(item,item_image_index,wx.TreeItemIcon_Normal)
                 self._treeCtrl.SetPyData(item,child)
             elif child.Type == parserconfig.NODE_CLASSDEF_TYPE:
-                item_image_index = 2
+                item_image_index = self.ClassIdx
                 item = self._treeCtrl.AppendItem(parent, child.Name,ct_type=1)
                 self._treeCtrl.SetItemImage(item,item_image_index,wx.TreeItemIcon_Normal)
                 self._treeCtrl.SetPyData(item,child)

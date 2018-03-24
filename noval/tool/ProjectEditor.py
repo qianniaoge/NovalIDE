@@ -32,6 +32,7 @@ import project as projectlib
 import ExtensionService
 import ResourceView
 import noval.util.sysutils as sysutilslib
+import ImportFiles
 
 from IDE import ACTIVEGRID_BASE_IDE
 if not ACTIVEGRID_BASE_IDE:
@@ -2019,10 +2020,16 @@ class ProjectView(wx.lib.docview.View):
         elif id == ProjectService.PROJECT_PROPERTIES_ID:
             self.OnProjectProperties(event)
             return True
+        elif id == ProjectService.IMPORT_FILES_ID:
+            self.ImportFilesToProject(event)
+            return True
         else:
             return False
 
-
+    def ImportFilesToProject(self,event):
+        import_files_dlg = ImportFiles.ImportFilesDialog(self._treeCtrl,-1,_("Import Files"))
+        import_files_dlg.ShowModal()
+        
     def ProcessUpdateUIEvent(self, event):
         # Hack: The edit menu is not being set for projects that are preloaded at startup, so make sure it is OK here
         if self._checkEditMenu:
@@ -2653,7 +2660,7 @@ class ProjectView(wx.lib.docview.View):
                     itemIDs = [None, ProjectService.RUN_SELECTED_PM_ID, None]
                     break
         else:  # Project context
-            itemIDs = []
+            itemIDs = [ProjectService.IMPORT_FILES_ID]
         menuBar = self._GetParentFrame().GetMenuBar()
         itemIDs = itemIDs + [ProjectService.ADD_FILES_TO_PROJECT_ID, ProjectService.ADD_DIR_FILES_TO_PROJECT_ID, ProjectService.ADD_FOLDER_ID, ProjectService.REMOVE_FROM_PROJECT, None, ProjectService.CLOSE_PROJECT_ID, ProjectService.DELETE_PROJECT_ID, None, ProjectService.PROJECT_PROPERTIES_ID]
         svnIDs = [SVNService.SVNService.SVN_UPDATE_ID, SVNService.SVNService.SVN_CHECKIN_ID, SVNService.SVNService.SVN_REVERT_ID]
@@ -3425,6 +3432,7 @@ class ProjectService(Service.Service):
     PROJECT_PROPERTIES_ID = wx.NewId()
     ADD_FOLDER_ID = wx.NewId()
     DELETE_PROJECT_ID = wx.NewId()
+    IMPORT_FILES_ID = wx.NewId()
     
 
     #----------------------------------------------------------------------------
@@ -3491,6 +3499,9 @@ class ProjectService(Service.Service):
 ##            frame.SetAcceleratorTable(accelTable)
         isProjectDocument = document and document.GetDocumentTemplate().GetDocumentType() == ProjectDocument
         if wx.GetApp().IsMDI() or isProjectDocument:
+            projectMenu.Append(ProjectService.IMPORT_FILES_ID, _("Import Files..."), _("Import files to the current project"))
+            wx.EVT_MENU(frame, ProjectService.IMPORT_FILES_ID, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, ProjectService.IMPORT_FILES_ID, frame.ProcessUpdateUIEvent)
             if not menuBar.FindItemById(ProjectService.ADD_FILES_TO_PROJECT_ID):
                 projectMenu.Append(ProjectService.ADD_FILES_TO_PROJECT_ID, _("Add &Files to Project..."), _("Adds a document to the current project"))
                 wx.EVT_MENU(frame, ProjectService.ADD_FILES_TO_PROJECT_ID, frame.ProcessEvent)

@@ -58,6 +58,7 @@ import interpreter.configruation as configruation
 import noval.parser.intellisence as intellisence
 import interpreter.manager as interpretermanager
 from consts import PYTHON_PATH_KEY
+import noval.util.strutils as strutils
 
 import sys
 reload(sys)
@@ -261,6 +262,15 @@ class RunCommandUI(wx.Panel):
                 pass
         RunCommandUI.runners = []
     ShutdownAllRunners = staticmethod(ShutdownAllRunners)
+    
+    @staticmethod
+    def StopAndRemoveAllUI():
+        for i in range(Service.ServiceView.bottomTab.GetPageCount()-1, 0, -1): # Go from len-1 to 1
+            page = Service.ServiceView.bottomTab.GetPage(i)
+            if hasattr(page, 'StopAndRemoveUI'):
+                if not page.StopAndRemoveUI(None):
+                    return False
+        return True
 
     def __init__(self, parent, id, fileName):
         wx.Panel.__init__(self, parent, id)
@@ -390,12 +400,13 @@ class RunCommandUI(wx.Panel):
             ret = wx.MessageBox(_("Process is still running,Do You Want to kill the process and remove it?"), _("Process Running.."),
                        wx.YES_NO  | wx.ICON_QUESTION ,self)
             if ret == wx.NO:
-                return
+                return False
 
         self.StopExecution()
         index = self._noteBook.GetSelection()
         self._noteBook.GetPage(index).Show(False)
         self._noteBook.RemovePage(index)
+        return True
 
     #------------------------------------------------------------------------------
     # Event handling
@@ -2319,6 +2330,8 @@ class DebuggerService(Service.Service):
         try:
             config = wx.ConfigBase_Get()
             config.Write(self.BREAKPOINT_DICT_STRING, pickle.dumps(self._masterBPDict))
+            if not RunCommandUI.StopAndRemoveAllUI():
+                return False
         except:
             tp,val,tb = sys.exc_info()
             traceback.print_exception(tp, val, tb)
@@ -2601,13 +2614,13 @@ class DebuggerService(Service.Service):
         initialArgs = None
         environment = self.GetEnvironment(doc_view,interpreter)
         if sysutilslib.isWindows():
-            command = u"cmd.exe /c %s \"%s\""  % (python_executable_path,fileToRun)
+            command = u"cmd.exe /c call %s \"%s\""  % (strutils.emphasis_path(python_executable_path),fileToRun)
             if initialArgs is not None:
                 command += " " + initialArgs
             command += " &pause"
             subprocess.Popen(command.encode(sys_encoding),shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE,cwd=startIn.encode(sys_encoding),env=environment)
         else:
-            python_cmd = u"%s \"%s\"" % (python_executable_path,fileToRun)
+            python_cmd = u"%s \"%s\"" % (strutils.emphasis_path(python_executable_path),fileToRun)
             if initialArgs is not None:
                 python_cmd += " " + initialArgs
             python_cmd += ";echo 'Please enter any to continue';read"

@@ -3,6 +3,7 @@ import subprocess
 import wx
 import locale
 import noval.util.sysutils as sysutils
+import noval.util.strutils as strutils
 import __builtin__
 import threading
 from noval.util.logger import app_debugLogger
@@ -264,10 +265,10 @@ class PythonInterpreter(BuiltinPythonInterpreter):
             self.GetBuiltins()
             
     def GetVersion(self):
-        output = GetCommandOutput("%s -V" % self.Path,True).strip().lower()
+        output = GetCommandOutput("%s -V" % strutils.emphasis_path(self.Path),True).strip().lower()
         version_flag = "python "
         if output.find(version_flag) == -1:
-            output = GetCommandOutput("%s -V" % self.Path,False).strip().lower()
+            output = GetCommandOutput("%s -V" % strutils.emphasis_path(self.Path),False).strip().lower()
             if output.find(version_flag) == -1:
                 return
         self._version = output.replace(version_flag,"").strip()
@@ -351,18 +352,18 @@ class PythonInterpreter(BuiltinPythonInterpreter):
         
     def GetSysPathList(self):
         if int(self._version.split(".")[0]) == 2:
-            run_cmd ="%s -c \"import sys;print sys.path\"" % (self.Path)
+            run_cmd ="%s -c \"import sys;print sys.path\"" % (strutils.emphasis_path(self.Path))
         elif int(self._version.split(".")[0]) == 3:
-            run_cmd ="%s -c \"import sys;print (sys.path)\"" % (self.Path)
+            run_cmd ="%s -c \"import sys;print (sys.path)\"" % (strutils.emphasis_path(self.Path))
         output = GetCommandOutput(run_cmd).strip()
         lst = eval(output)
         self._sys_path_list = lst
         
     def GetBuiltins(self):
         if int(self._version.split(".")[0]) == 2:
-            run_cmd ="%s -c \"import sys;print sys.builtin_module_names\"" % (self.Path)
+            run_cmd ="%s -c \"import sys;print sys.builtin_module_names\"" % (strutils.emphasis_path(self.Path))
         elif int(self._version.split(".")[0]) == 3:
-            run_cmd ="%s -c \"import sys;print (sys.builtin_module_names)\"" % (self.Path)
+            run_cmd ="%s -c \"import sys;print (sys.builtin_module_names)\"" % (strutils.emphasis_path(self.Path))
         output = GetCommandOutput(run_cmd).strip()
         lst = eval(output)
         self._builtins = lst
@@ -413,7 +414,7 @@ class PythonInterpreter(BuiltinPythonInterpreter):
         self._is_loading_package = True
         pip_path = self.GetPipPath()
         if pip_path is not None:
-            command = "%s list" % pip_path
+            command = "%s list" % strutils.emphasis_path(pip_path)
             output = GetCommandOutput(command)
             for line in output.split('\n'):
                 if line.strip() == "":

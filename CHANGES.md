@@ -166,3 +166,9 @@ Version 1.0.6 -------------2018-03-6
 25.optimise the speed of load outline of parse tree
 26.change startup splash image of application
 27.fix bug when show startup splash image on linux os
+
+Version 1.0.7 -------------2018-03-23
+1.query the running process to stop or not when application exit
+2.fix the bug when the interpreter path contain empty string
+3.add icon of unittest treectrl item
+4.add import files to project 
