@@ -96,8 +96,8 @@ class UnitTestDialog(wx.Dialog):
         childs = self.get_childs(item)
         for child in self.get_childs(item):
             self._treeCtrl.CheckItem(child, checked)
-            if self._treeCtrl.HasChildren(child):
-                self.check_child_item(child,checked)
+            #if self._treeCtrl.HasChildren(child):
+             #   self.check_child_item(child,checked)
 
     def check_parent_item(self,item):
         parent_item = self._treeCtrl.GetItemParent(item)

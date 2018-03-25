@@ -169,6 +169,8 @@ Version 1.0.6 -------------2018-03-6
 
 Version 1.0.7 -------------2018-03-23
 1.query the running process to stop or not when application exit
-2.fix the bug when the interpreter path contain empty string
+2.fix the bug when the interpreter path contain empty blank string
 3.add icon of unittest treectrl item
-4.add import files to project 
+4.add import files to project and show import file progress
+5.beautify unittest wizard ui interface
+6.add new project wizard on right menu of project view

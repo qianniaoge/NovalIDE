@@ -2023,12 +2023,31 @@ class ProjectView(wx.lib.docview.View):
         elif id == ProjectService.IMPORT_FILES_ID:
             self.ImportFilesToProject(event)
             return True
+        elif id == ProjectService.NEW_PROJECT_ID:
+            self.NewProject(event)
+            return True
+        elif id == ProjectService.OPEN_PROJECT_PATH_ID:
+            self.OpenProjectPath(event)
+            return True
         else:
             return False
+            
+    def NewProject(self,event):
+        docManager = wx.GetApp().GetTopWindow().GetDocumentManager()
+        for template in docManager.GetTemplates():
+            if template.GetDocumentType() == ProjectDocument:
+                doc = template.CreateDocument("", flags = wx.lib.docview.DOC_NEW)
+                break
+                
+    def OpenProjectPath(self,event):
+        document = self.GetDocument()
+        fileutils.open_file_directory(document.GetFilename())
 
     def ImportFilesToProject(self,event):
-        import_files_dlg = ImportFiles.ImportFilesDialog(self._treeCtrl,-1,_("Import Files"))
+        folderPath = self._GetItemFolderPath(self._treeCtrl.GetSelection())
+        import_files_dlg = ImportFiles.ImportFilesDialog(self._treeCtrl,-1,_("Import Files"),folderPath)
         import_files_dlg.ShowModal()
+        import_files_dlg.Destroy()
         
     def ProcessUpdateUIEvent(self, event):
         # Hack: The edit menu is not being set for projects that are preloaded at startup, so make sure it is OK here
@@ -2427,7 +2446,7 @@ class ProjectView(wx.lib.docview.View):
         if wx.Platform == "__WXMSW__" or wx.Platform == "__WXGTK__" or wx.Platform == "__WXMAC__":
             descr = ''
             for temp in self.GetDocumentManager()._templates:
-                if temp.IsVisible():
+                if temp.IsVisible() and temp.GetDocumentType() != ProjectDocument:
                     if len(descr) > 0:
                         descr = descr + _('|')
                     descr = descr + temp.GetDescription() + _(" (") + temp.GetFileFilter() + _(") |") + temp.GetFileFilter()  # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
@@ -2635,6 +2654,7 @@ class ProjectView(wx.lib.docview.View):
         self.Activate()
         if not self.GetSelectedProject():
             return
+        is_root_item = False
         menu = wx.Menu()
         if self._HasFilesSelected():  # Files context
             menu.Append(ProjectService.OPEN_SELECTION_ID, _("&Open"), _("Opens the selection"))
@@ -2660,7 +2680,12 @@ class ProjectView(wx.lib.docview.View):
                     itemIDs = [None, ProjectService.RUN_SELECTED_PM_ID, None]
                     break
         else:  # Project context
-            itemIDs = [ProjectService.IMPORT_FILES_ID]
+            itemIDs = []
+            if self._treeCtrl.GetSelection() == self._treeCtrl.GetRootItem():
+                is_root_item = True
+            if is_root_item:
+                itemIDs = [ProjectService.NEW_PROJECT_ID] 
+            itemIDs.append(ProjectService.IMPORT_FILES_ID)
         menuBar = self._GetParentFrame().GetMenuBar()
         itemIDs = itemIDs + [ProjectService.ADD_FILES_TO_PROJECT_ID, ProjectService.ADD_DIR_FILES_TO_PROJECT_ID, ProjectService.ADD_FOLDER_ID, ProjectService.REMOVE_FROM_PROJECT, None, ProjectService.CLOSE_PROJECT_ID, ProjectService.DELETE_PROJECT_ID, None, ProjectService.PROJECT_PROPERTIES_ID]
         svnIDs = [SVNService.SVNService.SVN_UPDATE_ID, SVNService.SVNService.SVN_CHECKIN_ID, SVNService.SVNService.SVN_REVERT_ID]
@@ -2668,6 +2693,8 @@ class ProjectView(wx.lib.docview.View):
             itemIDs = itemIDs + [None, SVNService.SVNService.SVN_UPDATE_ID, SVNService.SVNService.SVN_CHECKIN_ID, SVNService.SVNService.SVN_REVERT_ID]
         globalIDs = [wx.ID_UNDO, wx.ID_REDO, wx.ID_CLOSE, wx.ID_SAVE, wx.ID_SAVEAS]
         itemIDs = itemIDs + [None, wx.ID_UNDO, wx.ID_REDO, None, wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE, wx.ID_CLEAR, None, wx.ID_SELECTALL, ProjectService.RENAME_ID, ProjectService.DELETE_FILE_ID, None, wx.lib.pydocview.FilePropertiesService.PROPERTIES_ID]
+        if is_root_item:
+            itemIDs.append(ProjectService.OPEN_PROJECT_PATH_ID)
         for itemID in itemIDs:
             if not itemID:
                 menu.AppendSeparator()
@@ -3433,6 +3460,8 @@ class ProjectService(Service.Service):
     ADD_FOLDER_ID = wx.NewId()
     DELETE_PROJECT_ID = wx.NewId()
     IMPORT_FILES_ID = wx.NewId()
+    NEW_PROJECT_ID = wx.NewId()
+    OPEN_PROJECT_PATH_ID = wx.NewId()
     
 
     #----------------------------------------------------------------------------
@@ -3499,6 +3528,7 @@ class ProjectService(Service.Service):
 ##            frame.SetAcceleratorTable(accelTable)
         isProjectDocument = document and document.GetDocumentTemplate().GetDocumentType() == ProjectDocument
         if wx.GetApp().IsMDI() or isProjectDocument:
+            projectMenu.Append(ProjectService.NEW_PROJECT_ID, _("New Project..."), _("New NovalIDE Project"))
             projectMenu.Append(ProjectService.IMPORT_FILES_ID, _("Import Files..."), _("Import files to the current project"))
             wx.EVT_MENU(frame, ProjectService.IMPORT_FILES_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, ProjectService.IMPORT_FILES_ID, frame.ProcessUpdateUIEvent)
@@ -3532,6 +3562,7 @@ class ProjectService(Service.Service):
                 projectMenu.Append(ProjectService.PROJECT_PROPERTIES_ID, _("Project Properties"), _("Project Properties"))
                 wx.EVT_MENU(frame, ProjectService.PROJECT_PROPERTIES_ID, frame.ProcessEvent)
                 wx.EVT_UPDATE_UI(frame, ProjectService.PROJECT_PROPERTIES_ID, frame.ProcessUpdateUIEvent)
+            projectMenu.Append(ProjectService.OPEN_PROJECT_PATH_ID, _("Open Project Path in File Explower"), _("Open Project Path"))
         index = menuBar.FindMenu(_("&Format"))
         if index == -1:
             index = menuBar.FindMenu(_("&View"))

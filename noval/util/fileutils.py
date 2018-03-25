@@ -502,4 +502,10 @@ def is_file_hiden(path):
                     break
                 path = os.path.dirname(path)
         return is_hidden
-            
+        
+def GetDirFiles(path,file_list):
+    for f in os.listdir(path):
+        file_path = os.path.join(path, f)
+        if os.path.isfile(file_path):
+            file_list.append(file_path)
+                        
