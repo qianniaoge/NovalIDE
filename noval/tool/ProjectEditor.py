@@ -33,6 +33,7 @@ import ExtensionService
 import ResourceView
 import noval.util.sysutils as sysutilslib
 import ImportFiles
+from noval.tool.consts import SPACE,HALF_SPACE,_ 
 
 from IDE import ACTIVEGRID_BASE_IDE
 if not ACTIVEGRID_BASE_IDE:
@@ -54,7 +55,6 @@ if not ACTIVEGRID_BASE_IDE:
 
 from SVNService import SVN_INSTALLED
 
-_ = wx.GetTranslation
 
 if wx.Platform == '__WXMSW__':
     _WINDOWS = True
@@ -64,8 +64,6 @@ else:
 #----------------------------------------------------------------------------
 # Constants
 #----------------------------------------------------------------------------
-SPACE = 10
-HALF_SPACE = 5
 PROJECT_EXTENSION = ".agp"
 
 if not ACTIVEGRID_BASE_IDE:
@@ -1021,10 +1019,8 @@ class NewProjectWizard(Wizard.BaseWizard):
         page = Wizard.TitledWizardPage(wizard, _("Name and Location"))
 
         page.GetSizer().Add(wx.StaticText(page, -1, _("\nEnter the name and location for the project.\n")))
-        self._projectName, self._dirCtrl, self._interpreterCombo,self._dirCheck,sizer, self._fileValidation = UICommon.CreateDirectoryControl(page, \
+        self._projectName, self._dirCtrl, self._interpreterCombo,self._dirCheck, self._fileValidation = UICommon.CreateDirectoryControl(page, \
                     fileExtension="agp", appDirDefaultStartDir=True, fileLabel=_("Name:"), dirLabel=_("Location:"),useDirDialog=True)
-        page.GetSizer().Add(sizer, 1, flag=wx.EXPAND)
-
         wizard.Layout()
         wizard.FitToPage(page)
         return page
@@ -3462,6 +3458,8 @@ class ProjectService(Service.Service):
     IMPORT_FILES_ID = wx.NewId()
     NEW_PROJECT_ID = wx.NewId()
     OPEN_PROJECT_PATH_ID = wx.NewId()
+    OPEN_PROJECT_ID = wx.NewId()
+    SAVE_PROJECT_ID = wx.NewId()
     
 
     #----------------------------------------------------------------------------
@@ -3529,6 +3527,8 @@ class ProjectService(Service.Service):
         isProjectDocument = document and document.GetDocumentTemplate().GetDocumentType() == ProjectDocument
         if wx.GetApp().IsMDI() or isProjectDocument:
             projectMenu.Append(ProjectService.NEW_PROJECT_ID, _("New Project..."), _("New NovalIDE Project"))
+            wx.EVT_MENU(frame, ProjectService.NEW_PROJECT_ID, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, ProjectService.NEW_PROJECT_ID, frame.ProcessUpdateUIEvent)
             projectMenu.Append(ProjectService.IMPORT_FILES_ID, _("Import Files..."), _("Import files to the current project"))
             wx.EVT_MENU(frame, ProjectService.IMPORT_FILES_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, ProjectService.IMPORT_FILES_ID, frame.ProcessUpdateUIEvent)
@@ -3563,6 +3563,8 @@ class ProjectService(Service.Service):
                 wx.EVT_MENU(frame, ProjectService.PROJECT_PROPERTIES_ID, frame.ProcessEvent)
                 wx.EVT_UPDATE_UI(frame, ProjectService.PROJECT_PROPERTIES_ID, frame.ProcessUpdateUIEvent)
             projectMenu.Append(ProjectService.OPEN_PROJECT_PATH_ID, _("Open Project Path in File Explower"), _("Open Project Path"))
+            wx.EVT_MENU(frame, ProjectService.OPEN_PROJECT_PATH_ID, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, ProjectService.OPEN_PROJECT_PATH_ID, frame.ProcessUpdateUIEvent)
         index = menuBar.FindMenu(_("&Format"))
         if index == -1:
             index = menuBar.FindMenu(_("&View"))
@@ -3762,7 +3764,10 @@ class ProjectService(Service.Service):
         or id == wx.lib.pydocview.FilePropertiesService.PROPERTIES_ID
         or id == ProjectService.ADD_FOLDER_ID
         or id == ProjectService.DELETE_PROJECT_ID
-        or id == ProjectService.CLOSE_PROJECT_ID):
+        or id == ProjectService.CLOSE_PROJECT_ID
+        or id == ProjectService.IMPORT_FILES_ID
+        or id == ProjectService.NEW_PROJECT_ID
+        or id == ProjectService.OPEN_PROJECT_PATH_ID):
             if self.GetView():
                 return self.GetView().ProcessEvent(event)
             else:
@@ -3798,9 +3803,12 @@ class ProjectService(Service.Service):
             event.Enable(self._HasOpenedProjects())
             return True
         elif id in [wx.lib.pydocview.FilePropertiesService.PROPERTIES_ID,
-        ProjectService.ADD_FOLDER_ID,
-        ProjectService.DELETE_PROJECT_ID,
-        ProjectService.CLOSE_PROJECT_ID]:
+            ProjectService.ADD_FOLDER_ID,
+            ProjectService.DELETE_PROJECT_ID,
+            ProjectService.CLOSE_PROJECT_ID,
+            ProjectService.NEW_PROJECT_ID,
+            ProjectService.OPEN_PROJECT_PATH_ID,
+            ProjectService.IMPORT_FILES_ID]:
             if self.GetView():
                 return self.GetView().ProcessUpdateUIEvent(event)
             else:

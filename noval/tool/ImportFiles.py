@@ -140,7 +140,10 @@ class ImportFilesDialog(wx.Dialog):
         self.ListDirFiles(self._treeCtrl.GetSelection(),False,True)
         
     def ChangeDir(self,event):
-        path = self.dirControl.GetValue()
+        path = self.dirControl.GetValue().strip()
+        if path == "":
+            self._treeCtrl.DeleteAllItems()
+            return
         if sysutilslib.isWindows():
             path = path.replace("/",os.sep)
         self.ListDirItemFiles(path.rstrip(os.sep))

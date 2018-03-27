@@ -43,6 +43,7 @@ from noval.util.logger import app_debugLogger
 import noval.util.sysutils as sysutilslib
 import noval.tool.interpreter.manager as interpretermanager
 import threading
+import PyShell
 try:
     import checker # for pychecker
     _CHECKER_INSTALLED = True
@@ -389,12 +390,10 @@ class PythonInterpreterView(Service.ServiceView):
 
     def _CreateControl(self, parent, id):
         sizer = wx.BoxSizer()
-        self.shell = wx.py.shell.Shell(parent=parent, id=-1, introText='',
+        self.shell = PyShell.PyShell(parent=parent, id=-1, introText='',
                            locals=None, InterpClass=None,
                            startupScript=None,
                            execStartupScript=True)
-        #remove the left gap if python interpreter view
-        self.shell.SetMarginWidth(1, 0)
         sizer.Add(self.shell, 1, wx.EXPAND, 0)
         return self.shell
         

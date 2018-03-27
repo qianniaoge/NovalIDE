@@ -221,7 +221,8 @@ class CodeView(STCTextEditor.TextView):
 
     def OnChangeFilename(self):
         wx.lib.docview.View.OnChangeFilename(self)
-        self.LoadOutline(force=True)
+        if self.GetLangLexer() == parserconfig.LANG_PYTHON_LEXER:
+            self.LoadOutline(force=True)
         
 
     def ClearOutline(self):

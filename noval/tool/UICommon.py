@@ -25,7 +25,7 @@ import noval.parser.utils as dirutils
 import wx.lib.agw.hyperlink as hl
 import interpreter.configruation as configruation
 import noval.tool.interpreter.manager as interpretermanager
-_ = wx.GetTranslation
+from noval.tool.consts import HALF_SPACE,_ ,SPACE
 
 def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Directory:"), fileExtension="*", startingName="", startingDirectory=None, choiceDirs=None, appDirDefaultStartDir=False, returnAll=False, useDirDialog=False):
 
@@ -92,7 +92,6 @@ def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Direc
     hyperLinkCtrl.AutoBrowse(False)
     hyperLinkCtrl.SetBold(True)
     hyperLinkCtrl.SetToolTip(wx.ToolTip(_("Click to Configure Interpreters")))
-    dirCheck = wx.CheckBox(parent, -1, _("Create Project Directory"))
     allControls = [nameControl, nameLabelText, dirLabelText, dirControl, button]
     
     def OnGotoLink(event):
@@ -202,7 +201,6 @@ def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Direc
                     return False
 
         return True    
-    HALF_SPACE = 5
     flexGridSizer = wx.FlexGridSizer(cols = 3, vgap = HALF_SPACE, hgap = HALF_SPACE)
     flexGridSizer.AddGrowableCol(1,1)
     if not useDirDialog:
@@ -220,18 +218,24 @@ def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Direc
         flexGridSizer.Add(dirControl, 2, flag=wx.ALIGN_CENTER_VERTICAL|wx.EXPAND)
         flexGridSizer.Add(button, flag=wx.ALIGN_RIGHT|wx.LEFT, border=HALF_SPACE)  
         
-        
         flexGridSizer.Add(interpreterLabelText, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT)
         flexGridSizer.Add(interpreterCombo, 2, flag=wx.ALIGN_CENTER_VERTICAL|wx.EXPAND)
         flexGridSizer.Add(hyperLinkCtrl, flag=wx.ALIGN_LEFT|wx.LEFT,border=HALF_SPACE)
         
-        flexGridSizer.Add(wx.StaticText(parent, -1, ""), 0)
-        flexGridSizer.Add(dirCheck)
-        
+    parent.GetSizer().Add(flexGridSizer, 0, flag=wx.EXPAND)
+    
+    option_sizer = wx.BoxSizer(wx.VERTICAL)
+    dirCheck = wx.CheckBox(parent, -1, _("Create Project Name Directory"))
+    option_sizer.Add(dirCheck,0,flag=wx.TOP,border=HALF_SPACE)
+    addsrcPathRadioBtn = wx.RadioButton(parent,-1, label = "Create 'Src' Folder And Add it to the PYTHONPATH")
+    option_sizer.Add(addsrcPathRadioBtn,0,flag=wx.TOP,border=HALF_SPACE)
+    addProjectPathRadioBtn = wx.RadioButton(parent,-1, label = 'Add Project Directory to the PYTHONPATH')
+    option_sizer.Add(addProjectPathRadioBtn,0,flag=wx.TOP,border=HALF_SPACE)
+    parent.GetSizer().Add(option_sizer, 0, flag=wx.TOP|wx.ALIGN_LEFT,border=SPACE)
     if returnAll:
-        return nameControl, dirControl, interpreterCombo,dirCheck,flexGridSizer, Validate, allControls
+        return nameControl, dirControl, interpreterCombo,dirCheck, Validate, allControls
     else:
-        return nameControl, dirControl, interpreterCombo,dirCheck,flexGridSizer, Validate
+        return nameControl, dirControl, interpreterCombo,dirCheck, Validate
 
 
 def CreateDirectoryOnlyControl( parent, dirLabel=_("Location:"), startingDirectory=None, choiceDirs=None, appDirDefaultStartDir=False):

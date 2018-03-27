@@ -174,3 +174,6 @@ Version 1.0.7 -------------2018-03-23
 4.add import files to project and show import file progress
 5.beautify unittest wizard ui interface
 6.add new project wizard on right menu of project view
+7.fix the bug of import files on linux os
+8.fix the coruption problem of debug run script with builtin interpreter
+9.fix the bug of open file in file explower on windows os

@@ -2525,9 +2525,10 @@ class DebuggerService(Service.Service):
         if line > 0:
             doc_view.GotoLine(line)
             
-    def GetEnvironment(self,doc_view,interpreter):
+    def GetEnvironmentArgs(self,doc_view,interpreter):
         
         environment = None
+        initialArgs = None
         if doc_view.RunParameter is not None:
             startIn = doc_view.RunParameter.StartUp
             initialArgs = doc_view.RunParameter.Arg
@@ -2558,15 +2559,20 @@ class DebuggerService(Service.Service):
                     environment[PYTHON_PATH_KEY] = env[PYTHON_PATH_KEY] + os.pathsep + environment.get(PYTHON_PATH_KEY)
                 else:
                     environment[PYTHON_PATH_KEY] = env[PYTHON_PATH_KEY]
-        return environment
+        return environment,initialArgs
         
-    def DebugRunSciptWithBuiltinInterpreter(self,interpreter,fileToRun):
+    def DebugRunSciptWithBuiltinInterpreter(self,interpreter,doc_view):
+        fileToRun = doc_view.GetDocument().GetFilename()
         pythonService = wx.GetApp().GetService(PythonEditor.PythonService)
         Service.ServiceView.bottomTab.SetSelection(0)
         pythonService.ShowWindow()
         python_interpreter_view = pythonService.GetView()
+        old_argv = sys.argv
+        environment,initialArgs = self.GetEnvironmentArgs(doc_view,interpreter)
+        sys.argv = [fileToRun]
         command = 'execfile(r"%s")' % fileToRun
         python_interpreter_view.shell.run(command)
+        sys.argv = old_argv
         
     def DebugRunScript(self,event,showDialog=True):
         if not Executor.GetPythonExecutablePath():
@@ -2582,7 +2588,7 @@ class DebuggerService(Service.Service):
         self.ShowWindow(True)
         interpreter = wx.GetApp().GetCurrentInterpreter()
         if interpreter.IsBuiltIn:
-            self.DebugRunSciptWithBuiltinInterpreter(interpreter,fileToRun)
+            self.DebugRunSciptWithBuiltinInterpreter(interpreter,doc_view)
             return
         shortFile = os.path.basename(fileToRun)
         page = RunCommandUI(Service.ServiceView.bottomTab, -1, fileToRun)
@@ -2591,8 +2597,7 @@ class DebuggerService(Service.Service):
         Service.ServiceView.bottomTab.SetPageImage(count,self.GetIconIndex())
         Service.ServiceView.bottomTab.SetSelection(count)
         startIn = os.path.dirname(fileToRun)
-        initialArgs = None
-        environment = self.GetEnvironment(doc_view,interpreter)
+        environment,initialArgs = self.GetEnvironmentArgs(doc_view,interpreter)
         page.Execute(initialArgs, startIn, environment, onWebServer = False)
 
     def RunScript(self,event,showDialog=True):
@@ -2611,8 +2616,7 @@ class DebuggerService(Service.Service):
         sys_encoding = locale.getdefaultlocale()[1]
         fileToRun = document.GetFilename()
         startIn = os.path.dirname(fileToRun)
-        initialArgs = None
-        environment = self.GetEnvironment(doc_view,interpreter)
+        environment,initialArgs = self.GetEnvironmentArgs(doc_view,interpreter)
         if sysutilslib.isWindows():
             command = u"cmd.exe /c call %s \"%s\""  % (strutils.emphasis_path(python_executable_path),fileToRun)
             if initialArgs is not None:
