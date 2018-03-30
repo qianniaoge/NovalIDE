@@ -26,6 +26,7 @@ import wx.lib.agw.hyperlink as hl
 import interpreter.configruation as configruation
 import noval.tool.interpreter.manager as interpretermanager
 from noval.tool.consts import HALF_SPACE,_ ,SPACE
+from noval.model import configuration as projectconfiguration
 
 def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Directory:"), fileExtension="*", startingName="", startingDirectory=None, choiceDirs=None, appDirDefaultStartDir=False, returnAll=False, useDirDialog=False):
 
@@ -152,34 +153,34 @@ def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Direc
         projName = nameControl.GetValue().strip()
         if projName == "":
             wx.MessageBox(_("Please provide a %sfile name.") % infoString, _("Provide a File Name"))            
-            return False
+            return False,None
         if projName.find(' ') != -1:
             wx.MessageBox(_("Please provide a %sfile name that does not contains spaces.") % infoString, _("Spaces in File Name"))            
-            return False
+            return False,None
         if validClassName:
             if projName[0].isdigit():
                 wx.MessageBox(_("File name cannot start with a number.  Please enter a different name."), _("Invalid File Name"))            
-                return False
+                return False,None
             if projName.endswith(".agp"):
                 projName2 = projName[:-4]
             else:
                 projName2 = projName
             if not projName2.replace("_", "a").isalnum():  # [a-zA-Z0-9_]  note '_' is allowed and ending '.agp'.
                 wx.MessageBox(_("Name must be alphanumeric ('_' allowed).  Please enter a valid name."), _("Project Name"))
-                return False
+                return False,None
 
         dirName = dirControl.GetValue().strip()
         if dirName == "":
             wx.MessageBox(_("No directory.  Please provide a directory."), _("Provide a Directory"))            
-            return False
+            return False,None
         if os.sep == "\\" and dirName.find("/") != -1:
             wx.MessageBox(_("Wrong delimiter '/' found in directory path.  Use '%s' as delimiter.") % os.sep, _("Provide a Valid Directory"))            
-            return False
+            return False,None
             
         if -1 == interpreterCombo.GetSelection():
             wx.MessageBox(_("You do not Choose any interpreter,Please choose a valid interpreter or click Configuration link to add new interpreter"),\
                         _("Choose a Interpreter"))
-            return
+            return False,None
         if dirCheck.GetValue():
             dirName = os.path.join(dirName,projName)
 
@@ -189,18 +190,29 @@ def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Direc
 
         if not os.path.exists(dirName):
             wx.MessageBox(_("That %sdirectory does not exist.  Please choose an existing directory.") % infoString, _("Provide a Valid Directory"))            
-            return False
+            return False,None
         if not ignoreFileConflicts:
             filePath = os.path.join(dirName, MakeNameEndInExtension(projName, "." + fileExtension))
             if os.path.exists(filePath):
                 if allowOverwriteOnPrompt:
                     res = wx.MessageBox(_("That %sfile already exists. Would you like to overwrite it.") % infoString, "File Exists", style=wx.YES_NO|wx.NO_DEFAULT)
-                    return (res == wx.YES)  
+                    if res != wx.YES:
+                        return False,None
                 else:                
                     wx.MessageBox(_("That %sfile already exists. Please choose a different name.") % infoString, "File Exists")
-                    return False
-
-        return True    
+                    return False,None
+                    
+        pythonpath_pattern = projectconfiguration.ProjectConfiguration.NONE_PATH_ADD_TO_PYTHONPATH
+        if addsrcPathRadioBtn.GetValue():
+            pythonpath_pattern = projectconfiguration.ProjectConfiguration.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH
+        elif addProjectPathRadioBtn.GetValue():
+            pythonpath_pattern = projectconfiguration.ProjectConfiguration.PROJECT_PATH_ADD_TO_PYTHONPATH
+        elif configureNonePathRadioBtn.GetValue():
+            pythonpath_pattern = projectconfiguration.ProjectConfiguration.NONE_PATH_ADD_TO_PYTHONPATH
+        pjconfiguration = projectconfiguration.ProjectConfiguration(nameControl.GetValue().strip(),
+                    dirControl.GetValue().strip(),interpreterCombo.GetValue(),dirCheck.GetValue(),pythonpath_pattern)
+        return True, pjconfiguration
+         
     flexGridSizer = wx.FlexGridSizer(cols = 3, vgap = HALF_SPACE, hgap = HALF_SPACE)
     flexGridSizer.AddGrowableCol(1,1)
     if not useDirDialog:
@@ -227,15 +239,17 @@ def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Direc
     option_sizer = wx.BoxSizer(wx.VERTICAL)
     dirCheck = wx.CheckBox(parent, -1, _("Create Project Name Directory"))
     option_sizer.Add(dirCheck,0,flag=wx.TOP,border=HALF_SPACE)
-    addsrcPathRadioBtn = wx.RadioButton(parent,-1, label = "Create 'Src' Folder And Add it to the PYTHONPATH")
+    addsrcPathRadioBtn = wx.RadioButton(parent,-1, label = "Create 'Src' Folder And Add it to the PYTHONPATH",style = wx.RB_GROUP)
     option_sizer.Add(addsrcPathRadioBtn,0,flag=wx.TOP,border=HALF_SPACE)
     addProjectPathRadioBtn = wx.RadioButton(parent,-1, label = 'Add Project Directory to the PYTHONPATH')
     option_sizer.Add(addProjectPathRadioBtn,0,flag=wx.TOP,border=HALF_SPACE)
+    configureNonePathRadioBtn = wx.RadioButton(parent,-1, label = 'Don\'t Configure PYTHONPATH(later manually configure it)')
+    option_sizer.Add(configureNonePathRadioBtn,0,flag=wx.TOP,border=HALF_SPACE)
     parent.GetSizer().Add(option_sizer, 0, flag=wx.TOP|wx.ALIGN_LEFT,border=SPACE)
     if returnAll:
-        return nameControl, dirControl, interpreterCombo,dirCheck, Validate, allControls
+        return Validate, allControls
     else:
-        return nameControl, dirControl, interpreterCombo,dirCheck, Validate
+        return  Validate
 
 
 def CreateDirectoryOnlyControl( parent, dirLabel=_("Location:"), startingDirectory=None, choiceDirs=None, appDirDefaultStartDir=False):

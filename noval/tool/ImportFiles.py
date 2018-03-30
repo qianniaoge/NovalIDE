@@ -7,6 +7,7 @@ import ProjectEditor
 import noval.util.fileutils as fileutils
 import threading
 from wx.lib.pubsub import pub as Publisher
+import time
 
 NOVAL_MSG_UI_IMPORT_FILES_PROGRESS = "noval.msg.fileimport.progress"
 
@@ -168,8 +169,21 @@ class ImportFilesDialog(wx.Dialog):
         if root_item is None or not self._treeCtrl.IsItemChecked(root_item):
             wx.MessageBox(_("You don't select any file"))
             return
+        root_path = self._treeCtrl.GetPyData(root_item)
         file_list = []
+        dir_path = self._treeCtrl.GetPyData(root_item)
+        if not self.IsItemSelected(root_item):
+            fileutils.GetDirFiles(dir_path,file_list)
+         #get checked tree item file list
+        else:
+            self.GetCheckedItemFiles(root_item,file_list)
         self.RotateItems(root_item,file_list)
+        if 0 == len(file_list):
+            wx.MessageBox(_("You don't select any file"))
+            return
+        project_file_path = self.project_view.GetDocument().GetFilename()
+        if project_file_path in file_list:
+            file_list.remove(project_file_path)
         self.m_gauge.Show()
         self.GetSizer().Layout()
         self.Fit()
@@ -181,49 +195,23 @@ class ImportFilesDialog(wx.Dialog):
         self.file_filter_btn.Enable(False)
         self.m_gauge.SetRange(len(file_list))
         self._is_importing = True
-        self.StartCopyFilesToProject(file_list)
-        self.MonitorCopyProgress(file_list,len(file_list))
+        self.project_view.StopImport(False)
+        self.project_view.StartCopyFilesToProject(self,file_list,root_path,self.dest_path)
         
     def OnCancelClick(self, event):
         if self._is_importing:
             self._stop_importing = True
-            self.monotor_thread.join()
-            self.copy_thread.join()
-        self.EndModal(wx.ID_CANCEL)
-        
-    def StartCopyFilesToProject(self,file_list):
-        self.copy_thread = threading.Thread(target = self.CopyFilesToProject,args=(file_list,))
-        self.copy_thread.start()
-        
-    def MonitorCopyProgress(self,file_list,file_count):
-        self.monotor_thread = threading.Thread(target = self.ShowCopyProgress,args=(file_list,file_count))
-        self.monotor_thread.start()
-        
-    def ShowCopyProgress(self,file_list,max_file_count):
-        while len(file_list) != 0:
-            if self._stop_importing:
-                break
-            wx.MilliSleep(50)
-            wx.CallAfter(Publisher.sendMessage, NOVAL_MSG_UI_IMPORT_FILES_PROGRESS, value=max_file_count - len(file_list))
-        self._is_importing = False
-        if not self._stop_importing:
-            self.EndModal(wx.ID_OK)
+            self.project_view.StopImport(True)
+        else:
+            self.EndModal(wx.ID_CANCEL)
             
-    def UpdateImportProgress(self,value):
+    def UpdateImportProgress(self,value,is_cancel):
         self.m_gauge.SetValue(value)
-        
-    def CopyFilesToProject(self,file_list):
-        while len(file_list) != 0:
-            if self._stop_importing:
-                break
-            for file_path in file_list:
-                if self._stop_importing:
-                    break
-                import time
-                time.sleep(1)
-                ##if self.project.CopyFileToProject(self,file_path):
-                if True:
-                    file_list.remove(file_path)
+        if is_cancel:
+            print 'cancel import .........'
+            self.EndModal(wx.ID_CANCEL)
+        elif self.m_gauge.GetRange() <= value:
+            self.EndModal(wx.ID_OK)
             
     def CheckBoxFile(self,event):
         sel_item = self._treeCtrl.GetSelection()
@@ -251,12 +239,7 @@ class ImportFilesDialog(wx.Dialog):
     def RotateItems(self,parent_item,file_list):
         if parent_item is None or not self._treeCtrl.IsItemChecked(parent_item):
             return
-        dir_path = self._treeCtrl.GetPyData(parent_item)
-        if not self.IsItemSelected(parent_item):
-            fileutils.GetDirFiles(dir_path,file_list)
-        #get checked tree item file list
-        else:
-            self.GetCheckedItemFiles(parent_item,file_list)
+       
         (item, cookie) = self._treeCtrl.GetFirstChild(parent_item)
         while item:
             if self._treeCtrl.IsItemChecked(item):

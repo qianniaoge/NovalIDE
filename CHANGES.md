@@ -177,3 +177,17 @@ Version 1.0.7 -------------2018-03-23
 7.fix the bug of import files on linux os
 8.fix the coruption problem of debug run script with builtin interpreter
 9.fix the bug of open file in file explower on windows os
+10.optimise and fix bug of import project files
+11.copy files to project dest dir when import files
+12.fix the bug when load saved projects
+13.show prompt message dialog when the import files to project have already exist
+14.enable filter file types when import files to project 
+15.fix getcwd coruption bug on linux os when currrent path is deleted
+16.fix file observer bug on linux os when the watched path is deleted
+17.add open project and save project memu item on project menu
+18.add monitor to currrent project to generate intellisense data of the project
+19.add project icon of NovalIDE project file with the .nov file extension and associated with NovalIDE application
+20.enable click on the .nov file to open NovalIDE project
+21.enable add ,delete and manage breakpoints
+22.enable add package folder in project
+23.

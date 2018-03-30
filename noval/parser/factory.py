@@ -197,7 +197,7 @@ def scan_sys_path(src_path,dest_path,need_renew_database):
             continue
         for afile in files:
             fullpath = os.path.join(root,afile)
-            ext = os.path.splitext(fullpath)[1]
+            ext = os.path.splitext(fullpath)[1].lower()
             if not ext in ['.py','.pyw']:
                 continue
             top_module_name,is_package = utils.get_top_modulename(fullpath)

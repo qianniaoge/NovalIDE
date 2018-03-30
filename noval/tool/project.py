@@ -16,6 +16,7 @@ import os.path
 import noval.util.xmlutils as xmlutils
 import noval.util.logger as logger
 import noval.tool.interpreter.manager as interpretermanager
+import noval.util.sysutils as sysutilslib
 
 # REVIEW 07-Mar-06 stoens@activegrid.com -- Ideally move the pieces required
 # to generate the .dpl file out of this module so there's no dependency on wx,
@@ -103,8 +104,12 @@ class BaseProject(object):
     def FindFile(self, filePath):
         if filePath:
             for file in self._files:
-                if file.filePath == filePath:
-                    return file
+                if sysutilslib.isWindows():
+                    if file.filePath.lower() == filePath.lower():
+                        return file
+                else:
+                    if file.filePath == filePath:
+                        return file
         return None
 
     def _GetFilePaths(self):
@@ -584,7 +589,6 @@ def load(fileObject):
     if project:
         project._projectDir = os.path.dirname(fileObject.name)
         project.RelativeToAbsPath()
-
     return project
 
 

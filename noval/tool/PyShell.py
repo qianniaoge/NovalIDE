@@ -20,5 +20,5 @@ class PyShell(wx.py.shell.Shell):
             super(PyShell,self).push(command,silent)
         except SystemExit as x:
             self.write(str(x))
-            self.run("\n")
+            self.run("")
             #sys.exit

@@ -1224,14 +1224,16 @@ class ProcessOpen(Process):
         fdChildStderrRd, fdChildStderrWr = os.pipe()
 
         if self._cwd:
-            oldDir = os.getcwd()
+            oldDir = None
             try:
+                oldDir = os.getcwd()
                 os.chdir(self._cwd)
             except OSError, ex:
-                raise ProcessError(msg=str(ex), errno=ex.errno)
+                print 'warning..',ex
+                #raise ProcessError(msg=str(ex), errno=ex.errno)
         self._forkAndExecChildOnUnix(fdChildStdinRd, fdChildStdoutWr,
                                      fdChildStderrWr)
-        if self._cwd:
+        if self._cwd and oldDir:
             os.chdir(oldDir)
 
         os.close(fdChildStdinRd)

@@ -346,34 +346,34 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             outlineService.AddViewTypeForBackgroundHandler(PropertyService.PropertyView) # special case, don't clear outline if in property window
         outlineService.StartBackgroundTimer()
        
-        projectService.AddLogicalViewFolderDefault(".agp", _("Projects"))
-        projectService.AddLogicalViewFolderDefault(".wsdlag", _("Services"))
-        projectService.AddLogicalViewFolderDefault(".wsdl", _("Services"))
-        projectService.AddLogicalViewFolderDefault(".xsd", _("Data Models"))
-        projectService.AddLogicalViewFolderDefault(".bpel", _("Page Flows"))
-        projectService.AddLogicalViewFolderDefault(".xform", _("Pages"))
-        projectService.AddLogicalViewFolderDefault(".xacml", _("Security"))
-        projectService.AddLogicalViewFolderDefault(".lyt", _("Presentation/Layouts"))
-        projectService.AddLogicalViewFolderDefault(".skn", _("Presentation/Skins"))
-        projectService.AddLogicalViewFolderDefault(".css", _("Presentation/Stylesheets"))
-        projectService.AddLogicalViewFolderDefault(".js", _("Presentation/Javascript"))
-        projectService.AddLogicalViewFolderDefault(".html", _("Presentation/Static"))
-        projectService.AddLogicalViewFolderDefault(".htm", _("Presentation/Static"))
-        projectService.AddLogicalViewFolderDefault(".gif", _("Presentation/Images"))
-        projectService.AddLogicalViewFolderDefault(".jpeg", _("Presentation/Images"))
-        projectService.AddLogicalViewFolderDefault(".jpg", _("Presentation/Images"))
-        projectService.AddLogicalViewFolderDefault(".png", _("Presentation/Images"))
-        projectService.AddLogicalViewFolderDefault(".ico", _("Presentation/Images"))
-        projectService.AddLogicalViewFolderDefault(".bmp", _("Presentation/Images"))
-        projectService.AddLogicalViewFolderDefault(".py", _("Code"))
-        projectService.AddLogicalViewFolderDefault(".php", _("Code"))
-        projectService.AddLogicalViewFolderDefault(".pl", _("Code"))
-        projectService.AddLogicalViewFolderDefault(".sql", _("Code"))
-        projectService.AddLogicalViewFolderDefault(".xml", _("Code"))
-        projectService.AddLogicalViewFolderDefault(".dpl", _("Code"))
-        
-        projectService.AddLogicalViewFolderCollapsedDefault(_("Page Flows"), False)
-        projectService.AddLogicalViewFolderCollapsedDefault(_("Pages"), False)
+##        projectService.AddLogicalViewFolderDefault(".agp", _("Projects"))
+##        projectService.AddLogicalViewFolderDefault(".wsdlag", _("Services"))
+##        projectService.AddLogicalViewFolderDefault(".wsdl", _("Services"))
+##        projectService.AddLogicalViewFolderDefault(".xsd", _("Data Models"))
+##        projectService.AddLogicalViewFolderDefault(".bpel", _("Page Flows"))
+##        projectService.AddLogicalViewFolderDefault(".xform", _("Pages"))
+##        projectService.AddLogicalViewFolderDefault(".xacml", _("Security"))
+##        projectService.AddLogicalViewFolderDefault(".lyt", _("Presentation/Layouts"))
+##        projectService.AddLogicalViewFolderDefault(".skn", _("Presentation/Skins"))
+##        projectService.AddLogicalViewFolderDefault(".css", _("Presentation/Stylesheets"))
+##        projectService.AddLogicalViewFolderDefault(".js", _("Presentation/Javascript"))
+##        projectService.AddLogicalViewFolderDefault(".html", _("Presentation/Static"))
+##        projectService.AddLogicalViewFolderDefault(".htm", _("Presentation/Static"))
+##        projectService.AddLogicalViewFolderDefault(".gif", _("Presentation/Images"))
+##        projectService.AddLogicalViewFolderDefault(".jpeg", _("Presentation/Images"))
+##        projectService.AddLogicalViewFolderDefault(".jpg", _("Presentation/Images"))
+##        projectService.AddLogicalViewFolderDefault(".png", _("Presentation/Images"))
+##        projectService.AddLogicalViewFolderDefault(".ico", _("Presentation/Images"))
+##        projectService.AddLogicalViewFolderDefault(".bmp", _("Presentation/Images"))
+##        projectService.AddLogicalViewFolderDefault(".py", _("Code"))
+##        projectService.AddLogicalViewFolderDefault(".php", _("Code"))
+##        projectService.AddLogicalViewFolderDefault(".pl", _("Code"))
+##        projectService.AddLogicalViewFolderDefault(".sql", _("Code"))
+##        projectService.AddLogicalViewFolderDefault(".xml", _("Code"))
+##        projectService.AddLogicalViewFolderDefault(".dpl", _("Code"))
+##        
+##        projectService.AddLogicalViewFolderCollapsedDefault(_("Page Flows"), False)
+##        projectService.AddLogicalViewFolderCollapsedDefault(_("Pages"), False)
     
         iconPath = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "noval.ico")
         self.SetDefaultIcon(wx.Icon(iconPath, wx.BITMAP_TYPE_ICO))
@@ -523,34 +523,34 @@ class IDEDocManager(wx.lib.docview.DocManager):
     # Overriding default document creation.
     def OnFileNew(self, event):
         self.CreateDocument('', wx.lib.docview.DOC_NEW)
-        import NewDialog
-        newDialog = NewDialog.NewDialog(wx.GetApp().GetTopWindow())
-        if newDialog.ShowModal() == wx.ID_OK:
-            isTemplate, object = newDialog.GetSelection()
-            if isTemplate:
-                object.CreateDocument('', wx.lib.docview.DOC_NEW)
-            else:
-                import ProcessModelEditor
-                if object == NewDialog.FROM_DATA_SOURCE:
-                    wiz = ProcessModelEditor.CreateAppWizard(wx.GetApp().GetTopWindow(), title=_("New Database Application"), minimalCreate=False, startingType=object)
-                    wiz.RunWizard()
-                elif object == NewDialog.FROM_DATABASE_SCHEMA:
-                    wiz = ProcessModelEditor.CreateAppWizard(wx.GetApp().GetTopWindow(), title=_("New Database Application"), minimalCreate=False, startingType=object)
-                    wiz.RunWizard()
-                elif object == NewDialog.FROM_SERVICE:
-                    wiz = ProcessModelEditor.CreateAppWizard(wx.GetApp().GetTopWindow(), title=_("New Service Application"), minimalCreate=False, startingType=object)
-                    wiz.RunWizard()
-                elif object == NewDialog.CREATE_SKELETON_APP:
-                    wiz = ProcessModelEditor.CreateAppWizard(wx.GetApp().GetTopWindow(), title=_("New Skeleton Application"), minimalCreate=False, startingType=object)
-                    wiz.RunWizard()
-                elif object == NewDialog.CREATE_PROJECT:
-                    import ProjectEditor
-                    for temp in self.GetTemplates():
-                        if isinstance(temp,ProjectEditor.ProjectTemplate):
-                            temp.CreateDocument('', wx.lib.docview.DOC_NEW)
-                            break
-                else:
-                    assert False, "Unknown type returned from NewDialog"
+##        import NewDialog
+##        newDialog = NewDialog.NewDialog(wx.GetApp().GetTopWindow())
+##        if newDialog.ShowModal() == wx.ID_OK:
+##            isTemplate, object = newDialog.GetSelection()
+##            if isTemplate:
+##                object.CreateDocument('', wx.lib.docview.DOC_NEW)
+##            else:
+##                import ProcessModelEditor
+##                if object == NewDialog.FROM_DATA_SOURCE:
+##                    wiz = ProcessModelEditor.CreateAppWizard(wx.GetApp().GetTopWindow(), title=_("New Database Application"), minimalCreate=False, startingType=object)
+##                    wiz.RunWizard()
+##                elif object == NewDialog.FROM_DATABASE_SCHEMA:
+##                    wiz = ProcessModelEditor.CreateAppWizard(wx.GetApp().GetTopWindow(), title=_("New Database Application"), minimalCreate=False, startingType=object)
+##                    wiz.RunWizard()
+##                elif object == NewDialog.FROM_SERVICE:
+##                    wiz = ProcessModelEditor.CreateAppWizard(wx.GetApp().GetTopWindow(), title=_("New Service Application"), minimalCreate=False, startingType=object)
+##                    wiz.RunWizard()
+##                elif object == NewDialog.CREATE_SKELETON_APP:
+##                    wiz = ProcessModelEditor.CreateAppWizard(wx.GetApp().GetTopWindow(), title=_("New Skeleton Application"), minimalCreate=False, startingType=object)
+##                    wiz.RunWizard()
+##                elif object == NewDialog.CREATE_PROJECT:
+##                    import ProjectEditor
+##                    for temp in self.GetTemplates():
+##                        if isinstance(temp,ProjectEditor.ProjectTemplate):
+##                            temp.CreateDocument('', wx.lib.docview.DOC_NEW)
+##                            break
+##                else:
+##                    assert False, "Unknown type returned from NewDialog"
 
 
     def SelectDocumentPath(self, templates, flags, save):

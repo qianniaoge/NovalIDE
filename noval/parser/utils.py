@@ -94,6 +94,8 @@ def IsPython2():
     
 def ComparePath(path1,path2):
     if os.name == 'nt':
+        path1 = path1.replace("/",os.sep).rstrip(os.sep)
+        path2 = path2.replace("/",os.sep).rstrip(os.sep)
         return path1.lower() == path2.lower()
     return path1 == path2
     

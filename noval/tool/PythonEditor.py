@@ -134,7 +134,6 @@ class PythonView(CodeEditor.CodeView):
     def ModuleScope(self):
         return self._module_scope
 
-    @sysutilslib.time_func
     def LoadModule(self,filename):
         module = parser.parse_content(self.GetCtrl().GetValue(),filename,self.GetDocument().file_encoding)
         if module is None:
@@ -342,8 +341,6 @@ class PythonView(CodeEditor.CodeView):
             #should freeze control to prevent update and treectrl flick
             treeCtrl.LoadModuleAst(self.ModuleScope,self,outlineService,lineNum)
         
-        
-    @sysutilslib.time_func
     def TranverseItem(self,treeCtrl,node,parent):
         for child in node.Childs:
             if child.Type == parserconfig.NODE_FUNCDEF_TYPE:

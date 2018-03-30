@@ -361,7 +361,6 @@ class OutlineTreeCtrl(wx.TreeCtrl):
         if lineNum >= 0:
             outlineService.SyncToPosition(view,lineNum)
         
-    @sysutilslib.time_func
     def TranverseItem(self,view,node,parent):
         for child in node.Childs:
             if child.Type == parserconfig.NODE_FUNCDEF_TYPE:
