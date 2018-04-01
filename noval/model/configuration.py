@@ -3,6 +3,7 @@ class ProjectConfiguration(object):
     PROJECT_SRC_PATH_ADD_TO_PYTHONPATH = 1
     PROJECT_PATH_ADD_TO_PYTHONPATH = 2
     NONE_PATH_ADD_TO_PYTHONPATH = 3
+    DEFAULT_PROJECT_SRC_PATH = 'Src'
     def __init__(self,name,location,interpreter,is_project_dir_created,pythonpath_pattern):
         self._name = name
         self._location = location

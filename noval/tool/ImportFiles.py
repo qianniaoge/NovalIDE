@@ -8,6 +8,8 @@ import noval.util.fileutils as fileutils
 import threading
 from wx.lib.pubsub import pub as Publisher
 import time
+import ProjectUI
+import noval.util.strutils as strutils
 
 NOVAL_MSG_UI_IMPORT_FILES_PROGRESS = "noval.msg.fileimport.progress"
 
@@ -75,6 +77,7 @@ class ImportFilesDialog(wx.Dialog):
         self.file_filter_btn = wx.Button(self, -1, _("File Filters"))
         wx.EVT_BUTTON(self.file_filter_btn, -1, self.ShowFilterFileDialog)
         lineSizer.Add(self.file_filter_btn, 0,flag=wx.LEFT, border=SPACE)
+        self.filters = []
         
         self.select_all_btn = wx.Button(self, -1, _("Select All"))
         wx.EVT_BUTTON(self.select_all_btn, -1, self.SelectAll)
@@ -124,7 +127,10 @@ class ImportFilesDialog(wx.Dialog):
         self.Fit()
         
     def ShowFilterFileDialog(self,event):
-        pass
+        file_filter_dlg = ProjectUI.FileFilterDialog(self,-1,_("File Filters"))
+        file_filter_dlg.ShowModal()
+        self.filters = file_filter_dlg.filters
+        file_filter_dlg.Destroy()
         
     def SelectAll(self,event):
         root_item = self._treeCtrl.GetRootItem()
@@ -173,7 +179,7 @@ class ImportFilesDialog(wx.Dialog):
         file_list = []
         dir_path = self._treeCtrl.GetPyData(root_item)
         if not self.IsItemSelected(root_item):
-            fileutils.GetDirFiles(dir_path,file_list)
+            fileutils.GetDirFiles(dir_path,file_list,self.filters)
          #get checked tree item file list
         else:
             self.GetCheckedItemFiles(root_item,file_list)
@@ -234,7 +240,11 @@ class ImportFilesDialog(wx.Dialog):
         for i in range(self.listbox.GetCount()):
             if self.listbox.IsChecked(i):
                 f = os.path.join(dir_path,self.listbox.GetString(i))
-                file_list.append(f)
+                if self.filters != []:
+                    if strutils.GetFileExt(f) in self.filters:
+                        file_list.append(f)
+                else:
+                    file_list.append(f)
             
     def RotateItems(self,parent_item,file_list):
         if parent_item is None or not self._treeCtrl.IsItemChecked(parent_item):
@@ -245,7 +255,7 @@ class ImportFilesDialog(wx.Dialog):
             if self._treeCtrl.IsItemChecked(item):
                 dir_path = self._treeCtrl.GetPyData(item)
                 if not self.IsItemSelected(item):
-                    fileutils.GetDirFiles(dir_path,file_list)
+                    fileutils.GetDirFiles(dir_path,file_list,self.filters)
                 #get checked tree item file list    
                 else:
                     self.GetCheckedItemFiles(item,file_list)

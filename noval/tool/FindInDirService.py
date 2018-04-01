@@ -540,6 +540,7 @@ class FindInDirService(FindService.FindService):
                             needToDisplayFilename = False
                         line = repr(lineNum).zfill(4) + ":" + line
                         view.AddLines(line)
+                        found_line += 1
                         if firstDef == -1:
                             firstDef = view.GetControl().GetCurrentLine() - 1
                     line = docFile.readline()

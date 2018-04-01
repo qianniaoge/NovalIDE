@@ -184,10 +184,15 @@ Version 1.0.7 -------------2018-03-23
 14.enable filter file types when import files to project 
 15.fix getcwd coruption bug on linux os when currrent path is deleted
 16.fix file observer bug on linux os when the watched path is deleted
-17.add open project and save project memu item on project menu
+17.add open project and save project memu item on project menu and implement the menu action
 18.add monitor to currrent project to generate intellisense data of the project
 19.add project icon of NovalIDE project file with the .nov file extension and associated with NovalIDE application
 20.enable click on the .nov file to open NovalIDE project
 21.enable add ,delete and manage breakpoints
 22.enable add package folder in project
-23.
+23.correct the error number count of search text result in project
+24.enable open project from command line and set as current project
+25.update nsis script to write project file extension and icon to regsitry
+26.fix the serious bug of close and delete project
+27.enable filter file types when import files to project
+28.fix the bug of project file or path contains chinese character

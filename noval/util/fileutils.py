@@ -22,6 +22,7 @@ import noval.util.sysutils as sysutils
 import noval.util.utillang as utillang
 from noval.util.lang import *
 import subprocess
+import strutils
 
 global fileutilsLogger
 fileutilsLogger = logging.getLogger("activegrid.util.fileutils")
@@ -505,9 +506,13 @@ def is_file_hiden(path):
                 path = os.path.dirname(path)
         return is_hidden
         
-def GetDirFiles(path,file_list):
+def GetDirFiles(path,file_list,filters=[]):
     for f in os.listdir(path):
         file_path = os.path.join(path, f)
         if os.path.isfile(file_path):
-            file_list.append(file_path)
+            if filters == []:
+                file_list.append(file_path)
+            else:
+                if strutils.GetFileExt(file_path) in filters:
+                    file_list.append(file_path)
                         

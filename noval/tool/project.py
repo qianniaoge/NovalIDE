@@ -17,6 +17,7 @@ import noval.util.xmlutils as xmlutils
 import noval.util.logger as logger
 import noval.tool.interpreter.manager as interpretermanager
 import noval.util.sysutils as sysutilslib
+from consts import PROJECT_NAMESPACE_URL
 
 # REVIEW 07-Mar-06 stoens@activegrid.com -- Ideally move the pieces required
 # to generate the .dpl file out of this module so there's no dependency on wx,
@@ -51,10 +52,10 @@ class BaseProject(object):
     __xmlrename__ = { "_homeDir":"homeDir", "_appInfo":"appInfo" }
     __xmlflattensequence__ = { "_files":("file",) }
     __xmldefaultnamespace__ = xmlutils.AG_NS_URL
-    __xmlattrnamespaces__ = { "ag": ["version", "_homeDir"] }
+    __xmlattrnamespaces__ = { PROJECT_NAMESPACE_URL: ["version", "_homeDir"] }
 
     def __init__(self):
-        self.__xmlnamespaces__ = { "ag" : xmlutils.AG_NS_URL }
+        self.__xmlnamespaces__ = { PROJECT_NAMESPACE_URL : xmlutils.AG_NS_URL }
         self.version = PROJECT_VERSION_050826
         self._files = []
         self._projectDir = None  # default for homeDir, set on load
@@ -259,9 +260,14 @@ class PythonProject(Project):
     def __init__(self):
         super(PythonProject,self).__init__()
         self.interpreter = None
+        self.python_path_list = []
         
     def SetInterpreter(self,name):
         self.interpreter = ProjectInterpreter(self,name)
+        
+    @property
+    def PythonPathList(self):
+        return self.python_path_list
         
 class ProjectInterpreter(object):
     __xmlexclude__ = ('_parentProj',)
@@ -559,12 +565,13 @@ class Project_10:
 #----------------------------------------------------------------------------
 
 if ACTIVEGRID_BASE_IDE:
-    KNOWNTYPES = {"ag:project" : Project, "ag:file" : ProjectFile,"ag:interpreter":ProjectInterpreter}
+    KNOWNTYPES = {"%s:project" % PROJECT_NAMESPACE_URL : Project, "%s:file" % PROJECT_NAMESPACE_URL : ProjectFile,\
+                        "%s:interpreter" % PROJECT_NAMESPACE_URL:ProjectInterpreter}
 else:
-    KNOWNTYPES = {"ag:project" : Project, "ag:file" : ProjectFile,
-                  "ag:appInfo" : AppInfo.AppInfo,
-                  "ag:deploymentDataSource" : AppInfo.DeploymentDataSource,
-                  "ag:dataSourceBinding" : AppInfo.DataSourceBinding}
+    KNOWNTYPES = {"%s:project" % PROJECT_NAMESPACE_URL: Project, "%s:file" % PROJECT_NAMESPACE_URL: ProjectFile,
+                  "%s:appInfo" % PROJECT_NAMESPACE_URL: AppInfo.AppInfo,
+                  "%s:deploymentDataSource"  % PROJECT_NAMESPACE_URL:AppInfo.DeploymentDataSource,
+                  "%s:dataSourceBinding"  % PROJECT_NAMESPACE_URL:AppInfo.DataSourceBinding}
 
 def load(fileObject):
     version = xmlutils.getAgVersion(fileObject.name)
@@ -595,6 +602,8 @@ def load(fileObject):
 def save(fileObject, project, productionDeployment=False):
     if not project._projectDir:
         project._projectDir = os.path.dirname(fileObject.name)
+    if isinstance(project._projectDir,str):
+        project._projectDir = project._projectDir.decode("utf-8")
     project.AbsToRelativePath()  # temporarily change it to relative paths for saving
     savedHomeDir = project.homeDir
     if productionDeployment:

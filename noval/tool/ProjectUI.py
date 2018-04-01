@@ -1,5 +1,6 @@
 import wx
 from noval.tool.consts import SPACE,HALF_SPACE,_ 
+import ProjectEditor
 
 class PromptMessageDialog(wx.Dialog):
     
@@ -58,4 +59,54 @@ class PromptMessageDialog(wx.Dialog):
 
 class FileFilterDialog(wx.Dialog):
     def __init__(self,parent,dlg_id,title):
+        self.filters = []
         wx.Dialog.__init__(self,parent,dlg_id,title)
+        boxsizer = wx.BoxSizer(wx.VERTICAL)
+        
+        boxsizer.Add(wx.StaticText(self, -1, _("Please select file types to to allow added to project:"), \
+                        style=wx.ALIGN_CENTRE),0,flag=wx.ALL,border=SPACE)
+        
+        self.listbox = wx.CheckListBox(self,-1,size=(230,320),choices=[])
+        boxsizer.Add(self.listbox,0,flag = wx.EXPAND|wx.BOTTOM|wx.RIGHT,border = SPACE)
+        
+        boxsizer.Add(wx.StaticText(self, -1, _("Other File Extensions:(seperated by ';')"), \
+                        style=wx.ALIGN_CENTRE),0,flag=wx.BOTTOM|wx.RIGHT,border=SPACE)
+                        
+        self.other_extensions_ctrl = wx.TextCtrl(self, -1, "", size=(-1,-1))
+        boxsizer.Add(self.other_extensions_ctrl, 0, flag=wx.BOTTOM|wx.RIGHT|wx.EXPAND,border=SPACE)
+        
+        bsizer = wx.StdDialogButtonSizer()
+        ok_btn = wx.Button(self, wx.ID_OK, _("&OK"))
+        wx.EVT_BUTTON(ok_btn, -1, self.OnOKClick)
+        #set ok button default focused
+        ok_btn.SetDefault()
+        bsizer.AddButton(ok_btn)
+        
+        cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
+        bsizer.AddButton(cancel_btn)
+        bsizer.Realize()
+        boxsizer.Add(bsizer, 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.BOTTOM,HALF_SPACE)
+        self.SetSizer(boxsizer)
+        self.Fit()
+        self.InitFilters()
+        
+    def OnOKClick(self,event):
+        filters = []
+        for i in range(self.listbox.GetCount()):
+            if self.listbox.IsChecked(i):
+               filters.append(self.listbox.GetString(i))
+        extension_value = self.other_extensions_ctrl.GetValue().strip()
+        if extension_value != "":
+            extensions = extension_value.split(";")
+            filters.extend(extensions)
+        self.filters = [str(fitler.replace("*","").replace(".","")) for fitler in filters]
+        self.EndModal(wx.ID_OK)
+        
+    def InitFilters(self):
+        descr = ''
+        for temp in wx.GetApp().GetDocumentManager().GetTemplates():
+            if temp.IsVisible() and temp.GetDocumentType() != ProjectEditor.ProjectDocument:
+                filters = temp.GetFileFilter().split(";")
+                for filter in filters:
+                    self.listbox.Append(filter)
+ 

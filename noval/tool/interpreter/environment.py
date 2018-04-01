@@ -7,8 +7,6 @@ import os
 class SystemEnvironmentVariableDialog(wx.Dialog):
     def __init__(self,parent,dlg_id,title,size=(300,400)):
         wx.Dialog.__init__(self,parent,dlg_id,title,size=size)
-        contentSizer = wx.BoxSizer(wx.VERTICAL)
-        
         self.Sizer = wx.BoxSizer()
         self.dvlc = dataview.DataViewListCtrl(self,size=(280,380))
         self.dvlc.AppendTextColumn(_('Key'), width=80)

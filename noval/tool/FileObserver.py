@@ -64,8 +64,12 @@ class PathWatcher(object):
         self.Start()
 
     def Stop(self):
-        self.observer.stop()
-        self.observer.join()
+        try:
+            #TODO:the watchdog package bug,to fix
+            self.observer.stop()
+            self.observer.join(6)
+        except Exception as e:
+            print 'stop file watcher error',e
         self._is_watched = False
 
     def Start(self):

@@ -8,6 +8,11 @@
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\NovalIDE.exe"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
+!define PRODUCT_PROJECT_FILE_EXTENSION ".nov"
+!define PRODUCT_PROJECT_FILE "Noval.ProjectFile"
+!define PRODUCT_PROJECT_FILE_DESCRIPTION "NovalIDE Project File"
+!define PRODUCT_PROJECT_FILE_ICON_KEY "${PRODUCT_PROJECT_FILE}\DefaultIcon"
+!define PRODUCT_PROJECT_FILE_OPEN_KEY "${PRODUCT_PROJECT_FILE}\shell\open\command"
 
 SetCompressor lzma
 
@@ -138,6 +143,10 @@ SectionEnd
 
 Section -Post
   WriteUninstaller "$INSTDIR\uninst.exe"
+  WriteRegStr HKCR "${PRODUCT_PROJECT_FILE_EXTENSION}" "" "${PRODUCT_PROJECT_FILE}"
+  WriteRegStr HKCR "${PRODUCT_PROJECT_FILE}" "" "${PRODUCT_PROJECT_FILE_DESCRIPTION}"
+  WriteRegStr HKCR "${PRODUCT_PROJECT_FILE_ICON_KEY}" "" "$INSTDIR\noval\tool\bmp_source\project.ico"
+  WriteRegStr HKCR "${PRODUCT_PROJECT_FILE_OPEN_KEY}" "" "$INSTDIR\NovalIDE.exe $\"%1$\""
   WriteRegStr HKLM "${PRODUCT_DIR_REGKEY}" "" "$INSTDIR\NovalIDE.exe"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninst.exe"

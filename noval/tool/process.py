@@ -1229,7 +1229,7 @@ class ProcessOpen(Process):
                 oldDir = os.getcwd()
                 os.chdir(self._cwd)
             except OSError, ex:
-                print 'warning..',ex
+                print 'getcwd or chdir error,warning....',ex
                 #raise ProcessError(msg=str(ex), errno=ex.errno)
         self._forkAndExecChildOnUnix(fdChildStdinRd, fdChildStdoutWr,
                                      fdChildStderrWr)

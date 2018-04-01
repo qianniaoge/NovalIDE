@@ -25,7 +25,7 @@ import noval.parser.utils as dirutils
 import wx.lib.agw.hyperlink as hl
 import interpreter.configruation as configruation
 import noval.tool.interpreter.manager as interpretermanager
-from noval.tool.consts import HALF_SPACE,_ ,SPACE
+from noval.tool.consts import HALF_SPACE,_ ,SPACE,PROJECT_EXTENSION
 from noval.model import configuration as projectconfiguration
 
 def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Directory:"), fileExtension="*", startingName="", startingDirectory=None, choiceDirs=None, appDirDefaultStartDir=False, returnAll=False, useDirDialog=False):
@@ -66,14 +66,18 @@ def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Direc
 
         if startingDirectory and (startingDirectory not in choiceDirs):
             choiceDirs.insert(0, startingDirectory)
-            
-        if os.getcwd() not in choiceDirs:
-            choiceDirs.append(os.getcwd())                
+        cwdir = None
+        try:
+            cwdir = os.getcwd()
+        except Exception as e:
+            print 'UICommon waring ,getcwd error',e
+        if cwdir and cwdir not in choiceDirs:
+            choiceDirs.append(cwdir)                
         if appdirs.getSystemDir() not in choiceDirs:
             choiceDirs.append(appdirs.getSystemDir()) 
 
-    if not startingDirectory:
-        startingDirectory = os.getcwd()
+    if not startingDirectory and cwdir:
+        startingDirectory = cwdir
         
     nameControl = wx.TextCtrl(parent, -1, startingName, size=(-1,-1))
     nameLabelText = wx.StaticText(parent, -1, fileLabel)
@@ -161,7 +165,7 @@ def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Direc
             if projName[0].isdigit():
                 wx.MessageBox(_("File name cannot start with a number.  Please enter a different name."), _("Invalid File Name"))            
                 return False,None
-            if projName.endswith(".agp"):
+            if projName.endswith(PROJECT_EXTENSION):
                 projName2 = projName[:-4]
             else:
                 projName2 = projName
@@ -205,6 +209,9 @@ def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Direc
         pythonpath_pattern = projectconfiguration.ProjectConfiguration.NONE_PATH_ADD_TO_PYTHONPATH
         if addsrcPathRadioBtn.GetValue():
             pythonpath_pattern = projectconfiguration.ProjectConfiguration.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH
+            project_src_path = os.path.join(dirName,projectconfiguration.ProjectConfiguration.DEFAULT_PROJECT_SRC_PATH)
+            if not os.path.exists(project_src_path):
+                dirutils.MakeDirs(project_src_path)
         elif addProjectPathRadioBtn.GetValue():
             pythonpath_pattern = projectconfiguration.ProjectConfiguration.PROJECT_PATH_ADD_TO_PYTHONPATH
         elif configureNonePathRadioBtn.GetValue():
@@ -239,7 +246,8 @@ def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Direc
     option_sizer = wx.BoxSizer(wx.VERTICAL)
     dirCheck = wx.CheckBox(parent, -1, _("Create Project Name Directory"))
     option_sizer.Add(dirCheck,0,flag=wx.TOP,border=HALF_SPACE)
-    addsrcPathRadioBtn = wx.RadioButton(parent,-1, label = "Create 'Src' Folder And Add it to the PYTHONPATH",style = wx.RB_GROUP)
+    addsrcPathRadioBtn = wx.RadioButton(parent,-1, label = "Create '%s' Folder And Add it to the PYTHONPATH" % \
+                            projectconfiguration.ProjectConfiguration.DEFAULT_PROJECT_SRC_PATH,style = wx.RB_GROUP)
     option_sizer.Add(addsrcPathRadioBtn,0,flag=wx.TOP,border=HALF_SPACE)
     addProjectPathRadioBtn = wx.RadioButton(parent,-1, label = 'Add Project Directory to the PYTHONPATH')
     option_sizer.Add(addProjectPathRadioBtn,0,flag=wx.TOP,border=HALF_SPACE)

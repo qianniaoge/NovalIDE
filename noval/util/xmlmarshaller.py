@@ -112,7 +112,7 @@ __xmlcdatacontent__ = "messyContent"
 """
 
 global xmlMarshallerLogger
-xmlMarshallerLogger = logging.getLogger("activegrid.util.xmlmarshaller.marshal")
+xmlMarshallerLogger = logging.getLogger("novalide.util.xmlmarshaller.marshal")
 # INFO  : low-level info
 # DEBUG : debugging info
 

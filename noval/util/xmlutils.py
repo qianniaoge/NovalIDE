@@ -19,8 +19,9 @@ from noval.util.lang import *
 import noval.util.objutils as objutils
 import noval.util.xmlmarshaller as xmlmarshaller
 import noval.util.logger as logger
+from noval.tool.consts import PROJECT_NAMESPACE_URL
 
-xmlLogger = logging.getLogger("activegrid.util.xml")
+xmlLogger = logging.getLogger("novalide.util.xml")
     
 def load(fileName, knownTypes=None, knownNamespaces=None, createGenerics=False):
     loadedObject = None
@@ -144,11 +145,11 @@ def getAgVersion(fileName):
         xml = fileObject.read()
     finally:
         fileObject.close()
-    i = xml.find(' ag:version=')
+    i = xml.find(' %s:version=' % PROJECT_NAMESPACE_URL)
     if i >= 0:
         i += 12
     else:
-        i2 = xml.find('<ag:')
+        i2 = xml.find('<%s:' % PROJECT_NAMESPACE_URL)
         if i2 >= 0:
             i = xml.find(' version=', i2)
             if i > 0:
@@ -165,7 +166,7 @@ def getAgVersion(fileName):
     return version
 
     
-AG_NS_URL = "http://www.activegrid.com/ag.xsd"
+AG_NS_URL = "http://www.novalide.com/noval.xsd"
 BPEL_NS_URL = "http://schemas.xmlsoap.org/ws/2003/03/business-process"
 HTTP_WSDL_NS_URL = "http://schemas.xmlsoap.org/wsdl/http/"
 MIME_WSDL_NS_URL = "http://schemas.xmlsoap.org/wsdl/mime/"
@@ -179,7 +180,7 @@ XMLSCHEMA_NS_URL = "http://www.w3.org/2001/XMLSchema"
 XSI_NS_URL = "http://www.w3.org/2001/XMLSchema-instance"
 XACML_NS_URL = "urn:oasis:names:tc:xacml:2.0:policy:schema:os"
 
-KNOWN_NAMESPACES = { AG_NS_URL          :  "ag",
+KNOWN_NAMESPACES = { AG_NS_URL          :  PROJECT_NAMESPACE_URL,
                      BPEL_NS_URL        :  "bpws",
                      HTTP_WSDL_NS_URL   :  "http",
                      MIME_WSDL_NS_URL   :  "mime",

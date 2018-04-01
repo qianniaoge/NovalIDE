@@ -23,7 +23,8 @@ import shutil
 import interpreter.manager as interpretermanager,interpreter.Interpreter as Interpreter
 import noval.parser.intellisence as intellisence
 import noval.parser.config as parserconfig
-from consts import _,ID_MRU_FILE1
+from consts import _,ID_MRU_FILE1,PROJECT_EXTENSION,PROJECT_SHORT_EXTENSION
+from noval.util import strutils
 
 # Required for Unicode support with python
 # site.py sets this, but Windows builds don't have site.py because of py2exe problems
@@ -74,7 +75,6 @@ class IDEApplication(wx.lib.pydocview.DocApp):
 
     def __init__(self, redirect=False):
         wx.lib.pydocview.DocApp.__init__(self, redirect=redirect)
-        
 
     def OnInit(self):
         global ACTIVEGRID_BASE_IDE
@@ -153,7 +153,8 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         import TabbedFrame
 ##        import UpdateLogIniService
                             
-        _EDIT_LAYOUTS = True                        
+        _EDIT_LAYOUTS = True
+        self._open_project_path = None                        
 
         # This creates some pens and brushes that the OGL library uses.
         # It should be called after the app object has been created, but
@@ -245,9 +246,9 @@ class IDEApplication(wx.lib.pydocview.DocApp):
 
         projectTemplate = ProjectEditor.ProjectTemplate(docManager,
                 _("Project"),
-                "*.agp",
+                "*%s" % PROJECT_EXTENSION,
                 _("Project"),
-                _(".agp"),
+                _(PROJECT_EXTENSION),
                 _("Project Document"),
                 _("Project View"),
                 ProjectEditor.ProjectDocument,
@@ -391,10 +392,11 @@ class IDEApplication(wx.lib.pydocview.DocApp):
 
         wx.lib.pydocview.DocApp.CloseSplash(self)
         self.OpenCommandLineArgs()
-
-        if not projectService.OpenSavedProjects() and not docManager.GetDocuments() and self.IsSDI():  # Have to open something if it's SDI and there are no projects...
+        
+        if not projectService.LoadSavedProjects() and not docManager.GetDocuments() and self.IsSDI():  # Have to open something if it's SDI and there are no projects...
             projectTemplate.CreateDocument('', wx.lib.docview.DOC_NEW).OnNewDocument()
-                       
+            
+        projectService.SetCurrentProject()
         interpretermanager.InterpreterManager().LoadDefaultInterpreter()
         self.AddInterpreters()
         intellisence.IntellisenceManager().generate_default_intellisence_data()
@@ -517,6 +519,27 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         wx.lib.pydocview.DocApp.ShowSplash(self,image)
         #should pause a moment to show splash image on linux os,otherwise it will show white background on linux
         wx.Yield()
+    
+    @property
+    def OpenProjectPath(self):
+        return self._open_project_path
+        
+    def OpenCommandLineArgs(self):
+        """
+        Called to open files that have been passed to the application from the
+        command line.
+        """
+        args = sys.argv[1:]
+        for arg in args:
+            if (wx.Platform != "__WXMSW__" or arg[0] != "/") and arg[0] != '-' and os.path.exists(arg):
+                if sysutilslib.isWindows():
+                    arg = arg.decode("gbk")
+                else:
+                    arg = arg.decode("utf-8")
+                self.GetDocumentManager().CreateDocument(os.path.normpath(arg), wx.lib.docview.DOC_SILENT)
+                if strutils.GetFileExt(arg) == PROJECT_SHORT_EXTENSION:
+                    self._open_project_path = arg
+        
 
 class IDEDocManager(wx.lib.docview.DocManager):
 
