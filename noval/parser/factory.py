@@ -200,7 +200,7 @@ def scan_sys_path(src_path,dest_path,need_renew_database):
             ext = os.path.splitext(fullpath)[1].lower()
             if not ext in ['.py','.pyw']:
                 continue
-            top_module_name,is_package = utils.get_top_modulename(fullpath)
+            top_module_name,is_package = utils.get_relative_name(fullpath)
             if top_module_name == "":
                 continue
             module_members_file = os.path.join(dest_path,top_module_name+ ".$members")

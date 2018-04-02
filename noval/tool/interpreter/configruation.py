@@ -330,9 +330,12 @@ class InterpreterConfigDialog(wx.Dialog):
                     python_path = os.path.join(location,"Scripts\\python.exe")
                 else:
                     python_path = os.path.join(location,"bin/python")
-                interpreter = interpretermanager.InterpreterManager().AddPythonInterpreter(python_path,name)
-                self.AddOneInterpreter(interpreter)
-                self.SmartAnalyse(interpreter)
+                try:
+                    interpreter = interpretermanager.InterpreterManager().AddPythonInterpreter(python_path,name)
+                    self.AddOneInterpreter(interpreter)
+                    self.SmartAnalyse(interpreter)
+                except Exception,e:
+                    wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR,self)
             return True
             
     def CreateVirtualEnv(self,name,location,include_site_packages,interpreter,progress_dlg):

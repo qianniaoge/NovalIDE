@@ -1062,13 +1062,10 @@ class ProjectDocument(wx.lib.docview.Document):
 
 class NewProjectWizard(Wizard.BaseWizard):
 
-    WIZTITLE = _("New Project Wizard")
-
-
     def __init__(self, parent):
         self._parent = parent
         self._fullProjectPath = None
-        Wizard.BaseWizard.__init__(self, parent, self.WIZTITLE)
+        Wizard.BaseWizard.__init__(self, parent, _("New Project Wizard"))
         self._projectLocationPage = self.CreateProjectLocation(self)
         wx.wizard.EVT_WIZARD_PAGE_CHANGING(self, self.GetId(), self.OnWizPageChanging)
         self._project_configuration = None

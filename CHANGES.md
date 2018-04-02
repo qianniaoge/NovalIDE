@@ -196,3 +196,8 @@ Version 1.0.7 -------------2018-03-23
 26.fix the serious bug of close and delete project
 27.enable filter file types when import files to project
 28.fix the bug of project file or path contains chinese character
+
+Version 1.0.8 -------------2018-04-01
+1.fix create virtualenv bug on linux os
+2.fix the bug of file watcher when save as the same file
+3.update english to chinese translation

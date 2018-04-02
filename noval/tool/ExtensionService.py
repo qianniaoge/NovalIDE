@@ -179,7 +179,7 @@ class ExtensionService(Service.BaseService):
         cur_view = self.GetActiveView()
         if cur_view is None or not cur_view.IsUnitTestEnable():
             return
-        dlg = UnitTestDialog.UnitTestDialog(wx.GetApp().GetTopWindow(),-1,"UnitTest",cur_view)
+        dlg = UnitTestDialog.UnitTestDialog(wx.GetApp().GetTopWindow(),-1,_("UnitTest"),cur_view)
         dlg.ShowModal()
 
     def OpenInterpreter(self,event):

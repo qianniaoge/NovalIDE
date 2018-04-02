@@ -25,6 +25,7 @@ import noval.parser.intellisence as intellisence
 import noval.parser.config as parserconfig
 from consts import _,ID_MRU_FILE1,PROJECT_EXTENSION,PROJECT_SHORT_EXTENSION
 from noval.util import strutils
+import noval.parser.utils as parserutils
 
 # Required for Unicode support with python
 # site.py sets this, but Windows builds don't have site.py because of py2exe problems
@@ -625,7 +626,9 @@ class IDEDocManager(wx.lib.docview.DocManager):
         old_file_path = doc.GetFilename()
         if not doc.SaveAs():
             return
-        if doc.IsWatched:
+        new_file_path = doc.GetFilename()
+        #if save as file is the same file as before,don't remove the old file watcher
+        if doc.IsWatched and not parserutils.ComparePath(new_file_path,old_file_path):
             doc.FileWatcher.RemoveFile(old_file_path)
 
     def OnPrintSetup(self, event):

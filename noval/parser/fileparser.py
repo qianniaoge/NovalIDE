@@ -52,11 +52,11 @@ def get_package_childs(module_path):
             continue
         if os.path.isfile(file_path_name):
             module_name = '.'.join(os.path.basename(file_name).split('.')[0:-1])
-            full_module_name,_ = utils.get_top_modulename(file_path_name)
+            full_module_name,_ = utils.get_relative_name(file_path_name)
         else:
             module_name = file_name
             file_path_name = os.path.join(file_path_name,"__init__.py")
-            full_module_name,_ = utils.get_top_modulename(file_path_name)
+            full_module_name,_ = utils.get_relative_name(file_path_name)
         d = dict(name=module_name,full_name=full_module_name,path=file_path_name,type=config.NODE_MODULE_TYPE)
         childs.append(d)        
     return childs
@@ -66,9 +66,9 @@ def fix_ref_module_name(module_dir,ref_module_name):
     ref_module_package_path = os.path.join(module_dir,ref_module_name)
     ref_module_package_file_path = os.path.join(ref_module_package_path,"__init__.py")
     if os.path.exists(ref_module_path):
-        return utils.get_top_modulename(ref_module_path)[0]
+        return utils.get_relative_name(ref_module_path)[0]
     elif os.path.exists(ref_module_package_file_path):
-        return utils.get_top_modulename(ref_module_package_file_path)[0]
+        return utils.get_relative_name(ref_module_package_file_path)[0]
     #elif ref_module_name in sys.modules:
      #   return sys.modules[ref_module_name].__name__
     else:

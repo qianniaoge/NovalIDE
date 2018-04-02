@@ -16,26 +16,26 @@ def MakeDirs(dirname):
         if not os.path.exists(destdir):
             os.mkdir(destdir)
 
-def get_top_modulename(fullpath):
-    path = os.path.dirname(fullpath)
-    data_name = ""
+def get_relative_name(module_path,path_list = sys.path):
+    path = os.path.dirname(module_path)
     recent_path = ''
     while True:
         #when route to sys path or root path,such as / or c:\\,skip the circle
-        if PathsContainPath(sys.path,path) or os.path.dirname(path) == path:
+        if PathsContainPath(path_list,path) or os.path.dirname(path) == path:
             recent_path = path
             break
         path = os.path.dirname(path)
-    path_name = fullpath.replace(recent_path + os.sep,'').split('.')[0]
-    path_name = path_name.replace("\\",'/')
+    path_name = module_path.replace(recent_path + os.sep,'').split('.')[0]
+    if os.name == 'nt':
+        path_name = path_name.replace(os.sep,'/')
     parts = path_name.split('/')
     if parts[-1] == "__init__":
-        data_file_name = '.'.join(parts[0:-1])
+        relative_module_name = '.'.join(parts[0:-1])
         is_package = True
     else:
-        data_file_name = '.'.join(parts)
+        relative_module_name = '.'.join(parts)
         is_package = False
-    return data_file_name,is_package
+    return relative_module_name,is_package
 
 def strcmp(str1,str2):
     i = 0
