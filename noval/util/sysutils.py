@@ -15,6 +15,7 @@ import os
 import time
 import pyperclip
 import wx
+import psutil
 
 # this will be set to true in IDE.py when we are running release builds.
 isRelease = False
@@ -143,3 +144,14 @@ def time_func(func):
         elapse = end - start
         print func.__name__,'elapse time',elapse,'S'
     return wrapped_func
+    
+def get_child_pids(ppid):
+    child_ids = []
+    for pid in psutil.pids():
+        try:
+            p = psutil.Process(pid)
+            if p.ppid() == ppid:
+                child_ids.append(p.pid)
+        except:
+            pass
+    return child_ids

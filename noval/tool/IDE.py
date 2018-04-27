@@ -397,9 +397,9 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         if not projectService.LoadSavedProjects() and not docManager.GetDocuments() and self.IsSDI():  # Have to open something if it's SDI and there are no projects...
             projectTemplate.CreateDocument('', wx.lib.docview.DOC_NEW).OnNewDocument()
             
-        projectService.SetCurrentProject()
         interpretermanager.InterpreterManager().LoadDefaultInterpreter()
         self.AddInterpreters()
+        projectService.SetCurrentProject()
         intellisence.IntellisenceManager().generate_default_intellisence_data()
 
         self.ShowTipfOfDay()

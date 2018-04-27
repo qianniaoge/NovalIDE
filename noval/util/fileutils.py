@@ -23,6 +23,14 @@ import noval.util.utillang as utillang
 from noval.util.lang import *
 import subprocess
 import strutils
+from chardet.compat import PY2, PY3
+from chardet.universaldetector import UniversalDetector
+from chardet.version import __version__, VERSION
+import chardet
+import fchecker
+
+
+_Checker = fchecker.FileTypeChecker()
 
 global fileutilsLogger
 fileutilsLogger = logging.getLogger("activegrid.util.fileutils")
@@ -516,3 +524,29 @@ def GetDirFiles(path,file_list,filters=[]):
                 if strutils.GetFileExt(file_path) in filters:
                     file_list.append(file_path)
                         
+
+
+def detect(byte_str):
+    """
+    Detect the encoding of the given byte string.
+
+    :param byte_str:     The byte sequence to examine.
+    :type byte_str:      ``bytes`` or ``bytearray``
+    """
+    if not isinstance(byte_str, bytearray):
+        if not isinstance(byte_str, bytes):
+            raise TypeError('Expected object of type bytes or bytearray, got: '
+                            '{0}'.format(type(byte_str)))
+        else:
+            byte_str = bytearray(byte_str)
+    pre_read = 4096
+    if not _Checker.IsUnicode(byte_str[0:pre_read]) and _Checker.IsBinaryBytes(byte_str[0:pre_read]):
+        return {'encoding':'binary'}
+    detector = chardet.UniversalDetector(chardet.enums.LanguageFilter.CHINESE)
+    detector.feed(byte_str)
+    return detector.close()
+    
+def is_python_file(file_path):
+    PY_EXT_LIST = ['py','pyw']
+    ext = strutils.GetFileExt(file_path)
+    return ext in PY_EXT_LIST

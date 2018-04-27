@@ -47,8 +47,8 @@ PROJECT_VERSION_050826 = '11'
 class BaseProject(object):
 
     __xmlname__ = "project"
-    __xmlexclude__ = ('fileName', '_projectDir', '_getDocCallback', '_cacheEnabled')
-    __xmlattributes__ = ("_homeDir", "version","name")
+    __xmlexclude__ = ('fileName', '_projectDir', '_getDocCallback', '_cacheEnabled','_startupfile')
+    __xmlattributes__ = ("_homeDir", "version","name","id")
     __xmlrename__ = { "_homeDir":"homeDir", "_appInfo":"appInfo" }
     __xmlflattensequence__ = { "_files":("file",) }
     __xmldefaultnamespace__ = xmlutils.AG_NS_URL
@@ -62,8 +62,30 @@ class BaseProject(object):
         self._homeDir = None         # user set homeDir for use in calculating relative path
         self._cacheEnabled = 0
         self.name = ''
+        self.id = ''
+        self._startupfile = None
         if not ACTIVEGRID_BASE_IDE:
             self._appInfo = AppInfo.AppInfo()
+            
+    @property
+    def StartupFile(self):
+        return self._startupfile
+        
+    @StartupFile.setter
+    def StartupFile(self,startupfile):
+        if self._startupfile is not None:
+            self._startupfile.IsStartup = False
+        self._startupfile = startupfile
+        if self._startupfile is not None:
+            self._startupfile.IsStartup = True
+            
+    @property
+    def Id(self):
+        return self.id
+        
+    @Id.setter
+    def Id(self,project_id):
+        self.id = project_id
             
     @property
     def Name(self):
@@ -100,6 +122,8 @@ class BaseProject(object):
             self._files.append(ProjectFile(self, filePath, logicalFolder, type, name, getDocCallback=self._getDocCallback))
 
     def RemoveFile(self, file):
+        if file.IsStartup:
+            self.StartupFile = None
         self._files.remove(file)
 
     def FindFile(self, filePath):
@@ -269,6 +293,10 @@ class PythonProject(Project):
     def PythonPathList(self):
         return self.python_path_list
         
+    @property
+    def Interpreter(self):
+        return self.interpreter
+        
 class ProjectInterpreter(object):
     __xmlexclude__ = ('_parentProj',)
     __xmlname__ = "interpreter"
@@ -284,10 +312,21 @@ class ProjectInterpreter(object):
         self.version = interpreter.Version
         self.path = interpreter.Path
         
+    @property
+    def Path(self):
+        return self.path
+        
+    @property
+    def Version(self):
+        return self.version
+        
 class ProjectFile(object):
+    
+    STARTUP_TRUE_NAME = 'true'
+    STARTUP_FALSE_NAME = 'false'
     __xmlname__ = "file"
     __xmlexclude__ = ('_parentProj', '_getDocCallback', '_docCallbackCacheReturnValue', '_docModelCallbackCacheReturnValue', '_doc',)
-    __xmlattributes__ = ["filePath", "logicalFolder", "type", "name"]
+    __xmlattributes__ = ["filePath", "logicalFolder", "type", "name","isStartup"]
     __xmldefaultnamespace__ = xmlutils.AG_NS_URL
 
 
@@ -301,7 +340,25 @@ class ProjectFile(object):
         self._docCallbackCacheReturnValue = None
         self._docModelCallbackCacheReturnValue = None
         self._doc = None
-
+        self.isStartup = ProjectFile.STARTUP_FALSE_NAME
+        
+    @property
+    def IsStartup(self):
+        if self.isStartup == ProjectFile.STARTUP_TRUE_NAME:
+            return True
+        elif self.isStartup == ProjectFile.STARTUP_FALSE_NAME:
+            return False
+        else:
+            assert(False)
+            
+    @IsStartup.setter
+    def IsStartup(self,is_startup):
+        if is_startup == True:
+            self.isStartup = ProjectFile.STARTUP_TRUE_NAME
+        elif is_startup == False:
+            self.isStartup = ProjectFile.STARTUP_FALSE_NAME
+        else:
+            assert(False)
 
     def _GetDocumentModel(self):
         if (self._docCallbackCacheReturnValue
@@ -565,7 +622,7 @@ class Project_10:
 #----------------------------------------------------------------------------
 
 if ACTIVEGRID_BASE_IDE:
-    KNOWNTYPES = {"%s:project" % PROJECT_NAMESPACE_URL : Project, "%s:file" % PROJECT_NAMESPACE_URL : ProjectFile,\
+    KNOWNTYPES = {"%s:project" % PROJECT_NAMESPACE_URL : PythonProject, "%s:file" % PROJECT_NAMESPACE_URL : ProjectFile,\
                         "%s:interpreter" % PROJECT_NAMESPACE_URL:ProjectInterpreter}
 else:
     KNOWNTYPES = {"%s:project" % PROJECT_NAMESPACE_URL: Project, "%s:file" % PROJECT_NAMESPACE_URL: ProjectFile,
@@ -610,7 +667,7 @@ def save(fileObject, project, productionDeployment=False):
         # for deployments, we don't want an abs path in homeDir since that
         # would tie the app to the current filesystem. So unset it.
         project.homeDir = None
-
+    
     xmlutils.save(fileObject.name, project, prettyPrint=True, knownTypes=KNOWNTYPES, knownNamespaces=xmlutils.KNOWN_NAMESPACES)
 
     if productionDeployment:

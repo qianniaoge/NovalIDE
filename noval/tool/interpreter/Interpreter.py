@@ -301,7 +301,7 @@ class PythonInterpreter(BuiltinPythonInterpreter):
         return False
         
     def CheckSyntax(self,script_path):
-        check_cmd ="%s -c \"import py_compile;py_compile.compile(r'%s')\"" % (self.Path,script_path)
+        check_cmd ="\"%s\" -c \"import py_compile;py_compile.compile(r'%s')\"" % (self.Path,script_path)
         sys_encoding = locale.getdefaultlocale()[1]
         output = GetCommandOutput(check_cmd.encode(sys_encoding),True).strip()
         if 0 == len(output):

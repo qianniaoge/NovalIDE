@@ -19,3 +19,4 @@ pywin32(only windows)
 watchdog
 chardet
 pyperclip
+psutil

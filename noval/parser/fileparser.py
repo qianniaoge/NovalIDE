@@ -167,10 +167,10 @@ def parse_content(content,module_path,text_encoding):
         deep_walk(node,module)
         #add a builtin import node to all file to make search builtin types convenient,which is hidden in outline view
         nodeast.BuiltinImportNode(module)
-        return module
+        return module,None
     except Exception as e:
         print (e)
-        return None
+        return None,unicode(e)
 
 def get_attribute_name(node):
     value = node.value

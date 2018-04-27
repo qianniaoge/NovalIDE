@@ -15,6 +15,8 @@ import wx.stc
 import wx.lib.docview
 import wx.lib.pydocview
 import STCTextEditor
+import os
+import noval.util.sysutils as sysutilslib
 _ = wx.GetTranslation
 
 
@@ -38,16 +40,28 @@ class MarkerService(wx.lib.pydocview.DocService):
         editMenu = menuBar.GetMenu(menuBar.FindMenu(_("&Edit")))
         editMenu.AppendSeparator()
         bookMenu = wx.Menu()
-        bookMenu.Append(MarkerService.MARKERTOGGLE_ID, _("Toggle &Bookmark\tCtrl+M"), _("Toggles a bookmark at text line"))
+        item = wx.MenuItem(bookMenu,MarkerService.MARKERTOGGLE_ID, _("Toggle &Bookmark\tCtrl+M"), _("Toggles a bookmark at text line"))
+        tooglebk_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "tooglebk.png")
+        item.SetBitmap(wx.BitmapFromImage(wx.Image(tooglebk_image_path,wx.BITMAP_TYPE_ANY)))
+        bookMenu.AppendItem(item)
         wx.EVT_MENU(frame, MarkerService.MARKERTOGGLE_ID, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, MarkerService.MARKERTOGGLE_ID, frame.ProcessUpdateUIEvent)
-        bookMenu.Append(MarkerService.MARKERDELALL_ID, _("Clear Bookmarks"), _("Removes all jump bookmarks from selected file"))
+        item = wx.MenuItem(bookMenu,MarkerService.MARKERDELALL_ID, _("Clear Bookmarks"), _("Removes all jump bookmarks from selected file"))
+        clearbk_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "clearbk.png")
+        item.SetBitmap(wx.BitmapFromImage(wx.Image(clearbk_image_path,wx.BITMAP_TYPE_ANY)))
+        bookMenu.AppendItem(item)
         wx.EVT_MENU(frame, MarkerService.MARKERDELALL_ID, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, MarkerService.MARKERDELALL_ID, frame.ProcessUpdateUIEvent)
-        bookMenu.Append(MarkerService.MARKERNEXT_ID, _("Bookmark Next\tF4"), _("Moves to next bookmark in selected file"))
+        item = wx.MenuItem(bookMenu,MarkerService.MARKERNEXT_ID, _("Bookmark Next\tF4"), _("Moves to next bookmark in selected file"))
+        nextbk_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "nextbk.png")
+        item.SetBitmap(wx.BitmapFromImage(wx.Image(nextbk_image_path,wx.BITMAP_TYPE_ANY)))
+        bookMenu.AppendItem(item)
         wx.EVT_MENU(frame, MarkerService.MARKERNEXT_ID, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, MarkerService.MARKERNEXT_ID, frame.ProcessUpdateUIEvent)
-        bookMenu.Append(MarkerService.MARKERPREV_ID, _("Bookmark Previous\tShift+F4"), _("Moves to previous bookmark in selected file"))
+        item = wx.MenuItem(bookMenu,MarkerService.MARKERPREV_ID, _("Bookmark Previous\tShift+F4"), _("Moves to previous bookmark in selected file"))
+        prevbk_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "prevbk.png")
+        item.SetBitmap(wx.BitmapFromImage(wx.Image(prevbk_image_path,wx.BITMAP_TYPE_ANY)))
+        bookMenu.AppendItem(item)
         wx.EVT_MENU(frame, MarkerService.MARKERPREV_ID, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, MarkerService.MARKERPREV_ID, frame.ProcessUpdateUIEvent)
 

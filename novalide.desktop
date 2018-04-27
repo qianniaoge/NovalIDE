@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=NovalIDE
+GenericName=Python IDE
+Comment=Edit,Debug,And Run Python File
+Exec=NovalIDE %f
+Terminal=false
+Icon= /usr/local/lib/python2.7/dist-packages/NovalIDE-1.0.7-py2.7.egg/noval/tool/bmp_source/noval.ico
+Type=Application
+Categories=Application;Programme;
+Version=1.0.7
+MimeType=application/nov-project;

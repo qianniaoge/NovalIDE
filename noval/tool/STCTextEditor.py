@@ -30,6 +30,7 @@ import CompletionService
 import NavigationService
 import consts
 import noval.util.sysutils as sysutilslib
+import noval.util.fileutils as fileutils
 
 _ = wx.GetTranslation
 
@@ -46,7 +47,7 @@ class TextDocument(wx.lib.docview.Document):
         self._inModify = False
         self.file_watcher = FileObserver.FileAlarmWatcher()
         self._is_watched = False
-        self.file_encoding = TextDocument.DEFAULT_FILE_ENCODING
+        self.file_encoding =  wx.ConfigBase_Get().Read(consts.DEFAULT_FILE_ENCODING_KEY,TextDocument.DEFAULT_FILE_ENCODING)
         self._is_new_doc = True
 
     def GetSaveObject(self,filename):
@@ -138,7 +139,7 @@ class TextDocument(wx.lib.docview.Document):
         try:
             with open(filepath,"rb") as f:
                 data = f.read()
-                result = chardet.detect(data)
+                result = fileutils.detect(data)
                 file_encoding = result['encoding']
         except:
             pass
@@ -164,8 +165,13 @@ class TextDocument(wx.lib.docview.Document):
         self.file_encoding = self.DetectFileEncoding(filename)
         fileObject = None
         try:
-            fileObject = codecs.open(filename, 'r',self.file_encoding)
-            self.LoadObject(fileObject)
+            if self.file_encoding == 'binary':
+                fileObject = open(filename, 'rb')
+                is_bytes = True
+            else:
+                fileObject = codecs.open(filename, 'r',self.file_encoding)
+                is_bytes = False
+            self.LoadObject(fileObject,is_bytes)
             fileObject.close()
             fileObject = None
         except:
@@ -190,6 +196,10 @@ class TextDocument(wx.lib.docview.Document):
         self.file_watcher.AddFileDoc(self)
         self._is_watched = True
         self._is_new_doc = False
+        pos = NavigationService.NavigationService.DocMgr.GetPos(filename)
+        self.GetFirstView().GetCtrl().GotoPos(pos)
+        self.GetFirstView().GetCtrl().ScrollToColumn(0)
+        self.GetFirstView().OnUpdateStatusBar(None)
         return True
 
     @property
@@ -206,10 +216,13 @@ class TextDocument(wx.lib.docview.Document):
         view.SetModifyFalse()
         return True
         
-    def LoadObject(self, fileObject):
+    def LoadObject(self, fileObject,is_bytes=False):
         view = self.GetFirstView()
         data = fileObject.read()
-        view.SetValue(data)
+        if is_bytes:
+            view.SetBinaryValue(data)
+        else:
+            view.SetValue(data)
         view.SetModifyFalse()
         return True
 
@@ -268,6 +281,10 @@ class TextView(wx.lib.docview.View):
         self._markerCount = 0
         self._commandProcessor = None
         self._dynSash = None
+        # Initialize the classes position manager for the first control
+        # that is created only.
+        if not NavigationService.NavigationService.DocMgr.IsInitialized():
+            NavigationService.NavigationService.DocMgr.InitPositionCache()
 
 
     def GetCtrlClass(self):
@@ -372,9 +389,13 @@ class TextView(wx.lib.docview.View):
         document = self.GetDocument()
         if document.IsWatched:
             document.FileWatcher.RemoveFileDoc(document)
+        if not document.IsNewDocument:
+            NavigationService.NavigationService.DocMgr.AddRecord([document.GetFilename(),
+                                           self.GetCtrl().GetCurrentPos()])
         self.Activate(False)
         if deleteWindow and self.GetFrame():
             self.GetFrame().Destroy()
+
         return True
 
 
@@ -613,7 +634,10 @@ class TextView(wx.lib.docview.View):
         else:
             return None
 
-
+    def SetBinaryValue(self,bytes_value):
+        self.GetCtrl().AddStyledText(bytes_value)
+        self.GetCtrl().SetReadOnly(True)
+        
     def SetValue(self, value):
         self.GetCtrl().SetText(value)
         self.GetCtrl().UpdateLineNumberMarginWidth()
@@ -639,6 +663,7 @@ class TextView(wx.lib.docview.View):
         statusBar.SetInsertMode(self.GetCtrl().GetOvertype() == 0)
         statusBar.SetLineNumber(self.GetCtrl().GetCurrentLine() + 1)
         statusBar.SetColumnNumber(self.GetCtrl().GetColumn(self.GetCtrl().GetCurrentPos()) + 1)
+        statusBar.SetDocumentEncoding(self.GetDocument().file_encoding)
 
 
     #----------------------------------------------------------------------------

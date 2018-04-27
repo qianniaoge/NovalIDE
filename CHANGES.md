@@ -201,3 +201,29 @@ Version 1.0.8 -------------2018-04-01
 1.fix create virtualenv bug on linux os
 2.fix the bug of file watcher when save as the same file
 3.update english to chinese translation
+4.replace toolbar old image with new image
+5.fix a serious breakpoint debug bug
+6.add icon to meneu item
+7.enable install and uninstall package
+8.add breakpoint debug menu item
+9.show detail progress information of install and uninstall package
+10.fix the bug of goto definition bug
+11.fix the bug of kill process fail on linux os
+12.kill the smart analyse processes when application exit and smart analyse is running
+13.add project id attribute to project instance
+14.enable mutiple selections on project files
+15.delete project regkey config when close project or delete project
+16.show styled text of binary document
+17.show file encoding of document on status bar
+18.save document cache position when close frame and load position data when open document
+19.enable modify project name with label edit
+20.set the startup script of project and bold the project startup item
+21.enable run and debug last settings of project or file
+22.fix the bug of create unittest when parse file error
+23.fix the check syntax error of python script bug
+24.save all open project documents before run
+25.fix the bug of close all run tabs
+26.fix the bug of save chinese text document
+27.allow set the default file encoding of text document
+28.fix the bug of pip path contains blank when install and uninstall package
+29.fix the bug of close debugger window when application exit

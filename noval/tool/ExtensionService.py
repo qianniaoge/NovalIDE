@@ -180,7 +180,9 @@ class ExtensionService(Service.BaseService):
         if cur_view is None or not cur_view.IsUnitTestEnable():
             return
         dlg = UnitTestDialog.UnitTestDialog(wx.GetApp().GetTopWindow(),-1,_("UnitTest"),cur_view)
-        dlg.ShowModal()
+        if dlg.CreateUnitTestFrame():
+            dlg.ShowModal()
+        dlg.Destroy()
 
     def OpenInterpreter(self,event):
         interpreter = wx.GetApp().GetCurrentInterpreter()

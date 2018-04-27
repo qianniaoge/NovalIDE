@@ -99,8 +99,10 @@ class ImportFilesDialog(wx.Dialog):
         sbox = wx.StaticBox(self, -1, _("Option"))
         sboxSizer = wx.StaticBoxSizer(sbox, wx.VERTICAL)
         
-        sboxSizer.Add(wx.CheckBox(self, label="Overwrite existing files without warning"),  flag=wx.LEFT|wx.TOP, border=HALF_SPACE)  
-        sboxSizer.Add(wx.CheckBox(self, label="Create top-level folder"),flag=wx.LEFT|wx.TOP, border=HALF_SPACE)
+        self.overwrite_chkbox = wx.CheckBox(self, label = _("Overwrite existing files without warning"))
+        sboxSizer.Add(self.overwrite_chkbox , flag=wx.LEFT|wx.TOP, border=HALF_SPACE)
+        self.root_folder_chkbox = wx.CheckBox(self, label = _("Create top-level folder"))
+        sboxSizer.Add(self.root_folder_chkbox,flag=wx.LEFT|wx.TOP, border=HALF_SPACE)
         boxsizer.Add(sboxSizer, flag=wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT , border=SPACE) 
         
         lineSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -202,6 +204,12 @@ class ImportFilesDialog(wx.Dialog):
         self.m_gauge.SetRange(len(file_list))
         self._is_importing = True
         self.project_view.StopImport(False)
+        
+        if self.overwrite_chkbox.GetValue():
+            ProjectUI.PromptMessageDialog.DEFAULT_PROMPT_MESSAGE_ID = wx.ID_YESTOALL
+        if self.root_folder_chkbox.GetValue():
+            self.dest_path = os.path.join(self.dest_path,self._treeCtrl.GetItemText(root_item))
+            
         self.project_view.StartCopyFilesToProject(self,file_list,root_path,self.dest_path)
         
     def OnCancelClick(self, event):

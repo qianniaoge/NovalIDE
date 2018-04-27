@@ -5,6 +5,9 @@ import noval.util.sysutils as sysutilslib
 import glob
 import wx.combo
 import os
+import sys
+import codecs
+import consts
 
 _ = wx.GetTranslation
 
@@ -97,6 +100,59 @@ class LangListCombo(wx.combo.BitmapComboBox):
 
         if default:
             self.SetValue(default)
+            
+def GetEncodings():
+    """Get a list of possible encodings to try from the locale information
+    @return: list of strings
+
+    """
+    encodings = list()
+    try:
+        encodings.append(locale.getpreferredencoding())
+    except:
+        pass
+    encodings.append('ascii')
+    encodings.append('utf-8')
+
+    try:
+        if hasattr(locale, 'nl_langinfo'):
+            encodings.append(locale.nl_langinfo(locale.CODESET))
+    except:
+        pass
+    try:
+        encodings.append(locale.getlocale()[1])
+    except:
+        pass
+    try:
+        encodings.append(locale.getdefaultlocale()[1])
+    except:
+        pass
+    encodings.append(sys.getfilesystemencoding())
+    encodings.append('utf-16')
+    encodings.append('utf-16-le') # for files without BOM...
+    encodings.append('latin-1')
+    encodings.append('gbk')
+    encodings.append('gb18030')
+    encodings.append('gb2312')
+    encodings.append('big5')
+
+    # Normalize all names
+    normlist = [ enc for enc in encodings if enc]
+    # Clean the list for duplicates and None values
+    rlist = list()
+    codec_list = list()
+    for enc in normlist:
+        if enc is not None and len(enc):
+            enc = enc.lower()
+            if enc not in rlist:
+                try:
+                    ctmp = codecs.lookup(enc)
+                    if ctmp.name not in codec_list:
+                        codec_list.append(ctmp.name)
+                        rlist.append(enc)
+                except LookupError:
+                    pass
+    return rlist
 
 class GeneralOptionsPanel(wx.Panel):
     """
@@ -181,6 +237,15 @@ class GeneralOptionsPanel(wx.Panel):
                         (self._mru_ctrl,
                          0, wx.ALIGN_CENTER_VERTICAL)])
         optionsSizer.Add(lsizer, 0, wx.ALL, HALF_SPACE)
+        
+        lsizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.encodings_combo = wx.ComboBox(self, -1,choices = GetEncodings(),value=config.Read(consts.DEFAULT_FILE_ENCODING_KEY,""), \
+                            style = wx.CB_READONLY)
+        lsizer.AddMany([(wx.StaticText(self, label=_("File Default Encoding") + u": "),
+                         0, wx.ALIGN_CENTER_VERTICAL), ((5, 5), 0),
+                        (self.encodings_combo,
+                         0, wx.ALIGN_CENTER_VERTICAL)])
+        optionsSizer.Add(lsizer, 0, wx.ALL, HALF_SPACE)
 
         optionsBorderSizer.Add(optionsSizer, 0, wx.ALL, SPACE)
         self.SetSizer(optionsBorderSizer)
@@ -213,6 +278,7 @@ class GeneralOptionsPanel(wx.Panel):
         config.Write("Language",self.language_combox.GetValue())
         config.Write("MRULength",self._mru_ctrl.GetValue())
         config.WriteInt("EnableMRU",self._enableMRUCheckBox.GetValue())
+        config.Write(consts.DEFAULT_FILE_ENCODING_KEY,self.encodings_combo.GetValue())
         if self._AllowModeChanges():
             config.WriteInt("UseMDI", (self._documentRadioBox.GetStringSelection() == self._mdiChoice))
             config.WriteInt("UseWinMDI", (self._documentRadioBox.GetStringSelection() == self._winMdiChoice))

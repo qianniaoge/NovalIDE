@@ -149,7 +149,9 @@ import os
 import sys
 import threading
 import types
-import pprint 
+import pprint
+import noval.util.sysutils as sysutilslib
+
 if sys.platform.startswith("win"):
     import msvcrt
     import win32api
@@ -1473,6 +1475,9 @@ class ProcessOpen(Process):
             if sig is None:
                 sig = signal.SIGKILL
             try:
+                #should kill child process first
+                for pid in sysutilslib.get_child_pids(self._pid):
+                    os.kill(pid,sig)
                 os.kill(self._pid, sig)
             except OSError, ex:
                 if ex.errno != 3:

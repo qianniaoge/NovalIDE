@@ -15,6 +15,8 @@ import wx.lib.docview
 import wx.lib.pydocview
 import re
 import Service
+import os
+import noval.util.sysutils as sysutilslib
 _ = wx.GetTranslation
 
 
@@ -69,19 +71,32 @@ class FindService(Service.BaseService):
         """ Install Find Service Menu Items """
         editMenu = menuBar.GetMenu(menuBar.FindMenu(_("&Edit")))
         editMenu.AppendSeparator()
-        editMenu.Append(FindService.FIND_ID, _("&Find...\tCtrl+F"), _("Finds the specified text"))
+        item = wx.MenuItem(editMenu,FindService.FIND_ID, _("&Find...\tCtrl+F"), _("Finds the specified text"))
+        item.SetBitmap(getFindBitmap())
+        editMenu.AppendItem(item)
+        
         wx.EVT_MENU(frame, FindService.FIND_ID, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, FindService.FIND_ID, frame.ProcessUpdateUIEvent)
-        editMenu.Append(FindService.FIND_PREVIOUS_ID, _("Find &Previous\tShift+F3"), _("Finds the previous specified text"))
+        item = wx.MenuItem(editMenu,FindService.FIND_PREVIOUS_ID, _("Find &Previous\tShift+F3"), _("Finds the previous specified text"))
+        previous_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "previous.png")
+        item.SetBitmap(wx.BitmapFromImage(wx.Image(previous_image_path,wx.BITMAP_TYPE_ANY)))
+        editMenu.AppendItem(item)
         wx.EVT_MENU(frame, FindService.FIND_PREVIOUS_ID, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, FindService.FIND_PREVIOUS_ID, frame.ProcessUpdateUIEvent)
-        editMenu.Append(FindService.FIND_NEXT_ID, _("Find &Next\tF3"), _("Finds the next specified text"))
+        item = wx.MenuItem(editMenu,FindService.FIND_NEXT_ID, _("Find &Next\tF3"), _("Finds the next specified text"))
+        next_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "next.png")
+        item.SetBitmap(wx.BitmapFromImage(wx.Image(next_image_path,wx.BITMAP_TYPE_ANY)))
+        editMenu.AppendItem(item)
         wx.EVT_MENU(frame, FindService.FIND_NEXT_ID, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, FindService.FIND_NEXT_ID, frame.ProcessUpdateUIEvent)
         editMenu.Append(FindService.REPLACE_ID, _("R&eplace...\tCtrl+H"), _("Replaces specific text with different text"))
         wx.EVT_MENU(frame, FindService.REPLACE_ID, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, FindService.REPLACE_ID, frame.ProcessUpdateUIEvent)
-        editMenu.Append(FindService.GOTO_LINE_ID, _("&Go to Line...\tCtrl+G"), _("Goes to a certain line in the file"))
+        item = wx.MenuItem(editMenu,FindService.GOTO_LINE_ID, _("&Go to Line...\tCtrl+G"), _("Goes to a certain line in the file"))
+        goto_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "goto.png")
+        item.SetBitmap(wx.BitmapFromImage(wx.Image(goto_image_path,wx.BITMAP_TYPE_ANY)))
+        editMenu.AppendItem(item)
+        
         wx.EVT_MENU(frame, FindService.GOTO_LINE_ID, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, FindService.GOTO_LINE_ID, frame.ProcessUpdateUIEvent)
 

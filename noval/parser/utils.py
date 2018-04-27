@@ -64,7 +64,7 @@ def CmpMember2(x,y):
         return 1
     return -1
     
-def CompareDatabaseVersion(new_version,old_version):
+def CompareDatabaseVersion_(new_version,old_version):
     new_verions = new_version.split(".")
     old_versions = old_version.split(".")
     for i,v in enumerate(new_verions):
@@ -106,3 +106,32 @@ def PathsContainPath(path_list,path):
                 return True
         return False
     return path in path_list
+    
+def CalcVersionValue(ver_str="0.0.0"):
+    """Calculates a version value from the provided dot-formated string
+
+    1) SPECIFICATION: Version value calculation AA.BBB.CCC
+         - major values: < 1     (i.e 0.0.85 = 0.850)
+         - minor values: 1 - 999 (i.e 0.1.85 = 1.850)
+         - micro values: >= 1000 (i.e 1.1.85 = 1001.850)
+
+    @keyword ver_str: Version string to calculate value of
+
+    """
+    ver_str = ''.join([char for char in ver_str
+                       if char.isdigit() or char == '.'])
+    ver_lvl = ver_str.split(u".")
+    if len(ver_lvl) < 3:
+        return 0
+
+    major = int(ver_lvl[0]) * 1000
+    minor = int(ver_lvl[1])
+    if len(ver_lvl[2]) <= 2:
+        ver_lvl[2] += u'0'
+    micro = float(ver_lvl[2]) / 1000
+    return float(major) + float(minor) + micro
+    
+def CompareDatabaseVersion(new_version,old_version):
+    if CalcVersionValue(new_version) <= CalcVersionValue(old_version):
+        return 0
+    return 1

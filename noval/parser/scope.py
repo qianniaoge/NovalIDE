@@ -507,10 +507,11 @@ class ImportScope(NodeScope):
                 return NodeScope.EqualName(self,name)
 
         def MakeFixName(self,name):
+            #should only replace the first find name 
             if self.Node.AsName is not None:
                 fix_name = name.replace(self.Node.AsName,"",1)
             else:
-                fix_name = name.replace(self.Node.Name,"")
+                fix_name = name.replace(self.Node.Name,"",1)
             if fix_name.startswith("."):
                 fix_name = fix_name[1:]
             return fix_name

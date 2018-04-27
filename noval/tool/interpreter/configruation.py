@@ -15,6 +15,7 @@ import noval.tool.OutputThread as OutputThread
 import subprocess
 import noval.tool.which as whichpath
 import noval.tool.WxThreadSafe as WxThreadSafe
+import noval.util.strutils as strutils
 
 ID_COPY_INTERPRETER_NAME = wx.NewId()
 ID_COPY_INTERPRETER_VERSION = wx.NewId()
@@ -104,13 +105,15 @@ class NewVirtualEnvDialog(wx.Dialog):
         interpreter_image_path = os.path.join(sysutils.mainModuleDir, "noval", "tool", "bmp_source", "python_nature.png")
         interpreter_image = wx.Image(interpreter_image_path,wx.BITMAP_TYPE_ANY)
         interpreter_bmp = wx.BitmapFromImage(interpreter_image)
-        for i,interpreter in enumerate(interpretermanager.InterpreterManager.interpreters):
+        i = 0
+        for interpreter in interpretermanager.InterpreterManager.interpreters:
             if interpreter.IsBuiltIn:
                 continue
             display_name = "%s (%s)" % (interpreter.Version,interpreter.Path)
             self._interprterChoice.Append(display_name,interpreter_bmp,interpreter.Path)
             if interpreter.Path == self._interpreter.Path:
                 self._interprterChoice.SetSelection(i)
+            i += 1
         
     def ChooseVirtualEnvPath(self,event):
         dlg = wx.DirDialog(wx.GetApp().GetTopWindow(),
@@ -366,9 +369,9 @@ class InterpreterConfigDialog(wx.Dialog):
         progress_dlg.call_back = progress_dlg.AppendMsg
         if not interpreter.Packages.has_key('virtualenv'):
             progress_dlg.msg = "install virtualenv package..."
-            command = interpreter.GetPipPath() + " install virtualenv"
+            command = strutils.emphasis_path(interpreter.GetPipPath()) + " install virtualenv"
             self.ExecCommandAndOutput(command,progress_dlg)
-        command = self.GetVirtualEnvPath(interpreter) + " " + location
+        command = strutils.emphasis_path(self.GetVirtualEnvPath(interpreter)) + " " + strutils.emphasis_path(location)
         if include_site_packages:
             command += " --system-site-packages"
         self.ExecCommandAndOutput(command,progress_dlg)

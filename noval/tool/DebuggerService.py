@@ -57,8 +57,11 @@ import DebugOutputCtrl
 import interpreter.configruation as configruation
 import noval.parser.intellisence as intellisence
 import interpreter.manager as interpretermanager
-from consts import PYTHON_PATH_KEY
+from consts import PYTHON_PATH_NAME,NOT_IN_ANY_PROJECT
 import noval.util.strutils as strutils
+import noval.parser.utils as parserutils
+import noval.util.fileutils as fileutils
+import copy
 
 import sys
 reload(sys)
@@ -81,7 +84,7 @@ _ = wx.GetTranslation
 
 #VERBOSE mode will invoke threading.Thread _VERBOSE,which will print a lot of thread debug text on screen
 _VERBOSE = False
-_WATCHES_ON = False
+_WATCHES_ON = True
 
 import  wx.lib.newevent
 (UpdateTextEvent, EVT_UPDATE_STDTEXT) = wx.lib.newevent.NewEvent()
@@ -265,16 +268,17 @@ class RunCommandUI(wx.Panel):
     
     @staticmethod
     def StopAndRemoveAllUI():
-        for i in range(Service.ServiceView.bottomTab.GetPageCount()-1, 0, -1): # Go from len-1 to 1
+        for i in range(Service.ServiceView.bottomTab.GetPageCount() - 1, Service.ServiceView.UNREMOVABLE_PAGE_COUNT - 1, -1): # Go from len-1 to 1
             page = Service.ServiceView.bottomTab.GetPage(i)
             if hasattr(page, 'StopAndRemoveUI'):
                 if not page.StopAndRemoveUI(None):
                     return False
         return True
 
-    def __init__(self, parent, id, fileName):
+    def __init__(self, parent, id, fileName,run_parameter):
         wx.Panel.__init__(self, parent, id)
         self._noteBook = parent
+        self._run_parameter = run_parameter
 
         threading._VERBOSE = _VERBOSE
 
@@ -335,8 +339,11 @@ class RunCommandUI(wx.Panel):
         # See comment on PythonDebuggerUI.StopExecution
         self._executor.DoStopExecution()
 
-    def Execute(self, initialArgs, startIn, environment, onWebServer = False):
+    def Execute(self,onWebServer = False):
         try:
+            initialArgs = self._run_parameter.Arg
+            startIn = self._run_parameter.StartUp
+            environment = self._run_parameter.Environment
             self._executor.Execute(initialArgs, startIn, environment)
         except Exception,e:
             wx.MessageBox(str(e),_("Run Error"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
@@ -365,7 +372,7 @@ class RunCommandUI(wx.Panel):
         for i in range(0,nb.GetPageCount()):
             if self == nb.GetPage(i):
                 text = nb.GetPageText(i)
-                newText = text.replace(_("Running"), _("Finished"))
+                newText = text.replace(_("Running"), _("Finished Running"))
                 nb.SetPageText(i, newText)
                 break
         self._stopped = True
@@ -397,7 +404,7 @@ class RunCommandUI(wx.Panel):
 
     def StopAndRemoveUI(self, event):
         if not self._stopped:
-            ret = wx.MessageBox(_("Process is still running,Do You Want to kill the process and remove it?"), _("Process Running.."),
+            ret = wx.MessageBox(_("Process is still running,Do you want to kill the process and remove it?"), _("Process Running.."),
                        wx.YES_NO  | wx.ICON_QUESTION ,self)
             if ret == wx.NO:
                 return False
@@ -562,7 +569,7 @@ class BaseDebuggerUI(wx.Panel):
         self.CLEAR_ID = wx.NewId()
         self.ADD_WATCH_ID = wx.NewId()
         sizer = wx.BoxSizer(wx.VERTICAL)
-        self._tb = tb = wx.ToolBar(self,  -1, wx.DefaultPosition, (1000,30), wx.TB_HORIZONTAL| wx.NO_BORDER| wx.TB_FLAT| wx.TB_TEXT, "Debugger" )
+        self._tb = tb = wx.ToolBar(self,  -1, wx.DefaultPosition, (1000,30), wx.TB_HORIZONTAL| wx.NO_BORDER| wx.TB_FLAT, "Debugger" )
         sizer.Add(tb, 0, wx.EXPAND |wx.ALIGN_LEFT|wx.ALL, 1)
         tb.SetToolBitmapSize((16,16))
 
@@ -693,12 +700,13 @@ class BaseDebuggerUI(wx.Panel):
             for i in range(0, nb.GetPageCount()):
                 if self == nb.GetPage(i):
                     text = nb.GetPageText(i)
-                    newText = text.replace("Debugging", "Finished")
+                    newText = text.replace(_("Debugging"), _("Finished Debugging"))
                     nb.SetPageText(i, newText)
                     if _VERBOSE: print "In ExectorFinished, changed tab title."
                     break
         except:
             if _VERBOSE: print "In ExectorFinished, got exception"
+        self._tb.EnableTool(self.KILL_PROCESS_ID, False)
 
     def SetStatusText(self, text):
         self._statusBar.SetStatusText(text,0)
@@ -752,12 +760,18 @@ class BaseDebuggerUI(wx.Panel):
                 openDoc.GetFirstView().GetCtrl().ClearCurrentLineMarkers()
 
     def StopAndRemoveUI(self, event):
+        if self._executor:
+            ret = wx.MessageBox(_("Debugger is still running,Do you want to kill the debugger and remove it?"), _("Debugger Running.."),
+                       wx.YES_NO  | wx.ICON_QUESTION ,self)
+            if ret == wx.NO:
+                return False
         self.StopExecution(None)
         if self in BaseDebuggerUI.debuggers:
             BaseDebuggerUI.debuggers.remove(self)
         index = self._parentNoteBook.GetSelection()
         self._parentNoteBook.GetPage(index).Show(False)
         self._parentNoteBook.RemovePage(index)
+        return True
 
     def OnAddWatch(self, event):
         if self.framesTab:
@@ -1017,7 +1031,7 @@ class PythonDebuggerUI(BaseDebuggerUI):
         PythonDebuggerUI.debuggerPortList = range(startingPort, startingPort + PORT_COUNT)
     NewPortRange = staticmethod(NewPortRange)
 
-    def __init__(self, parent, id, command, service, autoContinue=True):
+    def __init__(self, parent, id, command, service,run_parameter, autoContinue=True):
         # Check for ports before creating the panel.
         if not PythonDebuggerUI.debuggerPortList:
             PythonDebuggerUI.NewPortRange()
@@ -1025,6 +1039,7 @@ class PythonDebuggerUI(BaseDebuggerUI):
         self._guiPort = str(PythonDebuggerUI.GetAvailablePort())
         self._debuggerBreakPort = str(PythonDebuggerUI.GetAvailablePort())
         BaseDebuggerUI.__init__(self, parent, id)
+        self._run_parameter = run_parameter
         self._command = command
         self._service = service
         config = wx.ConfigBase_Get()
@@ -1037,7 +1052,7 @@ class PythonDebuggerUI(BaseDebuggerUI):
             try:
                 fname = DebuggerHarness.__file__
                 parts = fname.split('library.zip')
-                path = os.path.join(parts[0],'activegrid', 'tool', 'DebuggerHarness.py')
+                path = os.path.join(parts[0],'noval', 'tool', 'DebuggerHarness.py')
             except:
                 tp, val, tb = sys.exc_info()
                 traceback.print_exception(tp, val, tb)
@@ -1053,7 +1068,10 @@ class PythonDebuggerUI(BaseDebuggerUI):
     def LoadPythonFramesList(self, framesXML):
         self.framesTab.LoadFramesList(framesXML)
 
-    def Execute(self, initialArgs, startIn, environment, onWebServer = False):
+    def Execute(self, onWebServer = False):
+        initialArgs = self._run_parameter.Arg
+        startIn = self._run_parameter.StartUp
+        environment = self._run_parameter.Environment
         self._callback.Start()
         self._executor.Execute(initialArgs, startIn, environment)
         self._callback.WaitForRPC()
@@ -2033,7 +2051,6 @@ class RequestHandlerThread(threading.Thread):
         return ""
 
     def AskToStop(self):
-        self._keepGoing = False
         if type(self._server) is not types.NoneType:
             try:
                 # This is a really ugly way to make sure this thread isn't blocked in
@@ -2041,6 +2058,7 @@ class RequestHandlerThread(threading.Thread):
                 url = 'http://' + self._address[0] + ':' + str(self._address[1]) + '/'
                 tempServer = xmlrpclib.ServerProxy(url, allow_none=1)
                 tempServer.dummyOperation()
+                self._keepGoing = False
             except:
                 tp, val, tb = sys.exc_info()
                 traceback.print_exception(tp, val, tb)
@@ -2353,11 +2371,15 @@ class DebuggerService(Service.Service):
         debuggerMenu = wx.Menu()
         if not menuBar.FindItemById(DebuggerService.CLEAR_ALL_BREAKPOINTS):
 
-            debuggerMenu.Append(DebuggerService.RUN_ID, _("&Run...\tF5"), _("Run a file"))
+            item = wx.MenuItem(debuggerMenu,DebuggerService.RUN_ID, _("&Run...\tF5"), _("Run a file"))
+            item.SetBitmap(getRunningManBitmap())
+            debuggerMenu.AppendItem(item)
             wx.EVT_MENU(frame, DebuggerService.RUN_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, DebuggerService.RUN_ID, frame.ProcessUpdateUIEvent)
 
-            debuggerMenu.Append(DebuggerService.DEBUG_ID, _("&Debug...\tCtrl+F5"), _("Debug a file"))
+            item = wx.MenuItem(debuggerMenu,DebuggerService.DEBUG_ID, _("&Debug...\tCtrl+F5"), _("Debug a file"))
+            item.SetBitmap(getDebuggingManBitmap())
+            debuggerMenu.AppendItem(item)
             wx.EVT_MENU(frame, DebuggerService.DEBUG_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, DebuggerService.DEBUG_ID, frame.ProcessUpdateUIEvent)
             
@@ -2449,19 +2471,19 @@ class DebuggerService(Service.Service):
             self.ClearAllBreakpoints()
             return True
         elif an_id == DebuggerService.RUN_ID:
-            self.RunScript(event)
+            self.Run(event)
             return True
         elif an_id == DebuggerService.DEBUG_ID:
-            self.DebugRunScript(event)
+            self.DebugRun(event)
             return True
         elif an_id == DebuggerService.CHECK_ID:
             self.CheckScript(event)
             return True
         elif an_id == DebuggerService.RUN_LAST_ID:
-            self.OnRunProject(event, showDialog=False)
+            self.RunLast(event)
             return True
         elif an_id == DebuggerService.DEBUG_LAST_ID:
-            self.OnDebugProject(event, showDialog=False)
+            self.DebugRunLast(event)
             return True
         elif an_id == DebuggerService.DEBUG_WEBSERVER_ID:
             self.OnDebugWebServer(event)
@@ -2492,14 +2514,27 @@ class DebuggerService(Service.Service):
         elif an_id == DebuggerService.CLEAR_ALL_BREAKPOINTS:
             event.Enable(self.HasBreakpointsSet())
             return True
-        elif (an_id == DebuggerService.RUN_ID
-        or an_id == DebuggerService.RUN_LAST_ID
-        or an_id == DebuggerService.DEBUG_ID
+        if (an_id == DebuggerService.RUN_ID
+        or an_id == DebuggerService.RUN_LAST_ID):
+            interpreter = wx.GetApp().GetCurrentInterpreter()
+            if interpreter and interpreter.IsBuiltIn:
+                event.Enable(False)
+            else:
+                if wx.GetApp().GetService(ProjectEditor.ProjectService).GetView().GetDocument() is None:
+                    event.Enable(self.HasAnyFiles() and \
+                            self.GetActiveView().GetLangLexer() == parserconfig.LANG_PYTHON_LEXER)
+                else:
+                    event.Enable(True)
+            return True
+        if (an_id == DebuggerService.DEBUG_ID
         or an_id == DebuggerService.DEBUG_LAST_ID
         or an_id == DebuggerService.CHECK_ID
         or an_id == DebuggerService.SET_PARAMETER_ENVIRONMENT_ID):
-            event.Enable(self.HasAnyFiles() and \
-                    self.GetActiveView().GetLangLexer() == parserconfig.LANG_PYTHON_LEXER)
+            if wx.GetApp().GetService(ProjectEditor.ProjectService).GetView().GetDocument() is None:
+                event.Enable(self.HasAnyFiles() and \
+                        self.GetActiveView().GetLangLexer() == parserconfig.LANG_PYTHON_LEXER)
+            else:
+                event.Enable(True)
             return True
         else:
             return False
@@ -2517,6 +2552,10 @@ class DebuggerService(Service.Service):
         document = doc_view.GetDocument()
         if not document.Save() or document.IsNewDocument:
             return
+        if not os.path.exists(interpreter.Path):
+            wx.MessageBox("Could not find '%s' on the path." % interpreter.Path,_("Interpreter not exists"),\
+                          wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
+            return
         ok,line,msg = interpreter.CheckSyntax(document.GetFilename())
         if ok:
             wx.MessageBox(_("Check Syntax Ok!"),wx.GetApp().GetAppName(),wx.OK | wx.ICON_INFORMATION,doc_view.GetFrame())
@@ -2525,16 +2564,34 @@ class DebuggerService(Service.Service):
         if line > 0:
             doc_view.GotoLine(line)
             
-    def GetEnvironmentArgs(self,doc_view,interpreter):
-        
-        environment = None
-        initialArgs = None
-        if doc_view.RunParameter is not None:
-            startIn = doc_view.RunParameter.StartUp
-            initialArgs = doc_view.RunParameter.Arg
-            environment = doc_view.RunParameter.Environment
-
+    def GetKey(self, currentProj,lastPart):
+        if currentProj:
+            return currentProj.GetKey(lastPart)
+        return lastPart
+            
+    def SaveRunParameter(self,run_parameter):
+        config = wx.ConfigBase_Get()
+        cur_project_document = wx.GetApp().GetService(ProjectEditor.ProjectService).GetView().GetDocument()
+        if cur_project_document is None:
+            project_name = NOT_IN_ANY_PROJECT
+        else:
+            project_name = os.path.basename(cur_project_document.GetFilename())
+        config.Write(self.GetKey(cur_project_document,"LastRunProject"), project_name)
+        config.Write(self.GetKey(cur_project_document,"LastRunFile"), run_parameter.FilePath)
+        # Don't update the arguments or starting directory unless we're runing python.
+        if run_parameter.Arg is not None:
+            config.Write(self.GetKey(cur_project_document,"LastRunArguments"), run_parameter.Arg)
+        if run_parameter.StartUp is not None:
+            config.Write(self.GetKey(cur_project_document,"LastRunStartIn"), run_parameter.StartUp)
+        if run_parameter.Environment is not None and PYTHON_PATH_NAME in run_parameter.Environment:
+            config.Write(self.GetKey(cur_project_document,"LastPythonPath"),run_parameter.Environment[PYTHON_PATH_NAME])
+            
+    def GetRunEnvironment(self,run_parameter):
+        interpreter = run_parameter.Interpreter
+        environment = run_parameter.Environment
         environ = interpreter.Environ.GetEnviron()
+        if PYTHON_PATH_NAME in environ and environment is not None:
+            environ[PYTHON_PATH_NAME] = environ[PYTHON_PATH_NAME] + os.pathsep + environment.get(PYTHON_PATH_NAME,'')
         if len(environ) > 0:
             if environment is None:
                 environment = environ
@@ -2551,72 +2608,131 @@ class DebuggerService(Service.Service):
         if len(interpreter.PythonPathList) > 0:
             env = {}
             python_path = os.pathsep.join(interpreter.PythonPathList)
-            env[PYTHON_PATH_KEY] = python_path
+            env[PYTHON_PATH_NAME] = python_path
             if environment is None:
                 environment = env
             else:
-                if PYTHON_PATH_KEY in environment:
-                    environment[PYTHON_PATH_KEY] = env[PYTHON_PATH_KEY] + os.pathsep + environment.get(PYTHON_PATH_KEY)
+                if PYTHON_PATH_NAME in environment:
+                    environment[PYTHON_PATH_NAME] = env[PYTHON_PATH_NAME] + os.pathsep + environment.get(PYTHON_PATH_NAME)
                 else:
-                    environment[PYTHON_PATH_KEY] = env[PYTHON_PATH_KEY]
-        return environment,initialArgs
+                    environment[PYTHON_PATH_NAME] = env[PYTHON_PATH_NAME]
+        if run_parameter.Environment == environment:
+            return run_parameter
+        else:
+            cp_run_parameter = copy.deepcopy(run_parameter)
+            cp_run_parameter.Environment = environment
+            return cp_run_parameter
         
-    def DebugRunSciptWithBuiltinInterpreter(self,interpreter,doc_view):
-        fileToRun = doc_view.GetDocument().GetFilename()
+    def DebugRunBuiltin(self,run_parameter):
+        fileToRun = run_parameter.FilePath
         pythonService = wx.GetApp().GetService(PythonEditor.PythonService)
         Service.ServiceView.bottomTab.SetSelection(0)
         pythonService.ShowWindow()
         python_interpreter_view = pythonService.GetView()
         old_argv = sys.argv
-        environment,initialArgs = self.GetEnvironmentArgs(doc_view,interpreter)
+        environment,initialArgs = run_parameter.Environment,run_parameter.Arg
         sys.argv = [fileToRun]
         command = 'execfile(r"%s")' % fileToRun
         python_interpreter_view.shell.run(command)
         sys.argv = old_argv
+
+    def IsProjectContainBreakPoints(self,project):
+        for key in self._masterBPDict:
+            if project.FindFile(key) and len(self._masterBPDict[key]) > 0:
+                return True
+        return False
         
-    def DebugRunScript(self,event,showDialog=True):
+    def GetProjectStartupFile(self,project_docuemt):
+        startup_file = project_docuemt.GetStartupFile()
+        if startup_file is None:
+            wx.MessageBox(_("Your project needs a Python script marked as startup file to perform this action"),style=wx.OK|wx.ICON_ERROR)
+            return None
+        return startup_file
+        
+    def GetRunParameter(self):
         if not Executor.GetPythonExecutablePath():
+            return None
+        interpreter = wx.GetApp().GetCurrentInterpreter()
+        projectService = wx.GetApp().GetService(ProjectEditor.ProjectService)
+        cur_project_document = projectService.GetView().GetDocument()
+        is_debug_breakpoint = False
+        if cur_project_document is None:
+            doc_view = self.GetActiveView()
+            if doc_view:
+                document = doc_view.GetDocument()
+                if not document.Save() or document.IsNewDocument:
+                    return None
+            run_parameter = document.RunParameter
+            fileToRun = document.GetFilename()
+        else:
+            startup_file = self.GetProjectStartupFile(cur_project_document)
+            if not startup_file:
+                return None
+            openDocs = wx.GetApp().GetDocumentManager().GetDocuments()
+            #save all open documents of this project first before run
+            for openDoc in openDocs[:]:  
+                if cur_project_document == openDoc:  # don't save project document
+                    continue
+                if cur_project_document == projectService.FindProjectFromMapping(openDoc):
+                    if not openDoc.Save():
+                        return None
+            fileToRun = startup_file.filePath
+            run_parameter = cur_project_document.RunParameter
+            project = cur_project_document.GetModel()
+            if self.IsProjectContainBreakPoints(project):
+                is_debug_breakpoint = True
+        if run_parameter is None:
+            startIn = os.path.dirname(fileToRun)
+            run_parameter = PythonEditor.RunParameter(interpreter,fileToRun,start_up=startIn)
+        else:
+            if not parserutils.ComparePath(fileToRun,run_parameter.FilePath):
+                run_parameter.FilePath = fileToRun
+                
+        self.SaveRunParameter(run_parameter)
+        run_parameter = self.GetRunEnvironment(run_parameter)
+        run_parameter.DebugBreakPoint = is_debug_breakpoint
+        run_parameter.Interpreter = interpreter
+        return run_parameter
+        
+    def DebugRun(self,event,showDialog=True):
+        run_parameter = self.GetRunParameter()
+        if run_parameter is None:
             return
-        doc_view = self.GetActiveView()
-        if not doc_view:
-            return
-        document = doc_view.GetDocument()
-        if not document.Save() or document.IsNewDocument:
-            return
-        sys_encoding = locale.getdefaultlocale()[1]
-        fileToRun = document.GetFilename()
+        if not run_parameter.DebugBreakPoint:
+            self.DebugRunScript(run_parameter)
+        else:
+            self.DebugRunScriptBreakPoint(run_parameter)
+            
+    def DebugRunScript(self,run_parameter):
         self.ShowWindow(True)
         interpreter = wx.GetApp().GetCurrentInterpreter()
         if interpreter.IsBuiltIn:
-            self.DebugRunSciptWithBuiltinInterpreter(interpreter,doc_view)
+            self.DebugRunBuiltin(run_parameter)
             return
+        fileToRun = run_parameter.FilePath
         shortFile = os.path.basename(fileToRun)
-        page = RunCommandUI(Service.ServiceView.bottomTab, -1, fileToRun)
+        page = RunCommandUI(Service.ServiceView.bottomTab, -1, fileToRun,run_parameter)
         count = Service.ServiceView.bottomTab.GetPageCount()
         Service.ServiceView.bottomTab.AddPage(page, _("Running: ") + shortFile)
         Service.ServiceView.bottomTab.SetPageImage(count,self.GetIconIndex())
         Service.ServiceView.bottomTab.SetSelection(count)
-        startIn = os.path.dirname(fileToRun)
-        environment,initialArgs = self.GetEnvironmentArgs(doc_view,interpreter)
-        page.Execute(initialArgs, startIn, environment, onWebServer = False)
+        page.Execute(onWebServer = False)
 
-    def RunScript(self,event,showDialog=True):
-        python_executable_path = Executor.GetPythonExecutablePath()
-        if not python_executable_path:
+    def Run(self,event,showDialog=True):
+        run_parameter = self.GetRunParameter()
+        if run_parameter is None:
             return
-        doc_view = self.GetActiveView()
-        if not doc_view:
-            return
-        interpreter = wx.GetApp().GetCurrentInterpreter()
+        self.RunScript(run_parameter)
+            
+    def RunScript(self,run_parameter):
+        interpreter = run_parameter.Interpreter
         if interpreter.IsBuiltIn:
             return
-        document = doc_view.GetDocument()
-        if not document.Save() or document.IsNewDocument:
-            return
+        python_executable_path = interpreter.Path
         sys_encoding = locale.getdefaultlocale()[1]
-        fileToRun = document.GetFilename()
+        fileToRun = run_parameter.FilePath
         startIn = os.path.dirname(fileToRun)
-        environment,initialArgs = self.GetEnvironmentArgs(doc_view,interpreter)
+        startIn,environment,initialArgs = run_parameter.StartUp,run_parameter.Environment,run_parameter.Arg
         if sysutilslib.isWindows():
             command = u"cmd.exe /c call %s \"%s\""  % (strutils.emphasis_path(python_executable_path),fileToRun)
             if initialArgs is not None:
@@ -2630,6 +2746,73 @@ class DebuggerService(Service.Service):
             python_cmd += ";echo 'Please enter any to continue';read"
             cmd_list = ['gnome-terminal','-x','bash','-c',python_cmd]
             subprocess.Popen(cmd_list,shell = False,cwd=startIn.encode(sys_encoding),env=environment)
+            
+    def GetLastRunParameter(self,is_debug,showDialog):
+        if not Executor.GetPythonExecutablePath():
+            return None
+        projectService = wx.GetApp().GetService(ProjectEditor.ProjectService)
+        dlg_title = _('Run File')
+        btn_name = _("Run")
+        if is_debug:
+           dlg_title = _('Debug File')
+           btn_name = _("Debug")
+        dlg = CommandPropertiesDialog(self.GetView().GetFrame(),dlg_title, projectService, None, okButtonName=btn_name, debugging=is_debug,is_last_config=True)
+        dlg.CenterOnParent()
+        if not showDialog:
+            showDialog = dlg.MustShowDialog()
+        if showDialog and dlg.ShowModal() == wx.ID_OK:
+            projectDocument, fileToDebug, initialArgs, startIn, isPython, environment = dlg.GetSettings()
+        elif not showDialog:
+            projectDocument, fileToDebug, initialArgs, startIn, isPython, environment = dlg.GetSettings()
+        else:
+            dlg.Destroy()
+            return None
+        dlg.Destroy()
+        if projectDocument.GetFilename() != NOT_IN_ANY_PROJECT and self.IsProjectContainBreakPoints(projectDocument.GetModel()):
+            is_debug_breakpoint = True
+        else:
+            is_debug_breakpoint = False
+        return PythonEditor.RunParameter(wx.GetApp().GetCurrentInterpreter(),fileToDebug,initialArgs,environment,startIn,is_debug_breakpoint)
+            
+    def DebugRunLast(self,event,showDialog=False):
+        run_parameter = self.GetLastRunParameter(True,showDialog)
+        if run_parameter is None:
+            return
+        run_parameter = self.GetRunEnvironment(run_parameter)
+        if not run_parameter.DebugBreakPoint:
+            self.DebugRunScript(run_parameter)
+        else:
+            self.DebugRunScriptBreakPoint(run_parameter)
+        
+    def RunLast(self,event,showDialog=False):
+        run_parameter = self.GetLastRunParameter(False,showDialog)
+        if run_parameter is None:
+            return
+        run_parameter = self.GetRunEnvironment(run_parameter)
+        self.RunScript(run_parameter)
+        
+    def DebugRunScriptBreakPoint(self,run_parameter):
+        if BaseDebuggerUI.DebuggerRunning():
+            wx.MessageBox(_("A debugger is already running. Please shut down the other debugger first."), _("Debugger Running"))
+            return
+        config = wx.ConfigBase_Get()
+        host = config.Read("DebuggerHostName", DEFAULT_HOST)
+        if not host:
+            wx.MessageBox(_("No debugger host set. Please go to Tools->Options->Debugger and set one."), _("No Debugger Host"))
+            return
+        self.ShowWindow(True)
+        fileToDebug = run_parameter.FilePath
+        fileToDebug = DebuggerService.ExpandPath(fileToDebug)
+        shortFile = os.path.basename(fileToDebug)
+        try:
+            page = PythonDebuggerUI(Service.ServiceView.bottomTab, -1, str(fileToDebug),self,run_parameter)
+            count = Service.ServiceView.bottomTab.GetPageCount()
+            Service.ServiceView.bottomTab.AddPage(page, _("Debugging: ") + shortFile)
+            Service.ServiceView.bottomTab.SetSelection(count)
+            page.Execute()
+        except:
+            pass
+        
 
     def OnDebugProject(self, event, showDialog=True):
         if _WINDOWS and not _PYWIN32_INSTALLED:
@@ -2717,6 +2900,11 @@ class DebuggerService(Service.Service):
 
             page.Execute(initialArgs, startIn, environment)
         else:
+            doc_view = self.GetActiveView()
+            if not doc_view:
+                return
+            interpreter = wx.GetApp().GetCurrentInterpreter()
+            environment,initialArgs = self.GetEnvironmentArgs(doc_view,interpreter)
             try:
                 page = PythonDebuggerUI(Service.ServiceView.bottomTab, -1, str(fileToDebug), self)
                 count = Service.ServiceView.bottomTab.GetPageCount()
@@ -2826,14 +3014,24 @@ class DebuggerService(Service.Service):
 
     def SetParameterAndEnvironment(self):
         projectService = wx.GetApp().GetService(ProjectEditor.ProjectService)
-        doc_view = self.GetActiveView()
-        if not doc_view:
-            return
-        dlg = CommandPropertiesDialog(doc_view.GetFrame(), _('Set Parameter And Environment'), projectService, None,okButtonName=_("&OK"))
+        dlg = CommandPropertiesDialog(wx.GetApp().GetTopWindow(), _('Set Parameter And Environment'), projectService, None,okButtonName=_("&OK"))
         dlg.CenterOnParent()
         if dlg.ShowModal() == wx.ID_OK:
-            projectPath, fileToRun, initialArgs, startIn, isPython, environment = dlg.GetSettings()
-            doc_view.SetRunParameter(initialArgs,startIn,environment)
+            projectDocument, fileToRun, initialArgs, startIn, isPython, environment = dlg.GetSettings()
+            if startIn == '':
+                startIn = os.path.dirname(fileToRun)
+            cur_project_document = projectService.GetView().GetDocument()
+            if cur_project_document is None:
+                doc_view = self.GetActiveView()
+                if doc_view is None:
+                    return
+                document = doc_view.GetDocument()
+                document.RunParameter = PythonEditor.RunParameter(wx.GetApp().GetCurrentInterpreter(),\
+                                    document.GetFilename(),initialArgs,environment,startIn)
+            else:
+                projectDocument.RunParameter = PythonEditor.RunParameter(wx.GetApp().GetCurrentInterpreter(),\
+                            fileToRun,initialArgs,environment,startIn)
+
 
     def OnRunProject(self, event, showDialog=True):
         if _WINDOWS and not _PYWIN32_INSTALLED:
@@ -3070,15 +3268,13 @@ class DebuggerOptionsPanel(wx.Panel):
 
 
 class CommandPropertiesDialog(wx.Dialog):
-    def __init__(self, parent, title, projectService, currentProjectDocument, okButtonName=_("&OK"), debugging=False):
+    def __init__(self, parent, title, projectService, currentProjectDocument, okButtonName=_("&OK"), debugging=False,is_last_config=False):
         self._projService = projectService
-        self._pmext = None
-        self._pyext = '.py'
-        self._phpext = '.php'
-        for template in self._projService.GetDocumentManager().GetTemplates():
-            if not ACTIVEGRID_BASE_IDE and template.GetDocumentType() == ProcessModelEditor.ProcessModelDocument:
-                self._pmext = template.GetDefaultExtension()
-                break
+        self._is_last_config = is_last_config
+        #for template in self._projService.GetDocumentManager().GetTemplates():
+         #   if not ACTIVEGRID_BASE_IDE and template.GetDocumentType() == ProcessModelEditor.ProcessModelDocument:
+          #      self._pmext = template.GetDefaultExtension()
+           #     break
         self._currentProj = projectService.GetCurrentProject()
         self._projectNameList, self._projectDocumentList, selectedIndex = self.GetProjectList()
         if not self._projectNameList:
@@ -3184,58 +3380,61 @@ class CommandPropertiesDialog(wx.Dialog):
 
     def GetKey(self, lastPart):
         if self._currentProj:
-            return "%s/%s/%s" % (ProjectEditor.PROJECT_KEY, self._currentProj.GetFilename().replace(os.sep, '|'), lastPart)
+            return self._currentProj.GetKey(lastPart)
+            #return "%s/{%s}/%s" % (ProjectEditor.PROJECT_KEY, self._currentProj.GetModel().Id, lastPart)
         return lastPart
 
 
     def OnOKClick(self, event):
         startIn = self._startEntry.GetValue()
-        fileToRun = self._fileList.GetStringSelection()
+        fileToRun = self._fileNameList[self._selectedFileIndex]
+        ###fileToRun = self._fileList.GetStringSelection()
         if not fileToRun:
             wx.MessageBox(_("You must select a file to proceed. Note that not all projects have files that can be run or debugged."))
             return
-        isPython = fileToRun.endswith(self._pyext)
+        isPython = fileutils.is_python_file(fileToRun)
         if isPython and not os.path.exists(startIn):
             wx.MessageBox(_("Starting directory does not exist. Please change this value."))
             return
-        config = wx.ConfigBase_Get()
-        config.Write(self.GetKey("LastRunProject"), self._projectNameList[self._selectedProjectIndex])
-        config.Write(self.GetKey("LastRunFile"), fileToRun)
-        # Don't update the arguments or starting directory unless we're runing python.
-        if isPython:
-            config.Write(self.GetKey("LastRunArguments"), self._argsEntry.GetValue())
-            config.Write(self.GetKey("LastRunStartIn"), self._startEntry.GetValue())
-            config.Write(self.GetKey("LastPythonPath"),self._pythonPathEntry.GetValue())
-            if hasattr(self, "_postpendCheckBox"):
-                config.WriteInt(self.GetKey("PythonPathPostpend"), int(self._postpendCheckBox.GetValue()))
+        if self._is_last_config:
+            config = wx.ConfigBase_Get()
+            config.Write(self.GetKey("LastRunProject"), self._projectNameList[self._selectedProjectIndex])
+            config.Write(self.GetKey("LastRunFile"), fileToRun)
+            # Don't update the arguments or starting directory unless we're runing python.
+            if isPython:
+                config.Write(self.GetKey("LastRunArguments"), self._argsEntry.GetValue())
+                config.Write(self.GetKey("LastRunStartIn"), self._startEntry.GetValue())
+                config.Write(self.GetKey("LastPythonPath"),self._pythonPathEntry.GetValue())
+                if hasattr(self, "_postpendCheckBox"):
+                    config.WriteInt(self.GetKey("PythonPathPostpend"), int(self._postpendCheckBox.GetValue()))
 
         self.EndModal(wx.ID_OK)
 
     def GetSettings(self):
-        projectPath = self._selectedProjectDocument.GetFilename()
+        projectDocument = self._selectedProjectDocument
         filename = self._fileNameList[self._selectedFileIndex]
         args = self._argsEntry.GetValue()
-        startIn = self._startEntry.GetValue()
-        isPython = filename.endswith(self._pyext)
+        startIn = self._startEntry.GetValue().strip()
+        isPython = fileutils.is_python_file(filename)
         env = {}
         if hasattr(self, "_postpendCheckBox"):
             postpend = self._postpendCheckBox.GetValue()
         else:
             postpend = False
         if postpend:
-            env['PYTHONPATH'] = str(self._pythonPathEntry.GetValue()) + os.pathsep + os.path.join(os.getcwd(), "3rdparty", "pywin32")
+            env[PYTHON_PATH_NAME] = str(self._pythonPathEntry.GetValue()) + os.pathsep + os.path.join(os.getcwd(), "3rdparty", "pywin32")
         else:
             #should avoid environment contain unicode string,such as u'xxx'
-            env['PYTHONPATH'] = str(self._pythonPathEntry.GetValue())
+            env[PYTHON_PATH_NAME] = str(self._pythonPathEntry.GetValue())
 
-        return projectPath, filename, args, startIn, isPython, env
+        return projectDocument, filename, args, startIn, isPython, env
 
     def OnFileSelected(self, event):
         self._selectedFileIndex = self._fileList.GetSelection()
         self.EnableForFileType(event.GetString())
 
     def EnableForFileType(self, fileName):
-        show = fileName.endswith(self._pyext) or fileName.endswith(self._phpext)
+        show = fileutils.is_python_file(fileName)
         self._startEntry.Enable(show)
         self._findDir.Enable(show)
         self._argsEntry.Enable(show)
@@ -3246,10 +3445,7 @@ class CommandPropertiesDialog(wx.Dialog):
             self._lastArguments = self._argsEntry.GetValue()
             self._argsEntry.SetValue("")
         else:
-            if fileName.endswith(self._phpext):
-                self._startEntry.SetValue(os.path.dirname(fileName))
-            else:
-                self._startEntry.SetValue(self._lastStartIn)
+            self._startEntry.SetValue(self._lastStartIn)
             self._argsEntry.SetValue(self._lastArguments)
 
 
@@ -3273,18 +3469,23 @@ class CommandPropertiesDialog(wx.Dialog):
             self.PopulateFileList(self._selectedProjectDocument)
 
     def FilterFileList(self, list):
-        files = filter(lambda f: (self._phpext and f.endswith(self._phpext)) or (self._pmext and f.endswith(self._pmext)) or f.endswith(self._pyext), list)
+        files = filter(lambda f:fileutils.is_python_file(f), list)
         return files
 
     def PopulateFileList(self, project, shortNameToSelect=None):
-        self._fileNameList = self.FilterFileList(project.GetFiles()[:])
+        project_startup_file = project.GetStartupFile()
+        if project_startup_file is None:
+            pj_files = project.GetFiles()[:]
+        else:
+            pj_files = [project_startup_file.filePath]
+        self._fileNameList = self.FilterFileList(pj_files)
         self._fileList.Clear()
         if not self._fileNameList:
             return
         self._fileNameList.sort(lambda a, b: cmp(os.path.basename(a).lower(), os.path.basename(b).lower()))
         strings = map(lambda file: os.path.basename(file), self._fileNameList)
-        for index in range(0, len(strings)):
-            if shortNameToSelect == strings[index]:
+        for index in range(0, len(self._fileNameList)):
+            if shortNameToSelect == self._fileNameList[index]:
                 self._selectedFileIndex = index
                 break
         self._fileList.Hide()
@@ -3334,10 +3535,10 @@ class CommandPropertiesDialog(wx.Dialog):
 
         if unprojectedFiles:
             unprojProj = ProjectEditor.ProjectDocument()
-            unprojProj.SetFilename(_("Not in any Project"))
+            unprojProj.SetFilename(NOT_IN_ANY_PROJECT)
             unprojProj.AddFiles(unprojectedFiles)
             docList.append(unprojProj)
-            nameList.append(_("Not in any Project"))
+            nameList.append(NOT_IN_ANY_PROJECT)
 
         return nameList, docList, index
 

@@ -39,6 +39,8 @@ if sys.platform == "win32":
               options = { "py2exe":{"dll_excludes":["MSVCP90.dll"],"packages": ['wx.lib.pubsub']}},
                 data_files=[("noval/tool/bmp_source", glob.glob("noval/tool/bmp_source/*.ico") + glob.glob("noval/tool/bmp_source/*.jpg") \
                              + glob.glob("noval/tool/bmp_source/*.png") + glob.glob("noval/tool/bmp_source/*.gif")),
+                    ("noval/tool/bmp_source/toolbar",glob.glob("noval/tool/bmp_source/toolbar/*.png")),
+                    ("noval/tool",glob.glob("noval/tool/DebuggerHarness.py")),
                     ("noval/tool/data",["noval/tool/data/tips.txt"]),
                      ("noval/parser",glob.glob("noval/parser/*.py")),
                       ("noval/locale/en_US/LC_MESSAGES",['noval/locale/en_US/LC_MESSAGES/novalide.mo']),
@@ -52,7 +54,7 @@ elif sys.platform.find('linux') != -1:
     with open("version.txt") as f:
         version = f.read()
 
-    install_requires = ['wxpython','pyyaml',"watchdog","chardet","pyperclip"]
+    install_requires = ['wxpython','pyyaml',"watchdog","chardet","pyperclip","pyutil"]
     setup(name='NovalIDE',
             version = version,
             description='''noval ide is a cross platform code editor''',
@@ -70,6 +72,7 @@ elif sys.platform.find('linux') != -1:
                         'tool/data/intellisence/builtins/3/*',
                         'tool/data/*.txt',
                         'tool/bmp_source/*', 
+                        'tool/bmp_source/toolbar/*', 
                         'locale/en_US/LC_MESSAGES/*.mo',
                         'locale/zh_CN/LC_MESSAGES/*.mo'
                         ],

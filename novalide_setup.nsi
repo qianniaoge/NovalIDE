@@ -2,7 +2,7 @@
 
 ; 安装程序初始定义常量
 !define PRODUCT_NAME "NovalIDE"
-!define PRODUCT_VERSION "1.0.7"
+!define PRODUCT_VERSION "1.0.8"
 !define PRODUCT_PUBLISHER "wukan"
 !define PRODUCT_WEB_SITE "http://www.genetalks.com"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\NovalIDE.exe"
@@ -93,6 +93,7 @@ Section "MainSection" SEC01
   File "dist\w9xpopen.exe"
   File "dist\version.txt"
   File "dist\unicodedata.pyd"
+  File "dist\psutil._psutil_windows.pyd"
   File "dist\tk85.dll"
   File "dist\tcl85.dll"
   File "dist\select.pyd"
@@ -169,6 +170,7 @@ Section Uninstall
   Delete "$INSTDIR\_ssl.pyd"
   Delete "$INSTDIR\_tkinter.pyd"
   Delete "$INSTDIR\_win32sysloader.pyd"
+  Delete "$INSTDIR\psutil._psutil_windows.pyd"
   Delete "$INSTDIR\API-MS-Win-Core-Debug-L1-1-0.dll"
   Delete "$INSTDIR\API-MS-Win-Core-DelayLoad-L1-1-0.dll"
   Delete "$INSTDIR\API-MS-Win-Core-ErrorHandling-L1-1-0.dll"

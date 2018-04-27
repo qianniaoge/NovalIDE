@@ -80,9 +80,7 @@ class UnitTestDialog(wx.Dialog):
         self.SetSizer(contentSizer) 
         
         self._cur_view = view
-        self.CreateUnitTestFrame()
         self.Bind(CT.EVT_TREE_ITEM_CHECKED, self.checked_item)
-        self._treeCtrl.CheckItem(self.root, True)
         wx.EVT_BUTTON(self, wx.ID_OK, self.OnClose)
 
     def checked_item(self, event):
@@ -114,10 +112,15 @@ class UnitTestDialog(wx.Dialog):
         return item_list
 
     def CreateUnitTestFrame(self):
-        module_scop = self._cur_view.ModuleScope
-        self.root = self._treeCtrl.AddRoot(module_scop.Module.Name,ct_type=1)
+        module_scope = self._cur_view.ModuleScope
+        if module_scope is None:
+            wx.MessageBox(self._cur_view.ParseError,style=wx.OK|wx.ICON_ERROR)
+            return False
+        self.root = self._treeCtrl.AddRoot(module_scope.Module.Name,ct_type=1)
         self._treeCtrl.SetItemImage(self.root,self.ModuleIdx,wx.TreeItemIcon_Normal)
-        self.TranverseItem(module_scop.Module,self.root)
+        self.TranverseItem(module_scope.Module,self.root)
+        self._treeCtrl.CheckItem(self.root, True)
+        return True
 
     def TranverseItem(self,node,parent):
         for child in node.Childs:

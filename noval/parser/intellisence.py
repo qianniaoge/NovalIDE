@@ -16,6 +16,7 @@ import nodeast
 import scope
 import pickle
 from noval.util.logger import app_debugLogger
+import signal
 
 class ModuleLoader(object):
     CHILD_KEY = "childs"
@@ -314,6 +315,8 @@ class IntellisenceManager(object):
         
     def Stop(self):
         if self._process_obj != None and self.IsRunning:
+            for pid in sysutilslib.get_child_pids(self._process_obj.pid):
+                os.kill(pid,signal.SIGTERM)
             self._process_obj.kill()
            # self._process_obj.terminate(gracePeriod=2.0)
             #os.killpg( p.pid,signal.SIGUSR1)
@@ -358,13 +361,13 @@ class IntellisenceManager(object):
             self.load_intellisence_data(interpreter)            
         
     def generate_default_intellisence_data(self):
-        default_interpreter = interpretermanager.InterpreterManager().GetDefaultInterpreter()
-        if default_interpreter is None:
+        current_interpreter = interpretermanager.InterpreterManager().GetCurrentInterpreter()
+        if current_interpreter is None:
             return
         try:
-            self.generate_intellisence_data(default_interpreter,load_data_end=True)
+            self.generate_intellisence_data(current_interpreter,load_data_end=True)
         except Exception as e:
-            app_debugLogger.error('load interpreter path %s intellisence data error: %s',default_interpreter.Path,e)
+            app_debugLogger.error('load interpreter path %s intellisence data error: %s',current_interpreter.Path,e)
         
     def load_intellisence_data(self,interpreter):
         self._loader.Load(interpreter)

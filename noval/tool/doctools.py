@@ -16,6 +16,10 @@ Provides helper functions and classes for managing documents and their services.
 import os
 import sys
 import hiscache  
+import noval.util.appdirs as appdirs
+import noval.parser.utils as dirutils
+import wx
+import codecs
 #--------------------------------------------------------------------------#
 
 GOTO_PREV_POS = 0
@@ -41,16 +45,18 @@ class DocPositionMgr(object):
         self._book = None
         self._records = dict()
 
-    def InitPositionCache(self, book_path):
+    def InitPositionCache(self):
         """Initialize and load the on disk document position cache.
         @param book_path: path to on disk cache
 
         """
         self._init = True
-        self._book = book_path
-
-        if Profile_Get('SAVE_POS'):
-            self.LoadBook(book_path)
+        cache_path = os.path.join(appdirs.getAppDataFolder(),"cache")
+        if not os.path.exists(cache_path):
+            dirutils.MakeDirs(cache_path)
+        self._book = os.path.join(cache_path,'positions')
+        if wx.ConfigBase_Get().ReadInt('SAVE_DOCUMENT_POS',True):
+            self.LoadBook(self._book)
 
     @classmethod
     def AddNaviPosition(cls, fname, pos):
@@ -174,17 +180,9 @@ class DocPositionMgr(object):
         """
         # If file does not exist create it and return
         if not os.path.exists(book):
-            try:
-                tfile = util.GetFileWriter(book)
-                tfile.close()
-            except (IOError, OSError):
-                util.Log("[docpositionmgr][err] failed to load book: %s" % book)
-                return False
-            except AttributeError:
-                util.Log("[docpositionmgr][err] Failed to create: %s" % book)
-                return False
+            return False
 
-        reader = util.GetFileReader(book, sys.getfilesystemencoding())
+        reader = codecs.open(book, 'r',"utf-8")
         if reader != -1:
             lines = list()
             try:
@@ -204,12 +202,10 @@ class DocPositionMgr(object):
                 try:
                     vals[1] = int(vals[1])
                 except (TypeError, ValueError), msg:
-                    util.Log("[docpositionmgr][err] %s" % str(msg))
                     continue
                 else:
                     self._records[vals[0]] = vals[1]
 
-            util.Log("[docpositionmgr][info] successfully loaded book")
             return True
 
     @classmethod
@@ -232,7 +228,9 @@ class DocPositionMgr(object):
         @postcondition: in memory doc data is written out to disk
 
         """
-        writer = util.GetFileWriter(self.GetBook(), sys.getfilesystemencoding())
+        if self._book is None:
+            return
+        writer = codecs.open(self.GetBook(), 'w',"utf-8")
         if writer != -1:
             try:
                 for key, val in self._records.iteritems():
@@ -242,6 +240,6 @@ class DocPositionMgr(object):
                         continue
                 writer.close()
             except IOError, msg:
-                util.Log("[docpositionmgr][err] %s" % str(msg))
+                pass
         else:
-            util.Log("[docpositionmgr][err] Failed to open %s" % self.GetBook())
+            pass

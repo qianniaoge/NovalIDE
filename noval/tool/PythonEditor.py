@@ -55,16 +55,31 @@ _ = wx.GetTranslation
 VIEW_PYTHON_INTERPRETER_ID = wx.NewId()
 
 class RunParameter():
-    def __init__(self,arg,env,start_up):
+    def __init__(self,interpreter,file_path,arg=None,env=None,start_up=None,is_debug_breakpoint=False):
+        self.Interpreter = interpreter
+        self.FilePath = file_path
         self.Arg = arg
         self.Environment = env
         self.StartUp = start_up
+        self.DebugBreakPoint = is_debug_breakpoint
 
 class PythonDocument(CodeEditor.CodeDocument): 
 
     UTF_8_ENCODING = 0
     GBK_ENCODING = 1
     ANSI_ENCODING = 2
+    
+    def __init__(self):
+        CodeEditor.CodeDocument.__init__(self)
+        self._run_parameter = None
+        
+    @property
+    def RunParameter(self):
+        return self._run_parameter
+        
+    @RunParameter.setter
+    def RunParameter(self,run_parameter):
+        self._run_parameter = run_parameter
 
     def get_coding_spec(self,lines):
         """Return the encoding declaration according to PEP 263.
@@ -118,30 +133,29 @@ class PythonView(CodeEditor.CodeView):
     def __init__(self):
         super(PythonView,self).__init__()
         self._module_scope = None
-        self._run_parameter = None
+        self._parse_error = None
         #document checksum to check document is updated
         self._checkSum = -1
         self._lock = threading.Lock()
-
-    def SetRunParameter(self,arg,start_up,env):
-        self._run_parameter = RunParameter(arg,env,start_up)
-
-    @property
-    def RunParameter(self):
-        return self._run_parameter
         
     @property
     def ModuleScope(self):
         return self._module_scope
+        
+    @property
+    def ParseError(self):
+        return self._parse_error
 
     def LoadModule(self,filename):
-        module = parser.parse_content(self.GetCtrl().GetValue(),filename,self.GetDocument().file_encoding)
+        module,error = parser.parse_content(self.GetCtrl().GetValue(),filename,self.GetDocument().file_encoding)
         if module is None:
+            self._parse_error = error
             return
         module_scope = scope.ModuleScope(module,self.GetCtrl().GetLineCount())
         module_scope.MakeModuleScopes()
         module_scope.RouteChildScopes()
         self.ModuleScope = module_scope
+        self._parse_error = None
         
     @ModuleScope.setter
     def ModuleScope(self,module_scope):
@@ -341,45 +355,6 @@ class PythonView(CodeEditor.CodeView):
             #should freeze control to prevent update and treectrl flick
             treeCtrl.LoadModuleAst(self.ModuleScope,self,outlineService,lineNum)
         
-    def TranverseItem(self,treeCtrl,node,parent):
-        for child in node.Childs:
-            if child.Type == parserconfig.NODE_FUNCDEF_TYPE:
-                item = treeCtrl.AppendItem(parent, child.Name)
-                treeCtrl.SetItemImage(item,treeCtrl.FuncIdx,wx.TreeItemIcon_Normal)
-                treeCtrl.SetDoSelectCallback(item, self, child)
-            elif child.Type == parserconfig.NODE_CLASSDEF_TYPE:
-                item = treeCtrl.AppendItem(parent, child.Name)
-                treeCtrl.SetItemImage(item,treeCtrl.ClassIdx,wx.TreeItemIcon_Normal)
-                treeCtrl.SetDoSelectCallback(item, self, child)
-                self.TranverseItem(treeCtrl,child,item)
-            elif child.Type == parserconfig.NODE_OBJECT_PROPERTY or \
-                        child.Type == parserconfig.NODE_ASSIGN_TYPE:
-                item = treeCtrl.AppendItem(parent, child.Name)
-                treeCtrl.SetItemImage(item,treeCtrl.PropertyIdx,wx.TreeItemIcon_Normal)
-                treeCtrl.SetDoSelectCallback(item, self, child)
-            elif child.Type == parserconfig.NODE_IMPORT_TYPE:
-                name = child.Name
-                if child.AsName is not None:
-                    name = child.AsName
-                item = treeCtrl.AppendItem(parent,name)
-                treeCtrl.SetItemImage(item,treeCtrl.ImportIdx,wx.TreeItemIcon_Normal)
-                treeCtrl.SetDoSelectCallback(item, self, child)
-            elif child.Type == parserconfig.NODE_FROMIMPORT_TYPE:
-                from_import_item = treeCtrl.AppendItem(parent,child.Name)
-                treeCtrl.SetItemImage(from_import_item,treeCtrl.FromImportIdx,wx.TreeItemIcon_Normal)
-                treeCtrl.SetDoSelectCallback(from_import_item, self, child)
-                for node_import in child.Childs:
-                    name = node_import.Name
-                    if node_import.AsName is not None:
-                        name = node_import.AsName
-                    import_item = treeCtrl.AppendItem(from_import_item,name)
-                    treeCtrl.SetItemImage(import_item,treeCtrl.ImportIdx,wx.TreeItemIcon_Normal)
-                    treeCtrl.SetDoSelectCallback(import_item, self, node_import)
-            elif child.Type == parserconfig.NODE_MAIN_FUNCTION_TYPE:
-                item = treeCtrl.AppendItem(parent, child.Name)
-                treeCtrl.SetItemImage(item,treeCtrl.MainFunctionIdx,wx.TreeItemIcon_Normal)
-                treeCtrl.SetDoSelectCallback(item, self, child)
-
     def IsUnitTestEnable(self):
         return True
 

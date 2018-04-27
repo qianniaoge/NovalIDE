@@ -29,6 +29,8 @@ class ServiceView(wx.EvtHandler):
     InterpreterIconIndex = -1
     SearchIconIndex = -1
     DebugRunIconIndex = -1
+    #the page count which could not be removed
+    UNREMOVABLE_PAGE_COUNT = 2
     
     #----------------------------------------------------------------------------
     # Overridden methods
@@ -167,7 +169,7 @@ class ServiceView(wx.EvtHandler):
         menu = wx.Menu()
         x, y = event.GetX(), event.GetY()
         # 0 tab is always message. This code assumes the rest are run/debug windows
-        if index > 1:
+        if index >= self.UNREMOVABLE_PAGE_COUNT:
             page = ServiceView.bottomTab.GetPage(index)
             id = wx.NewId()
             menu.Append(id, _("Close"))
@@ -175,11 +177,12 @@ class ServiceView(wx.EvtHandler):
                 if hasattr(page, 'StopAndRemoveUI'):
                     page.StopAndRemoveUI(event)
             wx.EVT_MENU(ServiceView.bottomTab, id, OnRightMenuSelect)
-            if ServiceView.bottomTab.GetPageCount() > 2:
+            if ServiceView.bottomTab.GetPageCount() > self.UNREMOVABLE_PAGE_COUNT:
                 id = wx.NewId()
                 menu.Append(id, _("Close All"))
                 def OnRightMenuSelect(event):
-                    for i in range(ServiceView.bottomTab.GetPageCount()-1, 0, -1): # Go from len-1 to 1
+                    for i in range(ServiceView.bottomTab.GetPageCount() - 1, self.UNREMOVABLE_PAGE_COUNT - 1, -1): # Go from len-1 to 1
+                        ServiceView.bottomTab.SetSelection(i)
                         page = ServiceView.bottomTab.GetPage(i)
                         if hasattr(page, 'StopAndRemoveUI'):
                             page.StopAndRemoveUI(event)
