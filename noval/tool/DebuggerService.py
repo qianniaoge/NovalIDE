@@ -2619,8 +2619,11 @@ class DebuggerService(Service.Service):
         if run_parameter.Environment == environment:
             return run_parameter
         else:
+            save_interpreter = run_parameter.Interpreter
+            run_parameter.Interpreter = None
             cp_run_parameter = copy.deepcopy(run_parameter)
             cp_run_parameter.Environment = environment
+            run_parameter.Interpreter = save_interpreter
             return cp_run_parameter
         
     def DebugRunBuiltin(self,run_parameter):
@@ -2792,6 +2795,9 @@ class DebuggerService(Service.Service):
         self.RunScript(run_parameter)
         
     def DebugRunScriptBreakPoint(self,run_parameter):
+        if _WINDOWS and not run_parameter.Interpreter.IsPackageExist("pywin32"):
+            wx.MessageBox(_("Python for Windows extensions (pywin32) is required to install to interpreter '%s'. Please download and install pywin32 via pip tool") % run_parameter.Interpreter.Name)
+            return
         if BaseDebuggerUI.DebuggerRunning():
             wx.MessageBox(_("A debugger is already running. Please shut down the other debugger first."), _("Debugger Running"))
             return

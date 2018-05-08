@@ -23,6 +23,12 @@ import UnitTestDialog
 import noval.util.sysutils as sysutilslib
 import noval.util.fileutils as fileutils
 import Service
+from noval.dummy.userdb import UserDataDb
+import GeneralOption
+import noval.util.appdirs as appdirs
+import noval.parser.utils as parserutils
+import requests
+from download import FileDownloader
 _ = wx.GetTranslation
 
 
@@ -147,6 +153,12 @@ class ExtensionService(Service.BaseService):
         id = wx.NewId()
         helpMenu.Insert(start_index,id,_("&Tips of Day"))
         wx.EVT_MENU(frame, id, self.ShowTipsOfDay)
+        start_index += 1
+        
+        id = wx.NewId()
+        helpMenu.Insert(start_index,id,_("&Check for Updates"))
+        wx.EVT_MENU(frame, id, self.CheckforUpdate)
+        start_index += 1
 
         if self._extensions:
             if toolsMenu.GetMenuItems():
@@ -160,6 +172,43 @@ class ExtensionService(Service.BaseService):
 
     def ShowTipsOfDay(self,event):
         wx.GetApp().ShowTipfOfDay(True)
+        
+    def CheckforUpdate(self,event):
+        api_addr = '%s/member/get_update' % (UserDataDb.HOST_SERVER_ADDR)
+        config = wx.ConfigBase_Get()
+        langId = GeneralOption.GetLangId(config.Read("Language",""))
+        lang = wx.Locale.GetLanguageInfo(langId).CanonicalName
+        app_version = sysutilslib.GetAppVersion()
+        data = UserDataDb.get_db().RequestData(api_addr,arg = {'app_version':app_version,'lang':lang})
+        if data is None:
+            wx.MessageBox(_("could not connect to version server"),style=wx.OK|wx.ICON_ERROR)
+            return
+        if data['code'] == 0:
+            wx.MessageBox(data['message'])
+        elif data['code'] == 1:
+            ret = wx.MessageBox(data['message'],_("Update Available"),wx.YES_NO |wx.ICON_QUESTION)
+            if ret == wx.YES:
+                new_version = data['new_version']
+                download_url = '%s/member/download_app' % (UserDataDb.HOST_SERVER_ADDR)
+                payload = dict(new_version = new_version,lang = lang,os_name=sys.platform)
+                req = requests.get(download_url,params=payload, stream=True)
+                #print req.headers,"------------"
+                if 'Content-Length' not in req.headers:
+                    data = req.json()
+                    if data['code'] != 0:
+                        wx.MessageBox(data['message'],style=wx.OK|wx.ICON_ERROR)
+                else:
+                    file_length = req.headers['Content-Length']
+                    content_disposition = req.headers['Content-Disposition']
+                    file_name = content_disposition[content_disposition.find(";") + 1:].replace("filename=","").replace("\"","")
+                    file_downloader = FileDownloader(file_length,file_name,req,self.Install)
+                    file_downloader.StartDownload()
+        else:
+            wx.MessageBox(data['message'],style=wx.OK|wx.ICON_ERROR)
+            
+    def Install(self,app_path):
+        os.startfile(app_path)
+        wx.GetApp().MainFrame.OnExit(None)
 
     def OpenPythonHelpDocument(self,event):
         interpreter = wx.GetApp().GetCurrentInterpreter()

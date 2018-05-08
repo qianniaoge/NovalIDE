@@ -155,3 +155,15 @@ def get_child_pids(ppid):
         except:
             pass
     return child_ids
+    
+def GetAppVersion():
+    # find version number from version.txt
+    versionFilepath = os.path.join(mainModuleDir, "version.txt")
+    if os.path.exists(versionFilepath):
+        versionfile = open(versionFilepath, 'r')
+        versionLines = versionfile.readlines()
+        versionfile.close()
+        version = "".join(versionLines)
+    else:
+        version = _("Version Unknown - %s not found" % versionFilepath)
+    return version

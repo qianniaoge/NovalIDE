@@ -130,5 +130,11 @@
   <noval:file filePath="./noval/tool/interpreter/pythonpath.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
   <noval:file filePath="./noval/tool/interpreter/__init__.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
   <noval:file filePath="./noval/util/fchecker.py" logicalFolder="noval/util" isStartup="false"/>
+  <noval:file filePath="./noval/dummy/basedb.py" logicalFolder="noval/dummy" isStartup="false"/>
+  <noval:file filePath="./noval/dummy/sql.py" logicalFolder="noval/dummy" isStartup="false"/>
+  <noval:file filePath="./noval/dummy/test_user_db.py" logicalFolder="noval/dummy" isStartup="false"/>
+  <noval:file filePath="./noval/dummy/userdb.py" logicalFolder="noval/dummy" isStartup="false"/>
+  <noval:file filePath="./noval/dummy/__init__.py" logicalFolder="noval/dummy" isStartup="false"/>
+  <noval:file filePath="./noval/tool/download.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:interpreter name="2.7" version="2.7.11" path="C:\Python27\python.exe"/>
 </noval:project>

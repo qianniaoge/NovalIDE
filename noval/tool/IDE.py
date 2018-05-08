@@ -26,6 +26,7 @@ import noval.parser.config as parserconfig
 from consts import _,ID_MRU_FILE1,PROJECT_EXTENSION,PROJECT_SHORT_EXTENSION
 from noval.util import strutils
 import noval.parser.utils as parserutils
+from noval.dummy.userdb import UserDataDb
 
 # Required for Unicode support with python
 # site.py sets this, but Windows builds don't have site.py because of py2exe problems
@@ -511,6 +512,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         
     def OnExit(self):
         intellisence.IntellisenceManager().Stop()
+        UserDataDb.get_db().RecordEnd()
         wx.lib.pydocview.DocApp.OnExit(self)
         
     def ShowSplash(self, image):

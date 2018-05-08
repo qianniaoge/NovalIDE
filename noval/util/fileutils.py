@@ -550,3 +550,13 @@ def is_python_file(file_path):
     PY_EXT_LIST = ['py','pyw']
     ext = strutils.GetFileExt(file_path)
     return ext in PY_EXT_LIST
+
+def RemoveDir(dir_path):
+    files = os.listdir(dir_path)
+    for f in files:
+        file_path = os.path.join(dir_path, f)
+        if os.path.isdir(file_path):
+            RemoveDir(file_path)
+        else:
+            os.remove(file_path)
+    os.rmdir(dir_path)

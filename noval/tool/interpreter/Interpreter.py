@@ -235,6 +235,11 @@ class BuiltinPythonInterpreter(Interpreter):
         lineNum = int(lines[0][i+1:j].split()[-1])
         return False,lineNum,msg
         
+    def IsPackageExist(self,package_name):
+        if package_name in self.Packages:
+            return True
+        return False
+        
 class PythonInterpreter(BuiltinPythonInterpreter):
     
     CONSOLE_EXECUTABLE_NAME = "python.exe"

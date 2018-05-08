@@ -1349,12 +1349,12 @@ class ProjectAddFolderCommand(wx.lib.docview.Command):
 
 
 class ProjectRemoveFolderCommand(wx.lib.docview.Command):
-    def __init__(self, view, doc, folderpath):
+    def __init__(self, view, doc, folderpath,delete_folder_files = False):
         wx.lib.docview.Command.__init__(self, canUndo = True)
         self._doc = doc
         self._view = view
         self._folderpath = folderpath
-
+        self._delete_folder_files = delete_folder_files
 
     def GetName(self):
         return _("Remove Folder %s") % (os.path.basename(self._folderpath))
@@ -1363,7 +1363,7 @@ class ProjectRemoveFolderCommand(wx.lib.docview.Command):
     def Do(self):
         if self._view.GetDocument() != self._doc:
             return True
-        return self._view.DeleteFolder(self._folderpath)
+        return self._view.DeleteFolder(self._folderpath,self._delete_folder_files)
 
 
     def Undo(self):
@@ -2204,8 +2204,8 @@ class ProjectView(wx.lib.docview.View):
         elif id == ProjectService.RENAME_ID:
             self.OnRename(event)
             return True
-        elif id == ProjectService.DELETE_FILE_ID:
-            self.OnDeleteFile(event)
+        elif id == ProjectService.DELETE_FROM_PROJECT:
+            self.DeleteFromProject(event)
             return True
         elif id == ProjectService.DELETE_PROJECT_ID:
             self.OnDeleteProject(event)
@@ -2221,7 +2221,7 @@ class ProjectView(wx.lib.docview.View):
             return True
         elif (id == wx.ID_CLEAR
         or id == ProjectService.REMOVE_FROM_PROJECT):
-            self.OnClear(event)
+            self.RemoveFromProject(event)
             return True
         elif id == wx.ID_SELECTALL:
             self.OnSelectAll(event)
@@ -2394,8 +2394,8 @@ class ProjectView(wx.lib.docview.View):
             return True
         elif (id == wx.ID_CUT
         or id == wx.ID_COPY
-        or id == ProjectService.DELETE_FILE_ID
-        or id == ProjectService.REMOVE_FROM_PROJECT
+       # or id == ProjectService.DELETE_FROM_PROJECT
+        #or id == ProjectService.REMOVE_FROM_PROJECT
         or id == ProjectService.OPEN_SELECTION_ID):
             event.Enable(self._HasFilesSelected())
             return True
@@ -2757,12 +2757,37 @@ class ProjectView(wx.lib.docview.View):
         self._treeCtrl.AddFolder(folderPath)
         return True
 
-
-    def DeleteFolder(self, folderPath):
+    def DeleteFolder(self, folderPath,delete_folder_files=True):
+        if delete_folder_files:
+            projectdir = self.GetDocument().GetModel().homeDir
+            folder_local_path = os.path.join(projectdir,folderPath)
+            if os.path.exists(folder_local_path):
+                try:
+                    fileutils.RemoveDir(folder_local_path)
+                except Exception as e:
+                    wx.MessageBox("Could not delete '%s'.  %s" % (os.path.basename(folder_local_path), e),
+                                              _("Delete Folder"),
+                                              wx.OK | wx.ICON_ERROR,
+                                              self.GetFrame())
+                    return
         item = self._treeCtrl.FindFolder(folderPath)
+        self._treeCtrl.Freeze()
+        self.DeleteFolderItems(item)
         self._treeCtrl.Delete(item)
+        self._treeCtrl.Thaw()
         return True
-
+        
+    def DeleteFolderItems(self,folder_item):
+        files = []
+        items = self._GetChildItems(folder_item)
+        for item in items:
+            if self._treeCtrl.GetChildrenCount(item, False):
+                self.DeleteFolderItems(item)
+            else:
+                file = self._GetItemFile(item)
+                files.append(file)
+        if files:
+            self.GetDocument().GetCommandProcessor().Submit(ProjectRemoveFilesCommand(self.GetDocument(), files))
 
     def OnAddFileToProject(self, event):
         if wx.Platform == "__WXMSW__" or wx.Platform == "__WXGTK__" or wx.Platform == "__WXMAC__":
@@ -3010,7 +3035,7 @@ class ProjectView(wx.lib.docview.View):
             itemIDs.extend([ProjectService.IMPORT_FILES_ID,ProjectService.ADD_FILES_TO_PROJECT_ID, \
                            ProjectService.ADD_DIR_FILES_TO_PROJECT_ID,ProjectService.ADD_FOLDER_ID, ProjectService.ADD_PACKAGE_FOLDER_ID])
         menuBar = self._GetParentFrame().GetMenuBar()
-        itemIDs = itemIDs + [ ProjectService.REMOVE_FROM_PROJECT, None]
+        #itemIDs = itemIDs + [ ProjectService.REMOVE_FROM_PROJECT, None]
         if is_root_item:
             itemIDs = itemIDs + [ProjectService.CLOSE_PROJECT_ID,ProjectService.SAVE_PROJECT_ID, ProjectService.DELETE_PROJECT_ID, \
                              None, ProjectService.PROJECT_PROPERTIES_ID]
@@ -3018,7 +3043,7 @@ class ProjectView(wx.lib.docview.View):
         if SVN_INSTALLED:
             itemIDs = itemIDs + [None, SVNService.SVNService.SVN_UPDATE_ID, SVNService.SVNService.SVN_CHECKIN_ID, SVNService.SVNService.SVN_REVERT_ID]
         globalIDs = [wx.ID_UNDO, wx.ID_REDO, wx.ID_CLOSE, wx.ID_SAVE, wx.ID_SAVEAS]
-        itemIDs = itemIDs + [None, wx.ID_UNDO, wx.ID_REDO, None, wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE, wx.ID_CLEAR, None, wx.ID_SELECTALL, ProjectService.RENAME_ID, ProjectService.DELETE_FILE_ID, None, wx.lib.pydocview.FilePropertiesService.PROPERTIES_ID]
+        itemIDs = itemIDs + [None, wx.ID_UNDO, wx.ID_REDO, None, wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE, ProjectService.REMOVE_FROM_PROJECT, None, wx.ID_SELECTALL, ProjectService.RENAME_ID, ProjectService.DELETE_FROM_PROJECT, None, wx.lib.pydocview.FilePropertiesService.PROPERTIES_ID]
         if is_root_item:
             itemIDs.append(ProjectService.OPEN_PROJECT_PATH_ID)
         for itemID in itemIDs:
@@ -3049,8 +3074,8 @@ class ProjectView(wx.lib.docview.View):
                             wx.EVT_MENU(self._GetParentFrame(), ProjectService.RUN_SELECTED_PM_INTERNAL_WINDOW_ID, self.ProjectServiceProcessEvent)
                         
                 elif itemID == ProjectService.REMOVE_FROM_PROJECT:
-                    menu.Append(ProjectService.REMOVE_FROM_PROJECT, _("Remove Selected Files from Project"))
-                    wx.EVT_MENU(self._GetParentFrame(), ProjectService.REMOVE_FROM_PROJECT, self.OnClear)
+                    menu.Append(ProjectService.REMOVE_FROM_PROJECT, _("Remove from Project"))
+                    wx.EVT_MENU(self._GetParentFrame(), ProjectService.REMOVE_FROM_PROJECT, self.RemoveFromProject)
                     wx.EVT_UPDATE_UI(self._GetParentFrame(), ProjectService.REMOVE_FROM_PROJECT, self._GetParentFrame().ProcessUpdateUIEvent)
                 else:
                     item = menuBar.FindItemById(itemID)
@@ -3070,7 +3095,7 @@ class ProjectView(wx.lib.docview.View):
             items = self._treeCtrl.GetSelections()
             item = items[0]
             filePath = self._GetItemFilePath(item)
-            if fileutils.is_python_file(filePath) and item != self._bold_item:
+            if self._IsItemFile(item) and fileutils.is_python_file(filePath) and item != self._bold_item:
                 menu.Append(ProjectService.SET_PROJECT_STARTUP_FILE_ID, _("Set as Startup File..."), _("Set the start script of project"))
                 wx.EVT_MENU(self._treeCtrl, ProjectService.SET_PROJECT_STARTUP_FILE_ID, self.ProcessEvent)
                 wx.EVT_UPDATE_UI(self._treeCtrl, ProjectService.SET_PROJECT_STARTUP_FILE_ID, self.ProcessUpdateUIEvent)
@@ -3173,7 +3198,7 @@ class ProjectView(wx.lib.docview.View):
 
     def OnCut(self, event):
         self.OnCopy(event)
-        self.OnClear(event)
+        self.RemoveFromProject(event)
 
 
     def OnCopy(self, event):
@@ -3203,30 +3228,77 @@ class ProjectView(wx.lib.docview.View):
             wx.TheClipboard.Close()
 
 
-    def OnClear(self, event):
-        if self._HasFilesSelected():
-            items = self._treeCtrl.GetSelections()
-            files = []
-            for item in items:
+    def RemoveFromProject(self, event):
+        items = self._treeCtrl.GetSelections()
+        #item = items[0]
+       # if self._treeCtrl.GetChildrenCount(item, False):
+        #    wx.MessageBox(_("Cannot remove folder '%s'.  Folder is not empty.") % self._treeCtrl.GetItemText(item),
+         #                 _("Remove Folder"),
+          #                wx.OK | wx.ICON_EXCLAMATION,
+           #               self.GetFrame())
+            #return
+        files = []
+        for item in items:
+            if not self._IsItemFile(item):
+                folderPath = self._GetItemFolderPath(item)
+                self.GetDocument().GetCommandProcessor().Submit(ProjectRemoveFolderCommand(self, self.GetDocument(), folderPath))
+            else:
                 file = self._GetItemFile(item)
                 if file:
                     files.append(file)
-            self.GetDocument().GetCommandProcessor().Submit(ProjectRemoveFilesCommand(self.GetDocument(), files))
+        self.GetDocument().GetCommandProcessor().Submit(ProjectRemoveFilesCommand(self.GetDocument(), files))
 
-        elif self._HasFoldersSelected():
-            items = self._treeCtrl.GetSelections()
-            item = items[0]
-            if self._treeCtrl.GetChildrenCount(item, False):
-                wx.MessageBox(_("Cannot remove folder '%s'.  Folder is not empty.") % self._treeCtrl.GetItemText(item),
-                              _("Remove Folder"),
-                              wx.OK | wx.ICON_EXCLAMATION,
-                              self.GetFrame())
-                return
-
-            folderPath = self._GetItemFolderPath(item)
-            self.GetDocument().GetCommandProcessor().Submit(ProjectRemoveFolderCommand(self, self.GetDocument(), folderPath))
-
-
+    def DeleteFromProject(self, event):
+        is_file_selected = False
+        is_folder_selected = False
+        if self._HasFilesSelected():
+            is_file_selected = True
+        if self._HasFoldersSelected():
+            is_folder_selected = True
+        if is_file_selected and not is_folder_selected:
+            yesNoMsg = wx.MessageDialog(self.GetFrame(),
+                         _("Delete cannot be reversed.\n\nRemove the selected files from the\nproject and file system permanently?"),
+                         _("Delete Files"),
+                         wx.YES_NO|wx.ICON_QUESTION)
+        elif is_folder_selected and not is_file_selected:
+            yesNoMsg = wx.MessageDialog(self.GetFrame(),
+                         _("Delete cannot be reversed.\n\nRemove the selected folder and its files from the\nproject and file system permanently?"),
+                         _("Delete Folder"),
+                         wx.YES_NO|wx.ICON_QUESTION)
+        elif is_folder_selected and is_file_selected:
+            yesNoMsg = wx.MessageDialog(self.GetFrame(),
+             _("Delete cannot be reversed.\n\nRemove the selected folder and files from the\nproject and file system permanently?"),
+             _("Delete Folder And Files"),
+             wx.YES_NO|wx.ICON_QUESTION)
+             
+        yesNoMsg.CenterOnParent()
+        status = yesNoMsg.ShowModal()
+        yesNoMsg.Destroy()
+        if status == wx.ID_NO:
+            return
+             
+        items = self._treeCtrl.GetSelections()
+        delFiles = []
+        for item in items:
+            if self._IsItemFile(item):
+                filePath = self._GetItemFilePath(item)
+                if filePath and filePath not in delFiles:
+                    # remove selected files from file system
+                    if os.path.exists(filePath):
+                        try:
+                            os.remove(filePath)
+                            # remove selected files from project
+                            self.GetDocument().RemoveFiles([filePath])
+                        except:
+                            wx.MessageBox("Could not delete '%s'.  %s" % (os.path.basename(filePath), sys.exc_value),
+                                          _("Delete File"),
+                                          wx.OK | wx.ICON_ERROR,
+                                          self.GetFrame())
+                    delFiles.append(filePath)
+            else:
+                folderPath = self._GetItemFolderPath(item)
+                self.GetDocument().GetCommandProcessor().Submit(ProjectRemoveFolderCommand(self, self.GetDocument(), folderPath,True))
+            
     def OnDeleteFile(self, event):
         yesNoMsg = wx.MessageDialog(self.GetFrame(),
                                  _("Delete cannot be reversed.\n\nRemove the selected files from the\nproject and file system permanently?"),
@@ -3341,7 +3413,7 @@ class ProjectView(wx.lib.docview.View):
                     except:
                         wx.MessageBox("Could not delete file '%s'.\n%s" % (filePath, sys.exc_value),
                                       _("Delete Project"),
-                                      wx.OK | wx.ICON_EXCLAMATION,
+                                      wx.OK | wx.ICON_ERROR,
                                       self.GetFrame())
                                       
         filePath = doc.GetFilename()
@@ -3391,7 +3463,7 @@ class ProjectView(wx.lib.docview.View):
     def OnKeyPressed(self, event):
         key = event.GetKeyCode()
         if key == wx.WXK_DELETE:
-            self.OnClear(event)
+            self.RemoveFromProject(event)
         else:
             event.Skip()
 
@@ -3505,9 +3577,9 @@ class ProjectView(wx.lib.docview.View):
         if not items:
             return False
         for item in items:
-            if self._IsItemFile(item):
-                return False
-        return True
+            if not self._IsItemFile(item):
+                return True
+        return False
 
 
     def _MakeProjectName(self, project):
@@ -3796,7 +3868,7 @@ class ProjectService(Service.Service):
     RENAME_ID = wx.NewId()
     OPEN_SELECTION_ID = wx.NewId()
     REMOVE_FROM_PROJECT = wx.NewId()
-    DELETE_FILE_ID = wx.NewId()
+    DELETE_FROM_PROJECT = wx.NewId()
     ADD_FILES_TO_PROJECT_ID = wx.NewId()
     ADD_CURRENT_FILE_TO_PROJECT_ID = wx.NewId()
     ADD_DIR_FILES_TO_PROJECT_ID = wx.NewId()
@@ -3936,10 +4008,10 @@ class ProjectService(Service.Service):
             editMenu.Append(ProjectService.RENAME_ID, _("&Rename"), _("Renames the active item"))
             wx.EVT_MENU(frame, ProjectService.RENAME_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, ProjectService.RENAME_ID, frame.ProcessUpdateUIEvent)
-        if not menuBar.FindItemById(ProjectService.DELETE_FILE_ID):
-            editMenu.Append(ProjectService.DELETE_FILE_ID, _("Delete File"), _("Delete the file from the project and file system."))
-            wx.EVT_MENU(frame, ProjectService.DELETE_FILE_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, ProjectService.DELETE_FILE_ID, frame.ProcessUpdateUIEvent)
+        if not menuBar.FindItemById(ProjectService.DELETE_FROM_PROJECT):
+            editMenu.Append(ProjectService.DELETE_FROM_PROJECT, _("Delete"), _("Delete the file from the project and file system."))
+            wx.EVT_MENU(frame, ProjectService.DELETE_FROM_PROJECT, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, ProjectService.DELETE_FROM_PROJECT, frame.ProcessUpdateUIEvent)
 
         return True
 
@@ -4160,8 +4232,7 @@ class ProjectService(Service.Service):
         elif id in [ProjectService.ADD_FILES_TO_PROJECT_ID,
         ProjectService.ADD_DIR_FILES_TO_PROJECT_ID,
         ProjectService.RENAME_ID,
-        ProjectService.OPEN_SELECTION_ID,
-        ProjectService.DELETE_FILE_ID]:
+        ProjectService.OPEN_SELECTION_ID]:
             event.Enable(False)
             return True
         elif id == ProjectService.PROJECT_PROPERTIES_ID:

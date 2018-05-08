@@ -17,6 +17,7 @@ import scope
 import pickle
 from noval.util.logger import app_debugLogger
 import signal
+from noval.dummy.userdb import UserDataDb
 
 class ModuleLoader(object):
     CHILD_KEY = "childs"
@@ -358,7 +359,12 @@ class IntellisenceManager(object):
         if progress_dlg != None:
             progress_dlg.KeepGoing = False
         if load_data_end:
-            self.load_intellisence_data(interpreter)            
+            self.load_intellisence_data(interpreter) 
+        self.ShareUserData()
+            
+    def ShareUserData(self):
+        UserDataDb.get_db().ShareUserData()
+        UserDataDb.get_db().RecordStart()
         
     def generate_default_intellisence_data(self):
         current_interpreter = interpretermanager.InterpreterManager().GetCurrentInterpreter()

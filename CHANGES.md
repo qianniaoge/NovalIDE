@@ -227,3 +227,12 @@ Version 1.0.8 -------------2018-04-01
 27.allow set the default file encoding of text document
 28.fix the bug of pip path contains blank when install and uninstall package
 29.fix the bug of close debugger window when application exit
+
+
+Version 1.0.9 -------------2018-05-02
+1.fix the bug of deepcopy run parameter iter attribute
+2.create novalide web server project
+3.enable check for app update version 
+4.enable download update version from web server
+5.establish the simple novalide web server
+6.enable delete files and folder from proeject and local file system

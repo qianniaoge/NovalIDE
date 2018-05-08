@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2018-02-07 14:57+ÖÐ¹ú±ê×¼Ê±¼ä\n"
-"PO-Revision-Date: 2018-02-08 22:27+0800\n"
+"PO-Revision-Date: 2018-05-08 19:11+0800\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -966,7 +966,7 @@ msgstr ""
 
 #: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2896
 msgid "Previous"
-msgstr ""
+msgstr "上一个"
 
 #: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2896
 msgid "Previous Tab"
@@ -982,7 +982,7 @@ msgstr ""
 
 #: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2902
 msgid "Close Current\tCtrl+F4"
-msgstr ""
+msgstr "关闭当前文档\tCtrl+F4"
 
 #: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:2902
 msgid "Close Current Tab"
