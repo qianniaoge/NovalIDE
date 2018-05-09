@@ -4,6 +4,9 @@ import noval.util.appdirs as appdirs
 import noval.parser.utils as parserutils
 import os
 from wx.lib.pubsub import pub as Publisher
+import noval.util.sysutils as sysutils
+import time
+
 _ = wx.GetTranslation
 
 NOVAL_MSG_UI_DOWNLOAD_PROGRESS = "noval.msg.download.progress"
@@ -22,7 +25,6 @@ class DownloadProgressDialog(wx.GenericProgressDialog):
         
     def UpdateProgress(self,temp,msg):
         keep_going,_ = self.Update(temp,msg)
-        #print temp,keep_going
         self.keep_going = keep_going
 
 class FileDownloader(object):
@@ -60,13 +62,20 @@ class FileDownloader(object):
                         break
                     f.write(chunk)
                     download_progress_dlg._progress += len(chunk)
-                    Publisher.sendMessage(NOVAL_MSG_UI_DOWNLOAD_PROGRESS,temp = download_progress_dlg._progress,msg="")
+                    if sysutils.isWindows():
+                        Publisher.sendMessage(NOVAL_MSG_UI_DOWNLOAD_PROGRESS,temp = download_progress_dlg._progress,msg="")
+                    else:
+                        wx.MilliSleep(50)
+                        wx.SafeYield(download_progress_dlg,True)
+                        wx.CallAfter(Publisher.sendMessage,NOVAL_MSG_UI_DOWNLOAD_PROGRESS,temp=download_progress_dlg._progress,msg="")
         except Exception as e:
             wx.MessageBox(_("Download fail:%s") % e,style=wx.OK|wx.ICON_ERROR)
-            wx.CallAfter(download_progress_dlg.Destroy)
+            time.sleep(1)
+            download_progress_dlg.Destroy()
             return
         f.close()
+        time.sleep(1)
         download_progress_dlg.keep_going = False
-        wx.CallAfter(download_progress_dlg.Destroy)
+        download_progress_dlg.Destroy()
         if self._call_back is not None and not is_cancel:
-            self._call_back(download_file_path)
+            wx.CallAfter(self._call_back,download_file_path)

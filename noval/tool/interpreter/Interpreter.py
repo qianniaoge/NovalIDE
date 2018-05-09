@@ -12,6 +12,8 @@ import manager
 import sys
 import cStringIO
 import py_compile
+import getpass
+import noval.util.fileutils as fileutils
 
 _ = wx.GetTranslation
 
@@ -356,22 +358,37 @@ class PythonInterpreter(BuiltinPythonInterpreter):
          return self._is_valid_interpreter
         
     def GetSysPathList(self):
-        if int(self._version.split(".")[0]) == 2:
+        if self.IsV2():
             run_cmd ="%s -c \"import sys;print sys.path\"" % (strutils.emphasis_path(self.Path))
-        elif int(self._version.split(".")[0]) == 3:
+        elif self.IsV3():
             run_cmd ="%s -c \"import sys;print (sys.path)\"" % (strutils.emphasis_path(self.Path))
         output = GetCommandOutput(run_cmd).strip()
         lst = eval(output)
         self._sys_path_list = lst
         
     def GetBuiltins(self):
-        if int(self._version.split(".")[0]) == 2:
+        if self.IsV2():
             run_cmd ="%s -c \"import sys;print sys.builtin_module_names\"" % (strutils.emphasis_path(self.Path))
-        elif int(self._version.split(".")[0]) == 3:
+        elif self.IsV3():
             run_cmd ="%s -c \"import sys;print (sys.builtin_module_names)\"" % (strutils.emphasis_path(self.Path))
         output = GetCommandOutput(run_cmd).strip()
         lst = eval(output)
         self._builtins = lst
+        
+    def GetPythonLibPath(self):
+        if self.IsV2():
+            cmd = "%s  -c \"from distutils.sysconfig import get_python_lib; print get_python_lib()\"" % \
+                        (strutils.emphasis_path(self.Path),)
+        elif self.IsV3():
+            cmd = "%s  -c \"from distutils.sysconfig import get_python_lib; print (get_python_lib())\"" % \
+                        (strutils.emphasis_path(self.Path),)
+        python_lib_path = GetCommandOutput(cmd).strip()
+        return python_lib_path
+        
+    def IsPythonlibWritable(self):
+        python_lib_path = self.GetPythonLibPath()
+        user = getpass.getuser()
+        return fileutils.is_writable(python_lib_path,user)
         
     @property
     def Analysing(self):

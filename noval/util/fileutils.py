@@ -560,3 +560,22 @@ def RemoveDir(dir_path):
         else:
             os.remove(file_path)
     os.rmdir(dir_path)
+    
+
+if sysutils.isWindows():
+    def is_writable(path, user):
+        return True
+else:
+    import pwd
+    import stat
+    def is_writable(path, user):
+        user_info = pwd.getpwnam(user)
+        uid = user_info.pw_uid
+        gid = user_info.pw_gid
+        s = os.stat(path)
+        mode = s[stat.ST_MODE]
+        return (
+            ((s[stat.ST_UID] == uid) and (mode & stat.S_IWUSR > 0)) or
+            ((s[stat.ST_GID] == gid) and (mode & stat.S_IWGRP > 0)) or
+            (mode & stat.S_IWOTH > 0)
+         )

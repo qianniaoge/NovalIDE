@@ -9,6 +9,7 @@ import subprocess
 import noval.tool.OutputThread as OutputThread
 import threading
 import noval.util.strutils as strutils
+import noval.util.sysutils as sysutils
 
 class ManagePackagesDialog(wx.Dialog):
     
@@ -139,22 +140,40 @@ class ManagePackagesDialog(wx.Dialog):
             self.ok_btn.Enable(True)
         
     def InstallPackage(self,interpreter):
+        should_root = False
+        if not sysutils.isWindows():
+            should_root = not interpreter.IsPythonlibWritable()
         package_name = self.value_ctrl.GetValue().strip()
         if os.path.basename(package_name) == "requirements.txt":
-            command = strutils.emphasis_path(interpreter.GetPipPath()) + " install -r %s" % (package_name)
+            if not sysutils.isWindows() and should_root:
+                command = "pkexec " + strutils.emphasis_path(interpreter.GetPipPath()) + " install -r %s" % (package_name)
+            else:
+                command = strutils.emphasis_path(interpreter.GetPipPath()) + " install -r %s" % (package_name)
         else:
-            command = strutils.emphasis_path(interpreter.GetPipPath()) + " install %s" % (package_name)
+            if not sysutils.isWindows() and should_root:
+                command = "pkexec " + strutils.emphasis_path(interpreter.GetPipPath()) + " install %s" % (package_name)
+            else:
+                command = strutils.emphasis_path(interpreter.GetPipPath()) + " install %s" % (package_name)
         self.output_ctrl.write(command + os.linesep)
         self.call_back = self.output_ctrl.write
         t = threading.Thread(target=self.ExecCommandAndOutput,args=(command,self))
         t.start()
         
     def UninstallPackage(self,interpreter):
+        should_root = False
+        if not sysutils.isWindows():
+            should_root = not interpreter.IsPythonlibWritable()
         package_name = self.value_ctrl.GetValue().strip()
         if os.path.basename(package_name) == "requirements.txt":
-            command = interpreter.GetPipPath() + " uninstall -y -r %s" % (package_name)
+            if not sysutils.isWindows() and should_root:
+                command = "pkexec " + strutils.emphasis_path(interpreter.GetPipPath()) + " uninstall -y -r %s" % (package_name)
+            else:
+                command = strutils.emphasis_path(interpreter.GetPipPath()) + " uninstall -y -r %s" % (package_name)
         else:
-            command = interpreter.GetPipPath() + " uninstall -y %s" % (package_name)
+            if not sysutils.isWindows() and should_root:
+                command = "pkexec " + strutils.emphasis_path(interpreter.GetPipPath()) + " uninstall -y %s" % (package_name)
+            else:
+                command = strutils.emphasis_path(interpreter.GetPipPath()) + " uninstall -y %s" % (package_name)
         self.output_ctrl.write(command + os.linesep)
         self.call_back = self.output_ctrl.write
         t = threading.Thread(target=self.ExecCommandAndOutput,args=(command,self))

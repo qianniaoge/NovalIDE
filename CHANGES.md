@@ -232,7 +232,13 @@ Version 1.0.8 -------------2018-04-01
 Version 1.0.9 -------------2018-05-02
 1.fix the bug of deepcopy run parameter iter attribute
 2.create novalide web server project
-3.enable check for app update version 
+3.enable check for app update version on menu item
 4.enable download update version from web server
 5.establish the simple novalide web server
 6.enable delete files and folder from proeject and local file system
+7.check update version info when application start up
+8.support install package with pip promote to root user on linux os
+9.set default logger debug level to info level
+10.close open project files when delete project files or folders
+11.support auto check ,download and install new version of app on linux os
+12.enable rename folder and file item of project

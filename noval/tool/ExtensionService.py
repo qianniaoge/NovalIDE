@@ -29,6 +29,10 @@ import noval.util.appdirs as appdirs
 import noval.parser.utils as parserutils
 import requests
 from download import FileDownloader
+import noval.tool.interpreter.Interpreter as Interpreter
+import getpass
+import noval.util.fileutils as fileutils
+import which as whichpath
 _ = wx.GetTranslation
 
 
@@ -174,6 +178,9 @@ class ExtensionService(Service.BaseService):
         wx.GetApp().ShowTipfOfDay(True)
         
     def CheckforUpdate(self,event):
+        self.CheckAppUpdate()
+        
+    def CheckAppUpdate(self,ignore_error = False):
         api_addr = '%s/member/get_update' % (UserDataDb.HOST_SERVER_ADDR)
         config = wx.ConfigBase_Get()
         langId = GeneralOption.GetLangId(config.Read("Language",""))
@@ -181,10 +188,14 @@ class ExtensionService(Service.BaseService):
         app_version = sysutilslib.GetAppVersion()
         data = UserDataDb.get_db().RequestData(api_addr,arg = {'app_version':app_version,'lang':lang})
         if data is None:
-            wx.MessageBox(_("could not connect to version server"),style=wx.OK|wx.ICON_ERROR)
+            if not ignore_error:
+                wx.MessageBox(_("could not connect to version server"),style=wx.OK|wx.ICON_ERROR)
             return
+        #no update
         if data['code'] == 0:
-            wx.MessageBox(data['message'])
+            if not ignore_error:
+                wx.MessageBox(data['message'])
+        #have update
         elif data['code'] == 1:
             ret = wx.MessageBox(data['message'],_("Update Available"),wx.YES_NO |wx.ICON_QUESTION)
             if ret == wx.YES:
@@ -203,11 +214,29 @@ class ExtensionService(Service.BaseService):
                     file_name = content_disposition[content_disposition.find(";") + 1:].replace("filename=","").replace("\"","")
                     file_downloader = FileDownloader(file_length,file_name,req,self.Install)
                     file_downloader.StartDownload()
+        #other error
         else:
-            wx.MessageBox(data['message'],style=wx.OK|wx.ICON_ERROR)
+            if not ignore_error:
+                wx.MessageBox(data['message'],style=wx.OK|wx.ICON_ERROR)
             
     def Install(self,app_path):
-        os.startfile(app_path)
+        if sysutilslib.isWindows():
+            os.startfile(app_path)
+        else:
+            path = os.path.dirname(sys.executable)
+            pip_path = os.path.join(path,"pip")
+            cmd = "%s  -c \"from distutils.sysconfig import get_python_lib; print get_python_lib()\"" % (sys.executable,)
+            python_lib_path = Interpreter.GetCommandOutput(cmd).strip()
+            user = getpass.getuser()
+            should_root = not fileutils.is_writable(python_lib_path,user)
+            if should_root:
+                cmd = "pkexec " + "%s install %s" % (pip_path,app_path)
+            else:
+                cmd = "%s install %s" % (pip_path,app_path)
+            subprocess.call(cmd,shell=True)
+            app_startup_path = whichpath.GuessPath("NovalIDE")
+            #wait a moment to avoid single instance limit
+            subprocess.Popen("/bin/sleep 2;%s" % app_startup_path,shell=True)
         wx.GetApp().MainFrame.OnExit(None)
 
     def OpenPythonHelpDocument(self,event):

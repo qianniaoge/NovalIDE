@@ -16,6 +16,8 @@ import subprocess
 import noval.tool.which as whichpath
 import noval.tool.WxThreadSafe as WxThreadSafe
 import noval.util.strutils as strutils
+import getpass
+import noval.util.fileutils as fileutils
 
 ID_COPY_INTERPRETER_NAME = wx.NewId()
 ID_COPY_INTERPRETER_VERSION = wx.NewId()
@@ -365,13 +367,30 @@ class InterpreterConfigDialog(wx.Dialog):
         virtualenv_path = whichpath.GuessPath(virtualenv_name)
         return virtualenv_path
         
+    def IsLocationWritable(self,location):
+        user = getpass.getuser()
+        path = location
+        while not os.path.exists(path):
+            path = os.path.dirname(path)
+        return fileutils.is_writable(path,user)
+        
     def CreatePythonVirtualEnv(self,name,location,include_site_packages,interpreter,progress_dlg):
         progress_dlg.call_back = progress_dlg.AppendMsg
         if not interpreter.Packages.has_key('virtualenv'):
             progress_dlg.msg = "install virtualenv package..."
-            command = strutils.emphasis_path(interpreter.GetPipPath()) + " install virtualenv"
+            should_root = False
+            if not sysutils.isWindows():
+                should_root = not interpreter.IsPythonlibWritable(interpreter)
+            if not sysutils.isWindows() and should_root:
+                command = "pkexec " + strutils.emphasis_path(interpreter.GetPipPath()) + " install virtualenv"
+            else:
+                command = strutils.emphasis_path(interpreter.GetPipPath()) + " install virtualenv"
             self.ExecCommandAndOutput(command,progress_dlg)
-        command = strutils.emphasis_path(self.GetVirtualEnvPath(interpreter)) + " " + strutils.emphasis_path(location)
+        should_root = not self.IsLocationWritable(location)
+        if not sysutils.isWindows() and should_root:
+            command = "pkexec " + strutils.emphasis_path(self.GetVirtualEnvPath(interpreter)) + " " + strutils.emphasis_path(location)
+        else:
+            command = strutils.emphasis_path(self.GetVirtualEnvPath(interpreter)) + " " + strutils.emphasis_path(location)
         if include_site_packages:
             command += " --system-site-packages"
         self.ExecCommandAndOutput(command,progress_dlg)

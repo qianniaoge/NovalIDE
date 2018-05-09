@@ -606,10 +606,10 @@ class ProjectDocument(wx.lib.docview.Document):
         except OSError, (code, message):
             msgTitle = wx.GetApp().GetAppName()
             if not msgTitle:
-                msgTitle = _("File Error")
+                msgTitle = _("Rename File Error")
             wx.MessageBox("Could not rename '%s'.  '%s'" % (wx.lib.docview.FileNameFromPath(oldFilePath), message),
                           msgTitle,
-                          wx.OK | wx.ICON_EXCLAMATION,
+                          wx.OK | wx.ICON_ERROR,
                           wx.GetApp().GetTopWindow())
             return False
 
@@ -915,11 +915,29 @@ class ProjectDocument(wx.lib.docview.Document):
         return rtn
     
                             
-    def RenameFolder(self, oldFolderPath, newFolderPath):
+    def RenameFolder(self, oldFolderLogicPath, newFolderLogicPath):
+        try:
+            oldFolderPath = os.path.join(self.GetModel().homeDir,oldFolderLogicPath)
+            newFolderPath = os.path.join(self.GetModel().homeDir,newFolderLogicPath)
+            os.rename(oldFolderPath, newFolderPath)
+        except Exception as e:
+            wx.MessageBox("Could not rename '%s'.  '%s'" % (wx.lib.docview.FileNameFromPath(oldFolderPath), e),
+                          _("Rename Folder Error"),
+                          wx.OK | wx.ICON_ERROR,
+                          wx.GetApp().GetTopWindow())
+            return False
+        rename_files = []
         for file in self.GetModel()._files:
-            if file.logicalFolder == oldFolderPath:
-                file.logicalFolder = newFolderPath
-        self.UpdateAllViews(hint = ("rename folder", self, oldFolderPath, newFolderPath))
+            if file.logicalFolder == oldFolderLogicPath:
+                file.logicalFolder = newFolderLogicPath
+                oldFilePath = file.filePath
+                file_name = os.path.basename(oldFilePath)
+                newFilePath = os.path.join(newFolderPath,file_name)
+                rename_files.append((oldFilePath,newFilePath))
+        for rename_file in rename_files:
+            oldFilePath, newFilePath = rename_file
+            self.UpdateFilePath(oldFilePath, newFilePath)
+        self.UpdateAllViews(hint = ("rename folder", self, oldFolderLogicPath, newFolderLogicPath))
         self.Modify(True)
         return True
 
@@ -3179,6 +3197,8 @@ class ProjectView(wx.lib.docview.View):
             if not doc.GetCommandProcessor().Submit(ProjectRenameFolderCommand(doc, oldFolderPath, newFolderPath)):
                 return False
             self._treeCtrl.SortChildren(self._treeCtrl.GetItemParent(item))
+            #should delete the folder item ,other it will have double folder item
+            wx.CallAfter(self._treeCtrl.Delete,item)
 
         return True
         

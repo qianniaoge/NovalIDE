@@ -38,12 +38,16 @@ def initLogging(mode=LOG_MODE_TESTRUN, force=False):
     if (force or not loggingInitialized):
         loggingInitialized = True
         configFile = None
+        log_level = logging.DEBUG
         if (mode == LOG_MODE_IDE):
             configFile = os.getenv("AG_LOGCONFIG_IDE")
+            log_level = logging.INFO
         elif (mode == LOG_MODE_TESTRUN):
+            log_level = logging.DEBUG
             configFile = os.getenv("AG_LOGCONFIG_PYTESTRUN")
         else:
             configFile = os.getenv("AG_LOGCONFIG_RUN")
+            log_level = logging.INFO
         if ((configFile == None) or not os.path.exists(configFile)):
             if (mode == LOG_MODE_IDE):
                 configFile = "IDELog"
@@ -61,12 +65,12 @@ def initLogging(mode=LOG_MODE_TESTRUN, force=False):
             if (mode == LOG_MODE_RUN):
                 defaultStream = sys.stdout
             handler = logging.StreamHandler(defaultStream)
-            handler.setLevel(logging.DEBUG)
+            handler.setLevel(log_level)
             handler.setFormatter(logging.Formatter("%(asctime)s %(name)s %(levelname)s: %(message)s"))
             logging.getLogger().addHandler(handler)
-            logging.getLogger().setLevel(logging.DEBUG)
+            logging.getLogger().setLevel(log_level)
         app_debugLogger = logging.getLogger("novalide.debug")
-        app_debugLogger.setLevel(logging.DEBUG)
+        app_debugLogger.setLevel(log_level)
         return configFile
     
 app_debugLogger = logging.getLogger("novalide.debug")

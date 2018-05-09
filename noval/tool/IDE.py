@@ -84,7 +84,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         args = sys.argv
 
         #init ide logger
-        logger.initLogging()
+        log_mode = logger.LOG_MODE_IDE
 
         # Suppress non-fatal errors that might prompt the user even in cases
         # when the error does not impact them.
@@ -110,6 +110,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             self.SetAppName(_("NovalBuilderDebug"))
             self.SetDebug(True)
             ACTIVEGRID_BASE_IDE = True
+            log_mode = logger.LOG_MODE_TESTRUN
             self.SetSingleInstance(False)
         elif isInArgs("baseide", args):
             self.SetAppName(_("NovalIDE"))
@@ -121,6 +122,8 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             self.SetDebug(False)
         if isInArgs("multiple", args) and wx.Platform != "__WXMAC__":
             self.SetSingleInstance(False)
+            
+        logger.initLogging(log_mode)
            
         if not wx.lib.pydocview.DocApp.OnInit(self):
             return False
@@ -404,8 +407,13 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         intellisence.IntellisenceManager().generate_default_intellisence_data()
 
         self.ShowTipfOfDay()
+        wx.CallAfter(self.CheckUpdate,extensionService)
         wx.UpdateUIEvent.SetUpdateInterval(1000)  # Overhead of updating menus was too much.  Change to update every n milliseconds.
         return True
+        
+
+    def CheckUpdate(self,extensionService):
+        extensionService.CheckAppUpdate(True)
 
     def ShowTipfOfDay(self,must_display=False):
         docManager = self.GetDocumentManager()
