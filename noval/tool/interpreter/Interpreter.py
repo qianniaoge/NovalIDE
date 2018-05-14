@@ -17,6 +17,8 @@ import noval.util.fileutils as fileutils
 
 _ = wx.GetTranslation
 
+UNKNOWN_VERSION_NAME = "Unknown Version"
+
 class Interpreter(object):
     
     def __init__(self,name,executable_path):
@@ -188,6 +190,8 @@ class BuiltinPythonInterpreter(Interpreter):
         
     def SetInterpreter(self,**kwargs):
         self._version = kwargs.get('version')
+        if self._version == UNKNOWN_VERSION_NAME:
+            return
         if self.IsV3():
             self._builtin_module_name = self.PYTHON3_BUILTIN_MODULE_NAME
         self._builtins = kwargs.get('builtins')
@@ -261,7 +265,7 @@ class PythonInterpreter(BuiltinPythonInterpreter):
                 
         super(PythonInterpreter,self).__init__(name,executable_path,id,False)
         self._is_valid_interpreter = is_valid_interpreter
-        self._version = "Unknown Version"
+        self._version = UNKNOWN_VERSION_NAME
         self._is_analysing = False
         self._is_analysed = False
         self._is_loading_package = False
@@ -275,8 +279,10 @@ class PythonInterpreter(BuiltinPythonInterpreter):
         output = GetCommandOutput("%s -V" % strutils.emphasis_path(self.Path),True).strip().lower()
         version_flag = "python "
         if output.find(version_flag) == -1:
+            app_debugLogger.error("get version stderr output is *****%s***",output)
             output = GetCommandOutput("%s -V" % strutils.emphasis_path(self.Path),False).strip().lower()
             if output.find(version_flag) == -1:
+                app_debugLogger.error("get version stdout output is *****%s****",output)
                 return
         self._version = output.replace(version_flag,"").strip()
         self._is_valid_interpreter = True
@@ -453,8 +459,8 @@ class PythonInterpreter(BuiltinPythonInterpreter):
         
     def SetInterpreter(self,**kwargs):
         BuiltinPythonInterpreter.SetInterpreter(self,**kwargs)
-        if self.IsV3():
-            self._builtin_module_name = self.PYTHON3_BUILTIN_MODULE_NAME
+        #if self.IsV3():
+         #   self._builtin_module_name = self.PYTHON3_BUILTIN_MODULE_NAME
         
 class EnvironmentError(Exception):
     

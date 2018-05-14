@@ -242,3 +242,9 @@ Version 1.0.9 -------------2018-05-02
 10.close open project files when delete project files or folders
 11.support auto check ,download and install new version of app on linux os
 12.enable rename folder and file item of project
+13.when renane folder of project,rename the open folder files
+14.watch the project document,and alarm the document change event
+15.fix the bug of load python when app startup on some computer
+16.fix the bug of null encoding when set file encoding
+17.enable copy and cut files of project,and paste to another position
+18.add csv module to library zip when use py2exe to pack

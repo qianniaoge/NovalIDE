@@ -48,6 +48,8 @@ class TextDocument(wx.lib.docview.Document):
         self.file_watcher = FileObserver.FileAlarmWatcher()
         self._is_watched = False
         self.file_encoding =  wx.ConfigBase_Get().Read(consts.DEFAULT_FILE_ENCODING_KEY,TextDocument.DEFAULT_FILE_ENCODING)
+        if self.file_encoding == "":
+            self.file_encoding = TextDocument.DEFAULT_FILE_ENCODING
         self._is_new_doc = True
 
     def GetSaveObject(self,filename):

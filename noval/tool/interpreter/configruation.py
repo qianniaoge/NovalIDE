@@ -524,10 +524,14 @@ class InterpreterConfigDialog(wx.Dialog):
     def SmartAnalyse(self,interpreter):
         if interpreter.IsBuiltIn:
             return
-        interpreter.GetDocPath()
-        interpreter.GetSysPathList()
-        interpreter.GetBuiltins()
-        self.package_panel.LoadPackages(interpreter,True)
+        try:
+            interpreter.GetDocPath()
+            interpreter.GetSysPathList()
+            interpreter.GetBuiltins()
+            self.package_panel.LoadPackages(interpreter,True)
+        except Exception as e:
+            wx.MessageBox(str(e),style = wx.OK|wx.ICON_ERROR)
+            return
         self.path_panel.AppendSysPath(interpreter)
         self.builtin_panel.SetBuiltiins(interpreter)
         self.smart_analyse_btn.Enable(False)

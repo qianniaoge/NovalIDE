@@ -43,6 +43,8 @@ from wx.lib.pubsub import pub as Publisher
 import ProjectUI
 from noval.model import configuration as projectconfiguration
 import uuid
+import FileObserver
+import cPickle
 
 from IDE import ACTIVEGRID_BASE_IDE
 if not ACTIVEGRID_BASE_IDE:
@@ -90,6 +92,7 @@ PROJECT_KEY = "/NOV_Projects"
 PROJECT_DIRECTORY_KEY = "NewProjectDirectory"
 
 NEW_PROJECT_DIRECTORY_DEFAULT = appdirs.getSystemDir()
+DF_COPY_FILENAME = wx.CustomDataFormat("copy_file_names")
 
 #----------------------------------------------------------------------------
 # Methods
@@ -323,6 +326,7 @@ class ProjectDocument(wx.lib.docview.Document):
         #don't allow pyc and pyo file add to project
         self.default_ban_exts = ['pyc','pyo']
         self._run_parameter = None
+        self.document_watcher = FileObserver.FileAlarmWatcher()
 
     @property
     def RunParameter(self):
@@ -387,6 +391,11 @@ class ProjectDocument(wx.lib.docview.Document):
 
     def SaveObject(self, fileObject):
         projectlib.save(fileObject, self.GetModel())
+##        try:
+##            projectlib.save(fileObject, self.GetModel())
+##        except Exception as e:
+##            wx.MessageBox(_("Project %s Save Failed") % self.GetModel().Name,_("Save Project"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
+##            return False
         return True
 
 
@@ -437,8 +446,13 @@ class ProjectDocument(wx.lib.docview.Document):
         self.UpdateAllViews()
         self._savedYet = True
         view.Activate()
+        self.document_watcher.AddFileDoc(self)
         return True
 
+    def OnSaveDocument(self, filename):
+        self.document_watcher.StopWatchFile(self)
+        wx.lib.docview.Document.OnSaveDocument(self,filename)
+        self.document_watcher.StartWatchFile(self)
 
     def AddFile(self, filePath, folderPath=None, type=None, name=None):
         if type:
@@ -582,12 +596,14 @@ class ProjectDocument(wx.lib.docview.Document):
         try:
             if oldFilePath == newFilePath:
                 return False
-
+            openDoc = None
             # projects don't have to exist yet, so not required to rename old file,
             # but files must exist, so we'll try to rename and allow exceptions to occur if can't.
             if not isProject or (isProject and os.path.exists(oldFilePath)):
+                openDoc = self.GetFirstView().GetOpenDocument(oldFilePath)
+                if openDoc:
+                    openDoc.FileWatcher.StopWatchFile(openDoc)
                 os.rename(oldFilePath, newFilePath)
-
             if isProject:
                 documents = self.GetDocumentManager().GetDocuments()
                 for document in documents:
@@ -596,18 +612,22 @@ class ProjectDocument(wx.lib.docview.Document):
                         document.SetTitle(wx.lib.docview.FileNameFromPath(newFilePath))
                         document.UpdateAllViews(hint = ("rename", self, oldFilePath, newFilePath))
             else:
-                self.UpdateFilePath(oldFilePath, newFilePath)
-                documents = self.GetDocumentManager().GetDocuments()
-                for document in documents:
-                    if os.path.normcase(document.GetFilename()) == os.path.normcase(oldFilePath):  # If the renamed document is open, update it
-                        document.SetFilename(newFilePath, notifyViews = True)
-                        document.UpdateAllViews(hint = ("rename", self, oldFilePath, newFilePath))
+                wx.CallAfter(self.UpdateFilePath,oldFilePath, newFilePath)
+                if openDoc:
+                    openDoc.SetFilename(newFilePath, notifyViews = True)
+                    openDoc.UpdateAllViews(hint = ("rename", self, oldFilePath, newFilePath))
+                    openDoc.FileWatcher.StartWatchFile(openDoc)
+##                documents = self.GetDocumentManager().GetDocuments()
+##                for document in documents:
+##                    if os.path.normcase(document.GetFilename()) == os.path.normcase(oldFilePath):  # If the renamed document is open, update it
+##                        print document,document.GetFilename()
+##                        document.SetFilename(newFilePath, notifyViews = True)
+##                        document.UpdateAllViews(hint = ("rename", self, oldFilePath, newFilePath))
+##                        document.FileWatcher.StartWatchFile(document)
             return True
         except OSError, (code, message):
-            msgTitle = wx.GetApp().GetAppName()
-            if not msgTitle:
-                msgTitle = _("Rename File Error")
-            wx.MessageBox("Could not rename '%s'.  '%s'" % (wx.lib.docview.FileNameFromPath(oldFilePath), message),
+            msgTitle = _("Rename File Error")
+            wx.MessageBox(_("Could not rename file '%s'.  '%s'") % (wx.lib.docview.FileNameFromPath(oldFilePath), message),
                           msgTitle,
                           wx.OK | wx.ICON_ERROR,
                           wx.GetApp().GetTopWindow())
@@ -921,7 +941,7 @@ class ProjectDocument(wx.lib.docview.Document):
             newFolderPath = os.path.join(self.GetModel().homeDir,newFolderLogicPath)
             os.rename(oldFolderPath, newFolderPath)
         except Exception as e:
-            wx.MessageBox("Could not rename '%s'.  '%s'" % (wx.lib.docview.FileNameFromPath(oldFolderPath), e),
+            wx.MessageBox(_("Could not rename folder '%s'.  '%s'") % (wx.lib.docview.FileNameFromPath(oldFolderPath), e),
                           _("Rename Folder Error"),
                           wx.OK | wx.ICON_ERROR,
                           wx.GetApp().GetTopWindow())
@@ -937,6 +957,12 @@ class ProjectDocument(wx.lib.docview.Document):
         for rename_file in rename_files:
             oldFilePath, newFilePath = rename_file
             self.UpdateFilePath(oldFilePath, newFilePath)
+            openDoc = self.GetFirstView().GetOpenDocument(oldFilePath)
+            if openDoc:
+                openDoc.SetFilename(newFilePath, notifyViews = True)
+                openDoc.UpdateAllViews(hint = ("rename", self, oldFilePath, newFilePath))
+                openDoc.FileWatcher.RemoveFile(oldFilePath)
+                openDoc.FileWatcher.StartWatchFile(openDoc)
         self.UpdateAllViews(hint = ("rename folder", self, oldFolderLogicPath, newFolderLogicPath))
         self.Modify(True)
         return True
@@ -1611,6 +1637,9 @@ class ProjectTreeCtrl(wx.TreeCtrl):
 class ProjectView(wx.lib.docview.View):
     PROJECT_VIEW  = "ProjectView"
     RESOURCE_VIEW = "ResourceView"
+    
+    COPY_FILE_TYPE = 1
+    CUT_FILE_TYPE = 2
 
     #----------------------------------------------------------------------------
     # Overridden methods
@@ -2178,32 +2207,34 @@ class ProjectView(wx.lib.docview.View):
         self._document = None
         self.OnProjectSelect()
  
-
+    def CloseProject(self):
+        projectDoc = self.GetDocument()
+        if projectDoc:
+            projectService = wx.GetApp().GetService(ProjectService)
+            if projectService:
+                openDocs = wx.GetApp().GetDocumentManager().GetDocuments()
+                #close all open documents of this project first
+                for openDoc in openDocs[:]:  # need to make a copy, as each file closes we're off by one
+                    if projectDoc == openDoc:  # close project last
+                        continue
+                        
+                    if projectDoc == projectService.FindProjectFromMapping(openDoc):
+                        self.GetDocumentManager().CloseDocument(openDoc, False)
+                        
+                        projectService.RemoveProjectMapping(openDoc)
+                        if hasattr(openDoc, "GetModel"):
+                            projectService.RemoveProjectMapping(openDoc.GetModel())
+            #delete project regkey config
+            wx.ConfigBase_Get().DeleteGroup(getProjectKeyName(projectDoc.GetModel().Id))
+            projectDoc.document_watcher.RemoveFileDoc(projectDoc)
+            if self.GetDocumentManager().CloseDocument(projectDoc, False):
+                self.RemoveCurrentDocumentUpdate()
+            if not self.GetDocument():
+                self.AddProjectRoot(_("Projects"))
     def ProcessEvent(self, event):
         id = event.GetId()
         if id == ProjectService.CLOSE_PROJECT_ID:
-            projectDoc = self.GetDocument()
-            if projectDoc:
-                projectService = wx.GetApp().GetService(ProjectService)
-                if projectService:
-                    openDocs = wx.GetApp().GetDocumentManager().GetDocuments()
-                    #close all open documents of this project first
-                    for openDoc in openDocs[:]:  # need to make a copy, as each file closes we're off by one
-                        if projectDoc == openDoc:  # close project last
-                            continue
-                            
-                        if projectDoc == projectService.FindProjectFromMapping(openDoc):
-                            self.GetDocumentManager().CloseDocument(openDoc, False)
-                            
-                            projectService.RemoveProjectMapping(openDoc)
-                            if hasattr(openDoc, "GetModel"):
-                                projectService.RemoveProjectMapping(openDoc.GetModel())
-                #delete project regkey config
-                wx.ConfigBase_Get().DeleteGroup(getProjectKeyName(projectDoc.GetModel().Id))
-                if self.GetDocumentManager().CloseDocument(projectDoc, False):
-                    self.RemoveCurrentDocumentUpdate()
-                if not self.GetDocument():
-                    self.AddProjectRoot(_("Projects"))
+            self.CloseProject()
             return True
         elif id == ProjectService.ADD_FILES_TO_PROJECT_ID:
             self.OnAddFileToProject(event)
@@ -2520,13 +2551,23 @@ class ProjectView(wx.lib.docview.View):
             return document.GetFilename()
         else:
             return None
-
+            
+    def GetProjectSelection(self,document):
+        for i in range(self._projectChoice.GetCount()):
+            project = self._projectChoice.GetClientData(i)
+            if document == project:
+                return i
+        return wx.NOT_FOUND
 
     def AddProjectToView(self, document):
-        i = self._projectChoice.Append(self._MakeProjectName(document),getProjectBitmap(), document)
-        self._projectChoice.SetSelection(i)
+        #check the project is already exist or not
+        index = self.GetProjectSelection(document)
+        #if proejct not exist,add the new document
+        if index == wx.NOT_FOUND:
+            index = self._projectChoice.Append(self._MakeProjectName(document),getProjectBitmap(), document)
+            self._documents.append(document)
+        self._projectChoice.SetSelection(index)
         self.OnProjectSelect()
-        self._documents.append(document)
         
     def LoadDocuments(self):
         self._projectChoice.Clear()
@@ -3210,41 +3251,122 @@ class ProjectView(wx.lib.docview.View):
         hasFilesInClipboard = False
         if not wx.TheClipboard.IsOpened():
             if wx.TheClipboard.Open():
-                fileDataObject = wx.FileDataObject()
+                fileDataObject = wx.CustomDataObject(DF_COPY_FILENAME)
                 hasFilesInClipboard = wx.TheClipboard.GetData(fileDataObject)
                 wx.TheClipboard.Close()
         return hasFilesInClipboard
-
-
-    def OnCut(self, event):
-        self.OnCopy(event)
-        self.RemoveFromProject(event)
-
-
-    def OnCopy(self, event):
-        fileDataObject = wx.FileDataObject()
+        
+    def CopyFileItem(self,actionType):
+        
+        fileDataObject = wx.CustomDataObject(DF_COPY_FILENAME)
         items = self._treeCtrl.GetSelections()
+        file_items = []
         for item in items:
             filePath = self._GetItemFilePath(item)
             if filePath:
-                fileDataObject.AddFile(filePath)
-        if len(fileDataObject.GetFilenames()) > 0 and wx.TheClipboard.Open():
+                d = {
+                    'filePath':filePath,
+                    'actionType':actionType
+                }
+                file_items.append(d)
+        share_data = cPickle.dumps(file_items)
+        fileDataObject.SetData(share_data)
+        if fileDataObject.GetSize() > 0 and wx.TheClipboard.Open():
             wx.TheClipboard.SetData(fileDataObject)
             wx.TheClipboard.Close()
 
 
+    def OnCut(self, event):
+        self.CopyFileItem(self.CUT_FILE_TYPE)
+        self.RemoveFromProject(event)
+
+
+    def OnCopy(self, event):
+        self.CopyFileItem(self.COPY_FILE_TYPE)
+        
+    def CopyToDest(self,src_path,file_name,dest_path,action_type):
+        dest_file_path = os.path.join(dest_path,file_name)
+        if not os.path.exists(dest_file_path):
+            if action_type == self.COPY_FILE_TYPE:
+                shutil.copy(src_path,dest_file_path)
+            elif action_type == self.CUT_FILE_TYPE:
+                shutil.move(src_path,dest_file_path)
+            return dest_file_path
+        src_dir_path = os.path.dirname(src_path)
+        if not parserutils.ComparePath(src_dir_path,dest_path):
+            if action_type == self.COPY_FILE_TYPE:
+                ret = wx.MessageBox(_("Dest file is already exist,Do you want to overwrite it?"),_("Copy File"),\
+                              wx.YES_NO|wx.ICON_QUESTION,self._GetParentFrame())
+                if ret == wx.YES:
+                    shutil.copy(src_path,dest_file_path)
+            elif action_type == self.CUT_FILE_TYPE:
+                ret = wx.MessageBox(_("Dest file is already exist,Do you want to overwrite it?"),_("Move File"),\
+                              wx.YES_NO|wx.ICON_QUESTION,self._GetParentFrame())
+                if ret == wx.YES:
+                    shutil.move(src_path,dest_file_path)
+            return dest_file_path
+        if action_type == self.CUT_FILE_TYPE:
+            return dest_file_path
+        file_ext = strutils.GetFileExt(file_name)
+        if sysutilslib.isWindows():
+            dest_file_name = _("%s - Copy.%s") % (file_name,file_ext)
+            dest_file_path = os.path.join(dest_path,dest_file_name)
+            if os.path.exists(dest_file_path):
+                i = 2
+                while os.path.exists(dest_file_path):
+                    dest_file_name = _("%s - Copy (%d).%s") % (file_name,i,file_ext)
+                    dest_file_path = os.path.join(dest_path,dest_file_name)
+                    i += 1
+        else:
+            dest_file_name = _("%s (copy).%s") % (file_name,file_ext)
+            dest_file_path = os.path.join(dest_path,dest_file_name)
+            if os.path.exists(dest_file_path):
+                i = 2
+                while os.path.exists(dest_file_path):
+                    if i == 2:
+                        dest_file_name = _("%s (another copy).%s") % (file_name,file_ext)
+                    elif i == 3:
+                        dest_file_name = _("%s (%drd copy).%s") % (file_name,i,file_ext)
+                    else:
+                        dest_file_name = _("%s (%dth copy).%s") % (file_name,i,file_ext)
+                    dest_file_path = os.path.join(dest_path,dest_file_name)
+                    i += 1
+        shutil.copy(src_path,dest_file_path)
+        return dest_file_path
+
     def OnPaste(self, event):
         if wx.TheClipboard.Open():
-            fileDataObject = wx.FileDataObject()
+            fileDataObject = wx.CustomDataObject(DF_COPY_FILENAME)
             if wx.TheClipboard.GetData(fileDataObject):
                 folderPath = None
+                dest_files = []
                 if self.GetMode() == ProjectView.PROJECT_VIEW:
                     items = self._treeCtrl.GetSelections()
                     if items:
                         item = items[0]
                         if item:
                             folderPath = self._GetItemFolderPath(item)
-                self.GetDocument().GetCommandProcessor().Submit(ProjectAddFilesCommand(self.GetDocument(), fileDataObject.GetFilenames(), folderPath))
+                destFolderPath = os.path.join(self.GetDocument().GetModel().homeDir,folderPath)
+                for src_file in cPickle.loads(fileDataObject.GetData()):
+                    filepath =  src_file['filePath']
+                    actionType = src_file['actionType']
+                    filename = os.path.basename(filepath)
+                    if not os.path.exists(filepath):
+                        wx.MessageBox(_("The item '%s' does not exist in the project directory.It may have been moved,renamed or deleted.") % filename,style=wx.OK|wx.ICON_ERROR)
+                        return
+                    try:
+                        if actionType == self.COPY_FILE_TYPE:
+                            dest_file_path = self.CopyToDest(filepath,filename,destFolderPath,self.COPY_FILE_TYPE)
+                            dest_files.append(dest_file_path)
+                        elif actionType == self.CUT_FILE_TYPE:
+                            dest_file_path = self.CopyToDest(filepath,filename,destFolderPath,self.CUT_FILE_TYPE)
+                            dest_files.append(dest_file_path)
+                        else:
+                            assert(False)
+                    except Exception as e:
+                        wx.MessageBox(str(e),style=wx.OK|wx.ICON_ERROR)
+                        return
+                self.GetDocument().GetCommandProcessor().Submit(ProjectAddFilesCommand(self.GetDocument(), dest_files, folderPath))
             wx.TheClipboard.Close()
 
 
@@ -3266,7 +3388,15 @@ class ProjectView(wx.lib.docview.View):
                 file = self._GetItemFile(item)
                 if file:
                     files.append(file)
-        self.GetDocument().GetCommandProcessor().Submit(ProjectRemoveFilesCommand(self.GetDocument(), files))
+        if files:
+            self.GetDocument().GetCommandProcessor().Submit(ProjectRemoveFilesCommand(self.GetDocument(), files))
+        
+    def GetOpenDocument(self,filepath):
+        openDocs = self.GetDocumentManager().GetDocuments()[:]  # need copy or docs shift when closed
+        for d in openDocs:
+            if parserutils.ComparePath(d.GetFilename(),filepath):
+                return d
+        return None
 
     def DeleteFromProject(self, event):
         is_file_selected = False
@@ -3306,16 +3436,29 @@ class ProjectView(wx.lib.docview.View):
                     # remove selected files from file system
                     if os.path.exists(filePath):
                         try:
+                            #close the open document first if file opened
+                            open_doc =  self.GetOpenDocument(filePath)
+                            if open_doc:
+                                open_doc.Modify(False)  # make sure it doesn't ask to save the file
+                                self.GetDocumentManager().CloseDocument(open_doc, True)
                             os.remove(filePath)
-                            # remove selected files from project
-                            self.GetDocument().RemoveFiles([filePath])
                         except:
                             wx.MessageBox("Could not delete '%s'.  %s" % (os.path.basename(filePath), sys.exc_value),
                                           _("Delete File"),
                                           wx.OK | wx.ICON_ERROR,
                                           self.GetFrame())
+                            return
+                    # remove selected files from project
+                    self.GetDocument().RemoveFiles([filePath])
                     delFiles.append(filePath)
             else:
+                file_items = self._GetFolderFileItems(item)
+                for fileItem in file_items:
+                    filePath = self._GetItemFilePath(fileItem)
+                    open_doc = self.GetOpenDocument(filePath)
+                    if open_doc:
+                        open_doc.Modify(False)  # make sure it doesn't ask to save the file
+                        self.GetDocumentManager().CloseDocument(open_doc, True)
                 folderPath = self._GetItemFolderPath(item)
                 self.GetDocument().GetCommandProcessor().Submit(ProjectRemoveFolderCommand(self, self.GetDocument(), folderPath,True))
             
@@ -3388,12 +3531,13 @@ class ProjectView(wx.lib.docview.View):
 
         if closeFiles or delFiles:
             filesInProject = doc.GetFiles()
-            deploymentFilePath = self.GetDocument().GetDeploymentFilepath()
-            if deploymentFilePath:
-                filesInProject.append(deploymentFilePath)  # remove deployment file also.
-                import activegrid.server.secutils as secutils
-                keystoreFilePath = os.path.join(os.path.dirname(deploymentFilePath), secutils.AGKEYSTORE_FILENAME)
-                filesInProject.append(keystoreFilePath)  # remove keystore file also.
+            if not ACTIVEGRID_BASE_IDE:
+                deploymentFilePath = self.GetDocument().GetDeploymentFilepath()
+                if deploymentFilePath:
+                    filesInProject.append(deploymentFilePath)  # remove deployment file also.
+                    import activegrid.server.secutils as secutils
+                    keystoreFilePath = os.path.join(os.path.dirname(deploymentFilePath), secutils.AGKEYSTORE_FILENAME)
+                    filesInProject.append(keystoreFilePath)  # remove keystore file also.
                 
             # don't remove self prematurely
             filePath = doc.GetFilename()
@@ -3447,6 +3591,7 @@ class ProjectView(wx.lib.docview.View):
             doc.Modify(False)  # make sure it doesn't ask to save the project
             if self.GetDocumentManager().CloseDocument(doc, True):
                 self.RemoveCurrentDocumentUpdate()
+            doc.document_watcher.RemoveFileDoc(doc)
 
         # remove project file
         if delFiles:
@@ -3550,6 +3695,8 @@ class ProjectView(wx.lib.docview.View):
                             # update Project Model with new location
                             self.GetDocument().UpdateFilePath(filepath, newpath)
                             filepath = newpath
+                        else:
+                            continue
 
                     doc = self.GetDocumentManager().CreateDocument(filepath, wx.lib.docview.DOC_SILENT|wx.lib.docview.DOC_OPEN_ONCE)
                     if not doc and filepath.endswith(PROJECT_EXTENSION):  # project already open
@@ -3678,6 +3825,35 @@ class ProjectView(wx.lib.docview.View):
                 folderItems.append(childItem)
                 folderItems += self._GetFolderItems(childItem)
         return folderItems
+        
+    def _GetFolderFileItems(self, parentItem):
+        fileItems = []
+        childrenItems = self._GetChildItems(parentItem)
+        for childItem in childrenItems:
+            if self._IsItemFile(childItem):
+                fileItems.append(childItem)
+            else:
+                fileItems.extend(self._GetFolderFileItems(childItem))
+        return fileItems
+        
+    @WxThreadSafe.call_after
+    def Alarm(self,alarm_type):
+        if alarm_type == FileObserver.FileEventHandler.FILE_MODIFY_EVENT:
+            ret = wx.MessageBox(_("Project File \"%s\" has already been modified outside,Do you want to reload It?") % self.GetDocument().GetFilename(), _("Reload Project.."),
+                           wx.YES_NO  | wx.ICON_QUESTION,self.GetFrame())
+            if ret == wx.YES:
+                document = self.GetDocument()
+                document.OnOpenDocument(document.GetFilename())
+                
+        elif alarm_type == FileObserver.FileEventHandler.FILE_MOVED_EVENT or \
+             alarm_type == FileObserver.FileEventHandler.FILE_DELETED_EVENT:
+            ret = wx.MessageBox(_("Project File \"%s\" has already been moved or deleted outside,Do you want to close this Project?") % self.GetDocument().GetFilename(), _("Project not exist.."),
+                           wx.YES_NO  | wx.ICON_QUESTION ,self.GetFrame())
+            document = self.GetDocument()
+            if ret == wx.YES:
+                self.CloseProject()
+            else:
+                document.Modify(True)
 
 
 class ProjectFileDropTarget(wx.FileDropTarget):

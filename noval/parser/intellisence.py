@@ -373,7 +373,9 @@ class IntellisenceManager(object):
         try:
             self.generate_intellisence_data(current_interpreter,load_data_end=True)
         except Exception as e:
-            app_debugLogger.error('load interpreter path %s intellisence data error: %s',current_interpreter.Path,e)
+            app_debugLogger.error('load interpreter name %s path %s version %s intellisence data path %s error: %s',current_interpreter.Name,\
+                                    current_interpreter.Path,current_interpreter.Version,\
+                                        os.path.join(self.data_root_path,str(current_interpreter.Id)),e)
         
     def load_intellisence_data(self,interpreter):
         self._loader.Load(interpreter)

@@ -70,10 +70,11 @@ class InterpreterManager(Singleton):
         if sysutils.isWindows():
             import _winreg
             ROOT_KEY_LIST = [_winreg.HKEY_LOCAL_MACHINE,_winreg.HKEY_CURRENT_USER]
-            for root_key in ROOT_KEY_LIST:
+            ROOT_KEY_NAMES = ['LOCAL_MACHINE','CURRENT_USER']
+            for k,root_key in enumerate(ROOT_KEY_LIST):
                 try:
                     open_key = _winreg.OpenKey(root_key, r"SOFTWARE\Python\Pythoncore")  
-                    countkey=_winreg.QueryInfoKey(open_key)[0]  
+                    countkey = _winreg.QueryInfoKey(open_key)[0]  
                     keylist = []  
                     for i in range(int(countkey)):  
                         name = _winreg.EnumKey(open_key,i)
@@ -81,15 +82,20 @@ class InterpreterManager(Singleton):
                             child_key = _winreg.OpenKey(root_key, r"SOFTWARE\Python\Pythoncore\%s" % name)
                             install_path = _winreg.QueryValue(child_key,"InstallPath")
                             interpreter = Interpreter.PythonInterpreter(name,os.path.join(install_path,Interpreter.PythonInterpreter.CONSOLE_EXECUTABLE_NAME))
+                            if not interpreter.IsValidInterpreter:
+                                app_debugLogger.error("interpreter name %s path %s,version %s is not a valid interpreter",interpreter.Name,interpreter.Path,interpreter.Version)
+                                continue
                             self.interpreters.append(interpreter)
+                            app_debugLogger.info("load python interpreter from regkey success,path is %s,version is %s",interpreter.Path,interpreter.Version)
                             help_key = _winreg.OpenKey(child_key,"Help")
                             help_path = _winreg.QueryValue(help_key,"Main Python Documentation")
                             interpreter.HelpPath = help_path
+                            app_debugLogger.info("interpreter %s,help path is %s",interpreter.Name,interpreter.HelpPath)
                         except Exception as e:
-                            app_debugLogger.error("read python regkey error:%s",e)
+                            app_debugLogger.error("read python child regkey %s\\xxx\\%s error:%s",ROOT_KEY_NAMES[k],name,e)
                             continue
                 except Exception as e:
-                    app_debugLogger.error("load python interpreter from regkey error:%s",e)
+                    app_debugLogger.error("load python interpreter from regkey %s error:%s",ROOT_KEY_NAMES[k],e)
                     continue
         else:
             executable_path = sys.executable
@@ -127,6 +133,8 @@ class InterpreterManager(Singleton):
                 interpreter.Environ.SetEnviron(l.get('environ',{}))
                 interpreter.Packages = l.get('packages',{})
                 self.interpreters.append(interpreter)
+                app_debugLogger.info('load python interpreter from app config success,name is %s,path is %s,version is %s,is builtin %s',\
+                                     interpreter.Name,interpreter.Path,interpreter.Version,interpreter.IsBuiltIn)
         else:
             prefix = self.KEY_PREFIX
             data = config.Read(prefix)

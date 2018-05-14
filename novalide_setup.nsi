@@ -2,7 +2,7 @@
 
 ; 安装程序初始定义常量
 !define PRODUCT_NAME "NovalIDE"
-!define PRODUCT_VERSION "1.0.8"
+!define PRODUCT_VERSION "1.0.9"
 !define PRODUCT_PUBLISHER "wukan"
 !define PRODUCT_WEB_SITE "http://www.genetalks.com"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\NovalIDE.exe"
@@ -101,6 +101,8 @@ Section "MainSection" SEC01
   File "dist\pythoncom27.dll"
   File "dist\python27.dll"
   File "dist\pyexpat.pyd"
+  File "dist\_sqlite3.pyd"
+  File "dist\sqlite3.dll"
   File "dist\NovalIDE.exe"
   File "dist\MSWSOCK.dll"
   File "dist\library.zip"
@@ -224,6 +226,8 @@ Section Uninstall
   Delete "$INSTDIR\wx._xrc.pyd"
   Delete "$INSTDIR\winxpgui.pyd"
   Delete "$INSTDIR\wx._aui.pyd"
+  Delete "$INSTDIR\_sqlite3.pyd"
+  Delete "$INSTDIR\sqlite3.dll"
   Delete "$INSTDIR\wxbase30u_net_vc90.dll"
   Delete "$INSTDIR\wxbase30u_vc90.dll"
   Delete "$INSTDIR\wxbase30u_xml_vc90.dll"
