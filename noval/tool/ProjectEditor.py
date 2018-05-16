@@ -451,8 +451,9 @@ class ProjectDocument(wx.lib.docview.Document):
 
     def OnSaveDocument(self, filename):
         self.document_watcher.StopWatchFile(self)
-        wx.lib.docview.Document.OnSaveDocument(self,filename)
+        suc = wx.lib.docview.Document.OnSaveDocument(self,filename)
         self.document_watcher.StartWatchFile(self)
+        return suc
 
     def AddFile(self, filePath, folderPath=None, type=None, name=None):
         if type:
@@ -640,16 +641,43 @@ class ProjectDocument(wx.lib.docview.Document):
 
     def MoveFiles(self, files, newFolderPath):
         filePaths = []
+        newFilePaths = []
+        move_files = []
         isArray = isinstance(newFolderPath, type([]))
         for i in range(len(files)):
             if isArray:
                 files[i].logicalFolder = newFolderPath[i]
             else:
                 files[i].logicalFolder = newFolderPath
-            filePaths.append(files[i].filePath)
-            
+            oldFilePath = files[i].filePath
+            filename = os.path.basename(oldFilePath)
+            if isArray:
+                destFolderPath = newFolderPath[i]
+            else:
+                destFolderPath = newFolderPath
+            newFilePath = os.path.join(self.GetModel().homeDir,\
+                                destFolderPath,filename)
+            #this is the same file,which will ignore
+            if parserutils.ComparePath(oldFilePath,newFilePath):
+                continue
+            if os.path.exists(newFilePath):
+                ret = wx.MessageBox(_("Dest file is already exist,Do you want to overwrite it?"),_("Move File"),\
+                                  wx.YES_NO|wx.ICON_QUESTION,self.GetFirstView()._GetParentFrame())
+                if ret == wx.NO:
+                    continue        
+            try:
+                shutil.move(oldFilePath,newFilePath)
+            except Exception as e:
+                wx.MessageBox(str(e),style = wx.OK|wx.ICON_ERROR)
+                return False
+            filePaths.append(oldFilePath)
+            newFilePaths.append(newFilePath)
+            move_files.append(files[i])
+
         self.UpdateAllViews(hint = ("remove", self, filePaths))
-        self.UpdateAllViews(hint = ("add", self, filePaths, []))
+        for k in range(len(move_files)):
+            move_files[k].filePath = newFilePaths[k]
+        self.UpdateAllViews(hint = ("add", self, newFilePaths, []))
         self.Modify(True)
         return True
 
@@ -1364,11 +1392,12 @@ class ProjectRenameFolderCommand(wx.lib.docview.Command):
     
 
 class ProjectAddFolderCommand(wx.lib.docview.Command):
-    def __init__(self, view, doc, folderpath):
+    def __init__(self, view, doc, folderpath,is_package = False):
         wx.lib.docview.Command.__init__(self, canUndo = True)
         self._doc = doc
         self._view = view
         self._folderpath = folderpath
+        self._is_package = is_package
 
 
     def GetName(self):
@@ -1378,7 +1407,7 @@ class ProjectAddFolderCommand(wx.lib.docview.Command):
     def Do(self):
         if self._view.GetDocument() != self._doc:
             return True
-        status = self._view.AddFolder(self._folderpath)
+        status = self._view.AddFolder(self._folderpath,self._is_package)
         if status:
             self._view._treeCtrl.UnselectAll()
             item = self._view._treeCtrl.FindFolder(self._folderpath)
@@ -1496,6 +1525,14 @@ class ProjectTreeCtrl(wx.TreeCtrl):
                 print "Warning: getFolderIcon isn't 16x16, not crossplatform"
         self._folderOpenIconIndex = iconList.AddIcon(icon)
 
+        icon = getPackageFolderIcon()
+        if icon.GetHeight() != 16 or icon.GetWidth() != 16:
+            icon.SetHeight(16)
+            icon.SetWidth(16)
+            if wx.GetApp().GetDebug():
+                print "Warning: getPackageFolderOIcon isn't 16x16, not crossplatform"
+        self._packageFolderIndex = iconList.AddIcon(icon)
+
         self.AssignImageList(iconList)
 
 
@@ -1514,6 +1551,12 @@ class ProjectTreeCtrl(wx.TreeCtrl):
         item = wx.TreeCtrl.AppendItem(self, parent, folderName)
         self.SetItemImage(item, self._folderClosedIconIndex, wx.TreeItemIcon_Normal)
         self.SetItemImage(item, self._folderOpenIconIndex, wx.TreeItemIcon_Expanded)
+        self.SetPyData(item, None)
+        return item
+        
+    def AppendPackageFolder(self, parent, folderName):
+        item = wx.TreeCtrl.AppendItem(self, parent, folderName)
+        self.SetItemImage(item, self._packageFolderIndex, wx.TreeItemIcon_Normal)
         self.SetPyData(item, None)
         return item
         
@@ -1549,7 +1592,7 @@ class ProjectTreeCtrl(wx.TreeCtrl):
         return item
 
 
-    def AddFolder(self, folderPath):
+    def AddFolder(self, folderPath,is_package = False):
         folderItems = []
         
         if folderPath != None:
@@ -1572,7 +1615,10 @@ class ProjectTreeCtrl(wx.TreeCtrl):
                     (child, cookie) = self.GetNextChild(item, cookie)
                     
                 if not found:
-                    item = self.AppendFolder(item, folderName)
+                    if not is_package:
+                        item = self.AppendFolder(item, folderName)
+                    else:
+                        item = self.AppendPackageFolder(item, folderName)
                     folderItems.append(item)
 
         return folderItems
@@ -1640,6 +1686,8 @@ class ProjectView(wx.lib.docview.View):
     
     COPY_FILE_TYPE = 1
     CUT_FILE_TYPE = 2
+    
+    PACKAGE_INIT_FILE = "__init__.py"
 
     #----------------------------------------------------------------------------
     # Overridden methods
@@ -1979,7 +2027,10 @@ class ProjectView(wx.lib.docview.View):
                 if file:
                     folderPath = file.logicalFolder
                     if folderPath:
-                        self._treeCtrl.AddFolder(folderPath)
+                        if os.path.basename(filePath).lower() == self.PACKAGE_INIT_FILE:
+                            self._treeCtrl.AddFolder(folderPath,True)
+                        else:
+                            self._treeCtrl.AddFolder(folderPath)
                         folder = self._treeCtrl.FindFolder(folderPath)
                     else:
                         folder = rootItem
@@ -2060,7 +2111,10 @@ class ProjectView(wx.lib.docview.View):
                         if file:
                             folderPath = file.logicalFolder
                             if folderPath:
-                                self._treeCtrl.AddFolder(folderPath)
+                                if os.path.basename(filePath).lower() == self.PACKAGE_INIT_FILE:
+                                    self._treeCtrl.AddFolder(folderPath,True)
+                                else:
+                                    self._treeCtrl.AddFolder(folderPath)
                                 folder = self._treeCtrl.FindFolder(folderPath)
                             else:
                                 folder = rootItem
@@ -2081,7 +2135,11 @@ class ProjectView(wx.lib.docview.View):
                                         prompt_dlg.Destroy()
                                 if ProjectUI.PromptMessageDialog.DEFAULT_PROMPT_MESSAGE_ID == wx.ID_YESTOALL or\
                                     ProjectUI.PromptMessageDialog.DEFAULT_PROMPT_MESSAGE_ID == wx.ID_YES:
-                                    shutil.copyfile(filePath,dest_path)
+                                    try:
+                                        shutil.copyfile(filePath,dest_path)
+                                    except Exception as e:
+                                        wx.MessageBox(str(e),style=wx.OK|wx.ICON_ERROR)
+                                        return
                                 file.filePath = dest_path
                             if not self._treeCtrl.FindItem(file.filePath,folder):
                                 item = self._treeCtrl.AppendItem(folder, os.path.basename(file.filePath), file)
@@ -2359,6 +2417,17 @@ class ProjectView(wx.lib.docview.View):
         self.copy_thread = threading.Thread(target = self.CopyFilesToProject,args=(parent,file_list,src_path,dest_path))
         self.copy_thread.start()
         
+    def BuildFileList(self,file_list):
+        '''put the package __init__.py to the first item'''
+        package_initfile_path = None
+        for file_path in file_list:
+            if os.path.basename(file_path).lower() == self.PACKAGE_INIT_FILE:
+                package_initfile_path = file_path
+                file_list.remove(file_path)
+                break
+        if package_initfile_path is not None:
+            file_list.insert(0,package_initfile_path)
+        
     @WxThreadSafe.call_after
     def CopyFilesToProject(self,parent,file_list,src_path,dest_path):
         files_dict = self.BuildFileMaps(file_list)
@@ -2367,6 +2436,8 @@ class ProjectView(wx.lib.docview.View):
             if self._stop_importing:
                 break
             file_path_list = files_dict[dir_path]
+            #should put package __init__.py to the first position of file list
+            self.BuildFileList(file_path_list)
             folder_path = dir_path.replace(src_path,"").replace(os.sep,"/").lstrip("/").rstrip("/")
             paths = dest_path.split(os.sep)
             if len(paths) > 1:
@@ -2609,7 +2680,12 @@ class ProjectView(wx.lib.docview.View):
                 folders.sort()
                 folderItems = []
                 for folderPath in folders:
-                    folderItems = folderItems + self._treeCtrl.AddFolder(folderPath)
+                    destfolderPath = os.path.join(document.GetModel().homeDir,folderPath)
+                    packageFilePath = os.path.join(destfolderPath,self.PACKAGE_INIT_FILE)
+                    is_package = False
+                    if os.path.exists(packageFilePath):
+                        is_package = True
+                    folderItems = folderItems + self._treeCtrl.AddFolder(folderPath,is_package)
                                             
                 for file in document.GetModel()._files:
                     if mode == ProjectView.PROJECT_VIEW:
@@ -2796,11 +2872,18 @@ class ProjectView(wx.lib.docview.View):
                 
             if folderDir:
                 folderDir += "/"
-            folderPath = _("%sUntitled") % folderDir
+            folderPath = "%sUntitled" % folderDir
             i = 1
             while self._treeCtrl.FindFolder(folderPath):
                 i += 1
-                folderPath = _("%sUntitled%s") % (folderDir, i)
+                folderPath = "%sUntitled%s" % (folderDir, i)
+            projectdir = self.GetDocument().GetModel().homeDir
+            destfolderPath = os.path.join(projectdir,folderPath)
+            try:
+                os.mkdir(destfolderPath)
+            except Exception as e:
+                wx.MessageBox(str(e),style=wx.OK|wx.ICON_ERROR)
+                return
             self.GetDocument().GetCommandProcessor().Submit(ProjectAddFolderCommand(self, self.GetDocument(), folderPath))
             
             self._treeCtrl.UnselectAll()
@@ -2810,10 +2893,43 @@ class ProjectView(wx.lib.docview.View):
             self.OnRename()
 
     def OnAddPackageFolder(self,event):
-        pass
+        if self.GetDocument():
+            items = self._treeCtrl.GetSelections()
+            if items:
+                item = items[0]
+                if self._IsItemFile(item):
+                    item = self._treeCtrl.GetItemParent(item)
+                    
+                folderDir = self._GetItemFolderPath(item)
+            else:
+                folderDir = ""
+                
+            if folderDir:
+                folderDir += "/"
+            folderPath = "%sPackage" % folderDir
+            i = 1
+            while self._treeCtrl.FindFolder(folderPath):
+                i += 1
+                folderPath = "%sPackage%s" % (folderDir, i)
+            projectdir = self.GetDocument().GetModel().homeDir
+            destpackagePath = os.path.join(projectdir,folderPath)
+            try:
+                os.mkdir(destpackagePath)
+            except Exception as e:
+                wx.MessageBox(str(e),style=wx.OK|wx.ICON_ERROR)
+                return
+            self.GetDocument().GetCommandProcessor().Submit(ProjectAddFolderCommand(self, self.GetDocument(), folderPath,True))
+            destpackageFile = os.path.join(destpackagePath,self.PACKAGE_INIT_FILE)
+            with open(destpackageFile,"w") as f:
+                self.GetDocument().GetCommandProcessor().Submit(ProjectAddFilesCommand(self.GetDocument(),[destpackageFile],folderPath))
+            self._treeCtrl.UnselectAll()
+            item = self._treeCtrl.FindFolder(folderPath)
+            self._treeCtrl.SelectItem(item)
+            self._treeCtrl.EnsureVisible(item)
+            self.OnRename()
 
-    def AddFolder(self, folderPath):
-        self._treeCtrl.AddFolder(folderPath)
+    def AddFolder(self, folderPath,is_package=False):
+        self._treeCtrl.AddFolder(folderPath,is_package)
         return True
 
     def DeleteFolder(self, folderPath,delete_folder_files=True):
@@ -4232,6 +4348,9 @@ class ProjectService(Service.Service):
                 if document.GetDocumentTemplate().GetDocumentType() == ProjectDocument:
                     if not document.OnSaveModified():
                         return False
+                    else:
+                        if document.document_watcher.IsDocFileWatched(document):
+                            document.document_watcher.RemoveFileDoc(document)
 
         # This is called when any SDI frame is closed, so need to check if message window is closing or some other window
         elif self.GetView() == event.GetEventObject().GetView():
@@ -4762,68 +4881,31 @@ def getBlankImage():
 def getBlankIcon():
     return wx.IconFromBitmap(getBlankBitmap())
 
-
 #----------------------------------------------------------------------
-def getFolderClosedData():
-    return \
-'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x10\x00\x00\x00\x10\x08\x06\
-\x00\x00\x00\x1f\xf3\xffa\x00\x00\x00\x04sBIT\x08\x08\x08\x08|\x08d\x88\x00\
-\x00\x00\xffIDAT8\x8d\xa5\x93?N\x02A\x14\x87\xbf\x19&\x10B\xb4A\x0b*iL0!$\
-\x06\x0f\xe0\x05lH\x88G\xe1\x0c\xdbx\x11ZN`,\xa5\x01\x8aM\xa4\x80\x84\xc4Fc\
-\xd0\xe8\xb0\xae\xbbc\x01\x0b,\x19\x16X~\xd5\x9b\xf7\xe7\x9by3o\x84\x90\x19\
-\x8e\x91\x8a\x0c\xed:\x06\xc0\xf7g\x00x\xde\x14\x80\xf3\x9b\x07\xb1\x13\xa0]\
-\xc7d\xcbw\x00d\x17\x81\x82\xff\x01\xc0\xb0\xd3\x9f\x83\x7f\xf5\xb2\xe8\xaa\
-\xf1\xb4\x84\n!3h\xd71\xef\xaf=\xeb\x0e\xc5R\xcd\xea\xcfWZ"\xd6\xc2\xb6\xc4\
-\xdc\xe5\xad\xd5?h\xd7M\xb5\xd9\x15\n\xe6}{\xde\x94\xe2\xf5\xbd59I\x12V\x17\
-\x96F\n \xfc\xfbD\xaaS\xc2\x9fI:@\x041\xdf\xa3\x8d\xb0Y\xb3\xed\xaf\xa9\x00\
-\xbe\xde\xc6\x9c\x9c]\x10\xea\xc3O #\xc3\xd7:)/\x19\xb0>$\x87J\x01\x04\xc1n\
-\xc0\xcb\xf3cl]mv\xe3\x83\xb4o\xc1\xa6D\xf4\x1b\x07\xed\xba\xd9\xa7`+ \xad\
-\xfe\x01\xd1\x03SV!\xfbHa\x00\x00\x00\x00IEND\xaeB`\x82' 
-
 def getFolderClosedBitmap():
     folder_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "folder_close.png")
     folder_image = wx.Image(folder_image_path,wx.BITMAP_TYPE_ANY)
     return BitmapFromImage(folder_image)
 
-def getFolderClosedImage():
-    stream = cStringIO.StringIO(getFolderClosedData())
-    return ImageFromStream(stream)
-
 def getFolderClosedIcon():
     return wx.IconFromBitmap(getFolderClosedBitmap())
 
-
 #----------------------------------------------------------------------
-def getFolderOpenData():
-    return \
-'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x10\x00\x00\x00\x10\x08\x06\
-\x00\x00\x00\x1f\xf3\xffa\x00\x00\x00\x04sBIT\x08\x08\x08\x08|\x08d\x88\x00\
-\x00\x01>IDAT8\x8d\xa5\x93\xbdJ\x03A\x14\x85\xbfY\x03i\xac\x14\x92\xc2F\xad$\
-Z\xa4\x10\x11|\x01\xc1J\xdbt\xbe\x86\x9d\x85\x0f\xa0\xe0\x1b\x04,l\xc4J\x0b\
-\x0bA;a\x11\x13\xb1H\xc2\xc2\xca\x84@\x88n\xb2\xd9?\xcd\xd8d6.\x9b\x104\xa7\
-\xbas\xef=g\xce\x9d\xe1\na\xcc1\x0b\x8c\x99\xd8@F\x07_\xd6\xb9\n\xdd\x8f\xb8\
-\xd0s\x9a\x00\xe4\xb6O\xc5T\x81~\xf5D\x89\xdc\x0e\xd9_\x85,\xa0\xa2\x06\xefw\
-R\x01\x04\x9e\x03\xc0\xea\xde\x8dH\th\xa8\xa81:\xf8\x1e\x00\xf9\x8d\x03\x00\
-\xa4U\x07\xc0,\xdb\xaaX\xaa\xc4"\x99\x04\xd9\xf7\xe0\xfbs$\x12\x0e\x90\xad\
-\x0e\x00]\xeb*N\x9b\xe5u\x05P,UD\xc2\x81&K\xbb\r@\xd4\xba\x1f\x9a\xe9\xb0\
-\xb6\x7f\x96h}\xbe8\x1c9\xe89M\x16\xfc\x15\xa4\xdd\xc6\xe8\x9a\x18\xc3\x99\
-\x97w\x8f\x99\x86\xd8\x81\xb4\xea\x18]\x93\xfcf).\x0e\\9\x96\xf4r}\x84~\x87\
-\xc4\x08\x81\xe7\xa0\xfa\xb5\xa9\xb7\xa6\x1c\xf4\xdao\xcc/B\x04\x0c<\xfb\xef\
-\x02Zd\xa9P\x98\xd8\xf8\xfax\x1b\xc7\xa9o\xf4\xbdN\x8aP{z \x0c\xdc\xb1\xa4\
-\xdf\x10z\x99\xaa\x97[J\'\xc3\xc0\x9dH\x98(\xf0_\xcc\xbc\x8d?\xf2)\x7f\x8e|f\
-\xe54\x00\x00\x00\x00IEND\xaeB`\x82' 
-
 def getFolderOpenBitmap():
     folder_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "folder_open.png")
     folder_image = wx.Image(folder_image_path,wx.BITMAP_TYPE_ANY)
     return BitmapFromImage(folder_image)
 
-def getFolderOpenImage():
-    stream = cStringIO.StringIO(getFolderOpenData())
-    return ImageFromStream(stream)
-
 def getFolderOpenIcon():
     return wx.IconFromBitmap(getFolderOpenBitmap())
+    
+def getPackageFolderBitmap():
+    folder_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "package_obj.gif")
+    folder_image = wx.Image(folder_image_path,wx.BITMAP_TYPE_ANY)
+    return BitmapFromImage(folder_image)
+
+def getPackageFolderIcon():
+    return wx.IconFromBitmap(getPackageFolderBitmap())
     
 
 #----------------------------------------------------------------------

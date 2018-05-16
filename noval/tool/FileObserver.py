@@ -54,6 +54,16 @@ class FileAlarmWatcher(Singleton):
             path_watcher.AddFile(doc)
             path_watcher.Start()
 
+    def IsFileWatched(self,filePath):
+        dir_path = os.path.dirname(filePath)
+        if self.path_watchers.has_key(dir_path):
+            path_watcher = self.path_watchers[dir_path]
+            return path_watcher.IsFileWatched(filePath)
+        return False
+        
+    def IsDocFileWatched(self,doc):
+        return self.IsFileWatched(doc.GetFilename())
+
 class PathWatcher(object):
 
     def __init__(self,path):
@@ -107,6 +117,11 @@ class PathWatcher(object):
         if self.file_docs.has_key(file_path):
             file_doc = self.file_docs[file_path]
             file_doc.GetFirstView().Alarm(event_alarm_type)
+            
+    def IsFileWatched(self,filePath):
+        if self.file_docs.has_key(filePath):
+            return True
+        return False
   
 class FileEventHandler(FileSystemEventHandler):
 

@@ -10,6 +10,8 @@ from noval.util.logger import app_debugLogger
 import noval.parser.nodeast as nodeast
 import json
 
+BUILTIN_INTERPRETER_NAME = _("Builtin_Interpreter")
+
 class InterpreterManager(Singleton):
     
     interpreters = []
@@ -24,13 +26,13 @@ class InterpreterManager(Singleton):
         self.LoadPythonInterpreters()
         if 0 == len(self.interpreters):
             if sysutils.isWindows():
-                dlg = wx.MessageDialog(None, _("No Python Interpreter Found In Your Computer,Will Use the Builtin Interpreter Instead"), \
-                    _("No Python Interpreter Found"), wx.OK | wx.ICON_WARNING)
+                dlg = wx.MessageDialog(None, _("No python interpreter found in your computer,will use the builtin interpreter instead"), \
+                    _("Python interpreter not found"), wx.OK | wx.ICON_WARNING)
             else:
-                dlg = wx.MessageDialog(None, _("No Python Interpreter Found!"), _("No Interpreter"), wx.OK | wx.ICON_WARNING)
+                dlg = wx.MessageDialog(None, _("Python interpreter not found!"), _("No Interpreter"), wx.OK | wx.ICON_WARNING)
             dlg.ShowModal()
             dlg.Destroy()
-        if sysutils.isWindows():
+        if sysutils.isWindows() and None == self.GetInterpreterByName(BUILTIN_INTERPRETER_NAME):
             self.LoadBuiltinInterpreter()
         if 1 == len(self.interpreters):
             self.MakeDefaultInterpreter()
@@ -49,9 +51,10 @@ class InterpreterManager(Singleton):
             interpreter = self.GetInterpreterByName(name)
             self.SetDefaultInterpreter(interpreter)
         else:
-            wx.MessageBox(_("No Default Interpreter Selected, Application May not run normal!"),\
+            wx.MessageBox(_("No default interpreter selected, application may not run normal!"),\
                           _("Choose Interpreter"),wx.OK | wx.ICON_WARNING)
             del self.interpreters[:]
+            self.SetDefaultInterpreter(None)
         dlg.Destroy()
         
     def GetInterpreterByName(self,name):
@@ -85,7 +88,7 @@ class InterpreterManager(Singleton):
                             if not interpreter.IsValidInterpreter:
                                 app_debugLogger.error("interpreter name %s path %s,version %s is not a valid interpreter",interpreter.Name,interpreter.Path,interpreter.Version)
                                 continue
-                            self.interpreters.append(interpreter)
+                            self.interpreters.insert(0,interpreter)
                             app_debugLogger.info("load python interpreter from regkey success,path is %s,version is %s",interpreter.Path,interpreter.Version)
                             help_key = _winreg.OpenKey(child_key,"Help")
                             help_path = _winreg.QueryValue(help_key,"Main Python Documentation")
@@ -106,7 +109,6 @@ class InterpreterManager(Singleton):
     def LoadPythonInterpretersFromConfig(self):
         config = wx.ConfigBase_Get()
         if sysutils.isWindows():
-            ###dct = self.ConvertInterpretersToDictList()
             data = config.Read(self.KEY_PREFIX)
             if not data:
                 return False
@@ -135,6 +137,8 @@ class InterpreterManager(Singleton):
                 self.interpreters.append(interpreter)
                 app_debugLogger.info('load python interpreter from app config success,name is %s,path is %s,version is %s,is builtin %s',\
                                      interpreter.Name,interpreter.Path,interpreter.Version,interpreter.IsBuiltIn)
+            if len(self.interpreters) > 1:
+                return True
         else:
             prefix = self.KEY_PREFIX
             data = config.Read(prefix)
@@ -165,9 +169,9 @@ class InterpreterManager(Singleton):
                 }
                 interpreter.SetInterpreter(**data)
                 self.interpreters.append(interpreter)
-        
-        if len(self.interpreters) > 0:
-            return True
+            if len(self.interpreters) > 0:
+                return True
+                
         return False
     
     def ConvertInterpretersToDictList(self):
@@ -295,7 +299,7 @@ class InterpreterManager(Singleton):
         return cls.CurrentInterpreter
         
     def LoadBuiltinInterpreter(self):
-        builtin_interpreter = Interpreter.BuiltinPythonInterpreter(_("Builtin_Interpreter"),sys.executable)
+        builtin_interpreter = Interpreter.BuiltinPythonInterpreter(BUILTIN_INTERPRETER_NAME,sys.executable)
         self.interpreters.append(builtin_interpreter)
         
 class InterpreterAddError(Exception):

@@ -229,7 +229,7 @@ Version 1.0.8 -------------2018-04-01
 29.fix the bug of close debugger window when application exit
 
 
-Version 1.0.9 -------------2018-05-02
+Version 1.1.0 -------------2018-05-16
 1.fix the bug of deepcopy run parameter iter attribute
 2.create novalide web server project
 3.enable check for app update version on menu item
@@ -248,3 +248,7 @@ Version 1.0.9 -------------2018-05-02
 16.fix the bug of null encoding when set file encoding
 17.enable copy and cut files of project,and paste to another position
 18.add csv module to library zip when use py2exe to pack
+19.allow add python package folder to project folder item
+20.fix a bug of load python interpreter from config
+21.enable drag file items to move files of project to dest
+22.fix the save as document bug whe the save as document filename is already opened

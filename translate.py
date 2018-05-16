@@ -2,7 +2,7 @@
 import subprocess
 import os
 
-cmd = r'python C:\Python27\Tools\i18n\pygettext.py -a -d novalide -o novalide.pot -p G:\work\Noval\noval\locale G:\work\Noval\noval'
+cmd = r'python C:\Python27\Tools\i18n\pygettext.py -a -d novalide -o novalide.pot -p D:\env\Noval\noval\locale D:\env\Noval\noval'
 
 subprocess.call(cmd)
 

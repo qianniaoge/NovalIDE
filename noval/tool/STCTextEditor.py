@@ -31,6 +31,7 @@ import NavigationService
 import consts
 import noval.util.sysutils as sysutilslib
 import noval.util.fileutils as fileutils
+import noval.parser.utils as parserutils
 
 _ = wx.GetTranslation
 
@@ -62,6 +63,57 @@ class TextDocument(wx.lib.docview.Document):
     def DoSaveBehind(self):
         pass
 
+    def GetOpenDocument(self,filepath):
+        if parserutils.ComparePath(self.GetFilename(),filepath):
+            return None
+        openDocs =  wx.GetApp().GetDocumentManager().GetDocuments()[:]  # need copy or docs shift when closed
+        for d in openDocs:
+            if parserutils.ComparePath(d.GetFilename(),filepath):
+                return d
+        return None
+        
+    def SaveAs(self):
+        """
+        Prompts the user for a file to save to, and then calls OnSaveDocument.
+        """
+        docTemplate = self.GetDocumentTemplate()
+        if not docTemplate:
+            return False
+
+        descr = docTemplate.GetDescription() + _(" (") + docTemplate.GetFileFilter() + _(") |") + docTemplate.GetFileFilter()  # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
+        filename = wx.FileSelector(_("Save As"),
+                                   docTemplate.GetDirectory(),
+                                   wx.lib.docview.FileNameFromPath(self.GetFilename()),
+                                   docTemplate.GetDefaultExtension(),
+                                   wildcard = descr,
+                                   flags = wx.SAVE | wx.OVERWRITE_PROMPT,
+                                   parent = self.GetDocumentWindow())
+        if filename == "":
+            return False
+
+        name, ext = os.path.splitext(filename)
+        if ext == "":
+            filename += '.' + docTemplate.GetDefaultExtension()
+            
+        if self.GetOpenDocument(filename):
+            wx.MessageBox(_("File has already been opened,could not overwrite it."),wx.GetApp().GetAppName(),wx.OK | wx.ICON_WARNING,
+                                  self.GetDocumentWindow())
+            return False
+
+        self.SetFilename(filename)
+        self.SetTitle(wx.lib.docview.FileNameFromPath(filename))
+
+        for view in self._documentViews:
+            view.OnChangeFilename()
+
+        if not self.OnSaveDocument(filename):
+            return False
+
+        if docTemplate.FileMatchesTemplate(filename):
+            self.GetDocumentManager().AddFileToHistory(filename)
+            
+        return True
+        
     def OnSaveDocument(self, filename):
         """
         Constructs an output file for the given filename (which must
