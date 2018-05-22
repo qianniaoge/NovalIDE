@@ -205,3 +205,10 @@ class UserDataDb(BaseDb):
         except Exception as e:
             app_debugLogger.error('open %s error:%s' ,addr,e)
         return None
+        
+    def GetUserId(self):
+        sql = "select * from user"
+        result = self.fetchone(sql)
+        if not result:
+            return None
+        return result[1]

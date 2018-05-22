@@ -202,8 +202,12 @@ class ExtensionService(Service.BaseService):
                 new_version = data['new_version']
                 download_url = '%s/member/download_app' % (UserDataDb.HOST_SERVER_ADDR)
                 payload = dict(new_version = new_version,lang = lang,os_name=sys.platform)
+                user_id = UserDataDb.get_db().GetUserId()
+                if user_id:
+                    payload.update({'member_id':user_id})
                 req = requests.get(download_url,params=payload, stream=True)
                 #print req.headers,"------------"
+                #print req.url
                 if 'Content-Length' not in req.headers:
                     data = req.json()
                     if data['code'] != 0:

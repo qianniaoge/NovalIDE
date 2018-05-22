@@ -136,5 +136,6 @@
   <noval:file filePath="./noval/dummy/userdb.py" logicalFolder="noval/dummy" isStartup="false"/>
   <noval:file filePath="./noval/dummy/__init__.py" logicalFolder="noval/dummy" isStartup="false"/>
   <noval:file filePath="./noval/tool/download.py" logicalFolder="noval/tool" isStartup="false"/>
+  <noval:file filePath="./novalide_setup.nsi" isStartup="false"/>
   <noval:interpreter name="2.7" version="2.7.11" path="C:\Python27\python.exe"/>
 </noval:project>
