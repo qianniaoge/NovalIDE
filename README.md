@@ -21,10 +21,13 @@ NovalIDE是一款开源，跨平台，而且免费的国产多功能，轻便的
 - 支持python2.6,2.7版本以及python3.x版本,2.6以前版本未实测
 
 官方网址：[http://www.novalide.com](http://www.novalide.com/)
+
 相关文章: [对一款优秀国产Python IDE---NovalIDE的体验](https://my.oschina.net/u/3728672/blog/1817030)
 
-![软件图标](http://www.novalide.com/media/images/logo.png) 
-![软件截图](http://www.novalide.com/media/images/index/banner_01.png) 
+[软件图标](http://www.novalide.com/media/images/logo.png) 
+
+[软件截图](http://www.novalide.com/media/images/index/banner_01.png) 
+
 ## 编译
 
 ## 安装
