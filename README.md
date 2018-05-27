@@ -83,8 +83,10 @@ cd Noval
 ### Windows安装
 
 从官网：[http://www.novalide.com](http://www.novalide.com/)下载[Windows版本](http://www.novalide.com/member/download_app?lang=zh_cn&os_name=win32)
+
 点击NovalIDE_Setup.exe并依次按安装向导安装，直到完成。
-![NovalIDE_WINDOWS_INSTALL](noval/tool/bmp_source/windows_insall.png)
+
+![NovalIDE_WINDOWS_INSTALL](noval/tool/bmp_source/images/windows_insall.png)
 
 ### Linux安装
 
@@ -96,6 +98,7 @@ sudo apt-get install python-wxtools
 
 sudo yum install wxPython-devel
 
+...
 从官网：[http://www.novalide.com](http://www.novalide.com/)下载[Linux版本](http://www.novalide.com/member/download_app?lang=zh_cn&os_name=linux)
 运行命令:tar -xvf NovalIDE.tar.gz解压安装包:NovalIDE.tar.gz
 cd NovalIDE-x.x.x
