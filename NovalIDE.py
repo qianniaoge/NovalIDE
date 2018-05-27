@@ -2,7 +2,7 @@
 # Name:         NovalIDE.py
 # Purpose:
 #
-# Author:       Lawrence Bruhmuller
+# Author:       wukan
 #
 # Created:      12/26/2017
 # CVS-ID:       $Id$

@@ -54,7 +54,7 @@ elif sys.platform.find('linux') != -1:
     with open("version.txt") as f:
         version = f.read()
 
-    install_requires = ['wxpython','pyyaml',"watchdog","chardet","pyperclip","pyutil"]
+    install_requires = ['wxpython','pyyaml',"watchdog","chardet","pyperclip","psutil"]
     setup(name='NovalIDE',
             version = version,
             description='''noval ide is a cross platform code editor''',

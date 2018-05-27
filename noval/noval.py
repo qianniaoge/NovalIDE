@@ -1,12 +1,12 @@
 #----------------------------------------------------------------------------
-# Name:         ActiveGridIDE.py
+# Name:         noval.py
 # Purpose:
 #
-# Author:       Lawrence Bruhmuller
+# Author:       wukan
 #
-# Created:      3/30/05
+# Created:      3/30/17
 # CVS-ID:       $Id$
-# Copyright:    (c) 2004-2005 ActiveGrid, Inc.
+# Copyright:    (c) 2018- NovalIDE, Inc.
 # License:      wxWindows License
 #----------------------------------------------------------------------------
 import wx.lib.pydocview
