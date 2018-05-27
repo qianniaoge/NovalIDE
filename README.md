@@ -99,6 +99,7 @@ cd Noval
 ![NovalIDE_WINDOWS_INSTALL](noval/tool/bmp_source/images/windows_insall.png)
 
 ### Linux安装
+从官网：[http://www.novalide.com](http://www.novalide.com/)下载[Linux版本](http://www.novalide.com/member/download_app?lang=zh_cn&os_name=linux)并解压 
 
 - **Ubuntu**
 
@@ -111,8 +112,7 @@ sudo yum install wxPython-devel
 - **安装步骤**
 
 ```
-从官网：[http://www.novalide.com](http://www.novalide.com/)下载[Linux版本](http://www.novalide.com/member/download_app?lang=zh_cn&os_name=linux)
-运行命令:tar -xvf NovalIDE.tar.gz解压安装包:NovalIDE.tar.gz
+运行解压命令:tar -xvf NovalIDE.tar.gz解压安装包:NovalIDE.tar.gz
 cd NovalIDE-x.x.x
 运行sudo python setup.py install
 最后输入命令NovalIDE来运行IDE。
@@ -133,7 +133,7 @@ cd NovalIDE-x.x.x
 ![PipManage](noval/tool/bmp_source/images/banner_07.png)
 
 - 中英文切换
-![Zh_En](noval/tool/bmp_source/images/zh_en.png)
+![ZhEn](noval/tool/bmp_source/images/zh_en.png)
 
 - 单元测试
 ![UnitTest](noval/tool/bmp_source/images/banner_08.png)
