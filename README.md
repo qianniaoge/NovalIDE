@@ -45,37 +45,49 @@ NovalIDE是一款开源，跨平台，而且免费的国产多功能，轻便的
 
 ### Windows编译
 
-- 源码运行
+- **源码运行**
+
+```
 
 下载Python2.7，以及wxPython3.0.2，pywin32，py2exe安装包，下载地址见上。
 git clone https://gitee.com/wekay/NovalIDE.git
 cd NovalIDE
+
 pip install psutil
 pip install watchdog
 pip install chardet
 pip install pyperclip
 pip install wmi
-运行Python NovalIDE.py
 
-- 源码打包
+运行Python NovalIDE.py
+```
+
+- **源码打包**
+
+```
 
 运行python buildide或者python setup.py py2exe
 生成dist目下运行NovalIDE.exe
+```
 
 ### Linux编译
 
-- Ubuntu
+- **Ubuntu**
 
 sudo apt-get install python-wxtools
 
-- Centos
+- **Centos**
 
 sudo yum install wxPython-devel
+
+...
+
 
 git clone https://gitee.com/wekay/NovalIDE.git
 cd Noval
 运行python setup.py install，权限不够请用sudo
 最后运行Python NovalIDE.py或者直接运行NovalIDE命令
+...
 
 安装
 ----------------------------------
@@ -90,20 +102,23 @@ cd Noval
 
 ### Linux安装
 
-- Ubuntu
+- **Ubuntu**
 
 sudo apt-get install python-wxtools
 
-- Centos
+- **Centos**
 
 sudo yum install wxPython-devel
 
 ...
+
+
 从官网：[http://www.novalide.com](http://www.novalide.com/)下载[Linux版本](http://www.novalide.com/member/download_app?lang=zh_cn&os_name=linux)
 运行命令:tar -xvf NovalIDE.tar.gz解压安装包:NovalIDE.tar.gz
 cd NovalIDE-x.x.x
 运行sudo python setup.py install
 最后输入命令NovalIDE来运行IDE。
+...
 
 功能截图
 ----------------------------------
@@ -119,11 +134,11 @@ cd NovalIDE-x.x.x
 - 包管理器
 ![PipManage](noval/tool/bmp_source/images/banner_07.png)
 
-- 单元测试
-![UnitTest](noval/tool/bmp_source/images/banner_08.png)
-
 - 中英文切换
 ![Zh_En](noval/tool/bmp_source/images/zh_en.png)
+
+- 单元测试
+![UnitTest](noval/tool/bmp_source/images/banner_08.png)
 
 - 新建工程
 ![NewProject](noval/tool/bmp_source/images/project.png)
