@@ -105,7 +105,7 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
             item.SetBitmap(self._toolBar.FindById(wx.ID_OPEN).GetBitmap())
             fileMenu.AppendItem(item)
             
-            fileMenu.Append(wx.ID_CLOSE, _("&Close"), _("Closes the active document"))
+            fileMenu.Append(wx.ID_CLOSE, _("&Close\tCtrl+W"), _("Closes the active document"))
             if not sdi:
                 fileMenu.Append(wx.ID_CLOSE_ALL, _("Close A&ll"), _("Closes all open documents"))
             fileMenu.AppendSeparator()

@@ -65,7 +65,7 @@ pip install wmi
 
 ```
 运行python buildide或者python setup.py py2exe
-生成dist目下运行NovalIDE.exe
+生成dist目录下运行NovalIDE.exe
 ```
 
 ### Linux编译
@@ -78,7 +78,7 @@ sudo apt-get install python-wxtools
 
 sudo yum install wxPython-devel
 
-- ***编译步骤**
+- **编译步骤**
 
 ...
 git clone https://gitee.com/wekay/NovalIDE.git
@@ -108,7 +108,7 @@ sudo apt-get install python-wxtools
 
 sudo yum install wxPython-devel
 
-- ***安装步骤**
+- **安装步骤**
 
 ...
 从官网：[http://www.novalide.com](http://www.novalide.com/)下载[Linux版本](http://www.novalide.com/member/download_app?lang=zh_cn&os_name=linux)
@@ -133,15 +133,18 @@ cd NovalIDE-x.x.x
 ![PipManage](noval/tool/bmp_source/images/banner_07.png)
 
 - 中英文切换
+<br/>
 ![Zh_En](noval/tool/bmp_source/images/zh_en.png)
 
 - 单元测试
 ![UnitTest](noval/tool/bmp_source/images/banner_08.png)
 
 - 新建工程
+<br/>
 ![NewProject](noval/tool/bmp_source/images/project.png)
 
 - 自动加载解释器
+<br/>
 ![LoadInterpreter](noval/tool/bmp_source/images/interpreter.png)
 
 特别感谢
