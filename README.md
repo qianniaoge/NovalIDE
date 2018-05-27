@@ -80,12 +80,12 @@ sudo yum install wxPython-devel
 
 - **编译步骤**
 
-...
+```
 git clone https://gitee.com/wekay/NovalIDE.git
 cd Noval
 运行python setup.py install，权限不够请用sudo
 最后运行Python NovalIDE.py或者直接运行NovalIDE命令
-...
+```
 
 安装
 ----------------------------------
@@ -110,13 +110,13 @@ sudo yum install wxPython-devel
 
 - **安装步骤**
 
-...
+```
 从官网：[http://www.novalide.com](http://www.novalide.com/)下载[Linux版本](http://www.novalide.com/member/download_app?lang=zh_cn&os_name=linux)
 运行命令:tar -xvf NovalIDE.tar.gz解压安装包:NovalIDE.tar.gz
 cd NovalIDE-x.x.x
 运行sudo python setup.py install
 最后输入命令NovalIDE来运行IDE。
-...
+```
 
 功能截图
 ----------------------------------
@@ -133,18 +133,15 @@ cd NovalIDE-x.x.x
 ![PipManage](noval/tool/bmp_source/images/banner_07.png)
 
 - 中英文切换
-<br/>
 ![Zh_En](noval/tool/bmp_source/images/zh_en.png)
 
 - 单元测试
 ![UnitTest](noval/tool/bmp_source/images/banner_08.png)
 
 - 新建工程
-<br/>
 ![NewProject](noval/tool/bmp_source/images/project.png)
 
 - 自动加载解释器
-<br/>
 ![LoadInterpreter](noval/tool/bmp_source/images/interpreter.png)
 
 特别感谢
