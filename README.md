@@ -48,7 +48,6 @@ NovalIDE是一款开源，跨平台，而且免费的国产多功能，轻便的
 - **源码运行**
 
 ```
-
 下载Python2.7，以及wxPython3.0.2，pywin32，py2exe安装包，下载地址见上。
 git clone https://gitee.com/wekay/NovalIDE.git
 cd NovalIDE
@@ -65,7 +64,6 @@ pip install wmi
 - **源码打包**
 
 ```
-
 运行python buildide或者python setup.py py2exe
 生成dist目下运行NovalIDE.exe
 ```
@@ -80,9 +78,9 @@ sudo apt-get install python-wxtools
 
 sudo yum install wxPython-devel
 
+- ***编译步骤**
+
 ...
-
-
 git clone https://gitee.com/wekay/NovalIDE.git
 cd Noval
 运行python setup.py install，权限不够请用sudo
@@ -110,9 +108,9 @@ sudo apt-get install python-wxtools
 
 sudo yum install wxPython-devel
 
+- ***安装步骤**
+
 ...
-
-
 从官网：[http://www.novalide.com](http://www.novalide.com/)下载[Linux版本](http://www.novalide.com/member/download_app?lang=zh_cn&os_name=linux)
 运行命令:tar -xvf NovalIDE.tar.gz解压安装包:NovalIDE.tar.gz
 cd NovalIDE-x.x.x

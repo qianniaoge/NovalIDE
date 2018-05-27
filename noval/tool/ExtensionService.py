@@ -160,6 +160,10 @@ class ExtensionService(Service.BaseService):
         start_index += 1
         
         id = wx.NewId()
+        helpMenu.Insert(start_index,id,_("&Visit Website"))
+        wx.EVT_MENU(frame, id, self.GotoWebsite)
+        
+        id = wx.NewId()
         helpMenu.Insert(start_index,id,_("&Check for Updates"))
         wx.EVT_MENU(frame, id, self.CheckforUpdate)
         start_index += 1
@@ -176,6 +180,9 @@ class ExtensionService(Service.BaseService):
 
     def ShowTipsOfDay(self,event):
         wx.GetApp().ShowTipfOfDay(True)
+        
+    def GotoWebsite(self,event):
+        fileutils.start_file(UserDataDb.HOST_SERVER_ADDR)
         
     def CheckforUpdate(self,event):
         self.CheckAppUpdate()
