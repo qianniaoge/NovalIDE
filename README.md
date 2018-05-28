@@ -42,6 +42,7 @@ NovalIDE是一款开源，跨平台，而且免费的国产多功能，轻便的
 - watchdog
 - chardet
 - pyperclip
+- requests
 
 ### Windows编译
 
@@ -57,6 +58,7 @@ pip install watchdog
 pip install chardet
 pip install pyperclip
 pip install wmi
+pip install requests
 
 运行Python NovalIDE.py
 ```
@@ -133,7 +135,7 @@ cd NovalIDE-x.x.x
 ![PipManage](noval/tool/bmp_source/images/banner_07.png)
 
 - 中英文切换
-![ZhEn](noval/tool/bmp_source/images/zh_en.png)
+![Zh_En](noval/tool/bmp_source/images/zh_en.png)
 
 - 单元测试
 ![UnitTest](noval/tool/bmp_source/images/banner_08.png)
@@ -147,5 +149,5 @@ cd NovalIDE-x.x.x
 特别感谢
 ----------------------------------
 
-- 感谢华俊女士帮助制作官网特效
-- 感谢回想之后同学提供官网域名
+- 感谢欢夏女士帮助制作官网特效
+- 感谢回想之后同学提供官网域名以及参与制作官网页面

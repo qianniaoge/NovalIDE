@@ -75,7 +75,7 @@ class AboutDialog(wx.Dialog):
         image = wx.StaticBitmap(aboutPage, -1, splash_bmp, (0,0), (splash_bmp.GetWidth(), splash_bmp.GetHeight()))
         sizer.Add(image, 0, wx.ALIGN_CENTER|wx.ALL, 0)
         sizer.Add(wx.StaticText(aboutPage, -1, wx.GetApp().GetAppName() + _("\n%s\n\nCopyright (c) 2014-2018 Genetalks Incorporated and Contributors.  All rights reserved.") % version), 0, wx.ALIGN_LEFT|wx.ALL, 10)
-        sizer.Add(wx.StaticText(aboutPage, -1, _("http://www.genetalks.com")), 0, wx.ALIGN_LEFT|wx.LEFT|wx.BOTTOM, 10)
+        sizer.Add(wx.StaticText(aboutPage, -1, _("http://www.novalide.com")), 0, wx.ALIGN_LEFT|wx.LEFT|wx.BOTTOM, 10)
         aboutPage.SetSizer(sizer)
         nb.AddPage(aboutPage, _("Copyright"))
 
